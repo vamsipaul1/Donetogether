@@ -14,6 +14,7 @@ interface OverviewProps {
     members: (ProjectMember & { users?: User })[];
     tasks: Task[];
     onProjectUpdated?: () => void;
+    isOwner?: boolean;
 }
 
 import { Button } from '@/components/ui/button';
@@ -24,9 +25,10 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 
-const Overview = ({ project, members, tasks, onProjectUpdated }: OverviewProps) => {
+const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: OverviewProps) => {
     const [projectGoal, setProjectGoal] = useState(project.goal || '');
     const [isEditingGoal, setIsEditingGoal] = useState(false);
+    const [isSavingGoal, setIsSavingGoal] = useState(false);
     const [projectStatus, setProjectStatus] = useState<'on_track' | 'at_risk' | 'off_track'>('on_track');
 
     // Sync state if props change
@@ -36,19 +38,57 @@ const Overview = ({ project, members, tasks, onProjectUpdated }: OverviewProps) 
 
     const updateProject = async (updates: any) => {
         try {
-            const { error } = await supabase.from('projects').update(updates).eq('id', project.id);
-            if (error) throw error;
-            toast.success('Project updated successfully');
-            if (onProjectUpdated) onProjectUpdated();
+            console.log('Updating project with:', updates);
+
+            const { data, error } = await supabase
+                .from('projects')
+                .update(updates)
+                .eq('id', project.id)
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Update error:', error);
+                throw error;
+            }
+
+            console.log('Update successful:', data);
+            toast.success('Project updated successfully!');
+
+            if (onProjectUpdated) {
+                onProjectUpdated();
+            }
+
+            return true;
         } catch (error: any) {
-            toast.error('Failed to update project');
-            console.error(error);
+            console.error('Failed to update project:', error);
+            toast.error(error.message || 'Failed to update project');
+            return false;
         }
     };
 
     const handleSaveGoal = async () => {
-        await updateProject({ goal: projectGoal });
-        setIsEditingGoal(false);
+        // Prevent double submissions
+        if (isSavingGoal) return;
+
+        // Validate input
+        if (projectGoal.trim().length === 0) {
+            toast.error('Please enter a project description');
+            return;
+        }
+
+        if (projectGoal.trim().length > 1000) {
+            toast.error('Description is too long (max 1000 characters)');
+            return;
+        }
+
+        setIsSavingGoal(true);
+        const success = await updateProject({ goal: projectGoal.trim() });
+        setIsSavingGoal(false);
+
+        if (success) {
+            setIsEditingGoal(false);
+        }
     };
 
     // Derived Activity Feed
@@ -182,31 +222,62 @@ const Overview = ({ project, members, tasks, onProjectUpdated }: OverviewProps) 
                                         value={projectGoal}
                                         onChange={(e) => setProjectGoal(e.target.value)}
                                         className="min-h-[140px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 text-sm focus:ring-emerald-500 rounded-2xl p-4 shadow-inner"
-                                        placeholder="Enter project goals..."
+                                        placeholder="Describe your project goals, objectives, and what you aim to achieve..."
+                                        disabled={isSavingGoal}
+                                        maxLength={1000}
                                     />
-                                    <div className="flex gap-2">
-                                        <Button size="sm" variant="ghost" onClick={() => { setIsEditingGoal(false); setProjectGoal(project.goal || ''); }} className="h-10 px-4 text-[11px] font-bold uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded-xl">
-                                            Cancel
-                                        </Button>
-                                        <Button size="sm" onClick={handleSaveGoal} className="bg-black hover:bg-black/80 text-white rounded-xl h-10 px-4 text-[11px] font-bold uppercase transition-all hover:scale-105 active:scale-95 shadow-lg shadow-black/60">
-                                            <Save className="w-2 h-2 mr-2" /> Save Goal
-                                        </Button>
-
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-xs text-zinc-400">
+                                            {projectGoal.length}/1000 characters
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => {
+                                                    setIsEditingGoal(false);
+                                                    setProjectGoal(project.goal || '');
+                                                }}
+                                                disabled={isSavingGoal}
+                                                className="h-10 px-4 text-[11px] font-bold uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 rounded-xl"
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                onClick={handleSaveGoal}
+                                                disabled={isSavingGoal || projectGoal.trim().length === 0}
+                                                className="bg-black hover:bg-black/80 text-white rounded-xl h-10 px-4 text-[11px] font-bold uppercase transition-all hover:scale-105 active:scale-95 shadow-lg shadow-black/60 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                            >
+                                                {isSavingGoal ? (
+                                                    <>
+                                                        <div className="w-3 h-3 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                        Saving...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Save className="w-3 h-3 mr-2" /> Save Description
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="relative">
                                     <div className="bg-stone-50/50 dark:bg-stone-900/30 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 text-stone-600 dark:text-stone-400 min-h-[140px] cursor-text transition-all text-sm leading-relaxed text-left hover:border-stone-300 dark:hover:border-stone-700 hover:bg-white dark:hover:bg-stone-900/50 whitespace-pre-wrap font-medium">
-                                        {projectGoal || "What's this project about? Click the edit icon to add a description."}
+                                        {projectGoal || (isOwner ? "What's this project about? Click the edit icon to add a description." : "No project description set.")}
                                     </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={() => setIsEditingGoal(true)}
-                                        className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-emerald-500 transition-all rounded-xl shadow-sm"
-                                    >
-                                        <Edit3 className="w-4 h-4" />
-                                    </Button>
+                                    {isOwner && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setIsEditingGoal(true)}
+                                            className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-emerald-500 transition-all rounded-xl shadow-sm"
+                                        >
+                                            <Edit3 className="w-4 h-4" />
+                                        </Button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -236,21 +307,21 @@ const Overview = ({ project, members, tasks, onProjectUpdated }: OverviewProps) 
                             ))}
                         </div>
                     </section>
-                </div>
-            </div>
+                </div >
+            </div >
 
             {/* Right Sidebar - Status & Timeline */}
-            <div className="w-full lg:w-80 p-8 lg:p-8 space-y-10 bg-stone-50 dark:bg-black border-t lg:border-t-0 lg:border-l border-stone-200 dark:border-stone-800 overflow-y-auto scrollbar-hide">
+            < div className="w-full lg:w-80 p-8 lg:p-8 space-y-10 bg-stone-50 dark:bg-black border-t lg:border-t-0 lg:border-l border-stone-200 dark:border-stone-800 overflow-y-auto scrollbar-hide" >
                 <section>
                     <h2 className="text-[13px] font-bold uppercase mb-6 text-zinc-900 dark:text-white px-1">What's the status of project?</h2>
-                    <div className="space-y-3">
-                        <div onClick={() => { setProjectStatus('on_track'); toast.success('Status updated: On track'); }}>
+                    <div className={`space-y-3 ${!isOwner ? 'pointer-events-none opacity-80' : ''}`}>
+                        <div onClick={() => isOwner && setProjectStatus('on_track')}>
                             <StatusCard label="On track" color="emerald" active={projectStatus === 'on_track'} />
                         </div>
-                        <div onClick={() => { setProjectStatus('at_risk'); toast.success('Status updated: At risk'); }}>
+                        <div onClick={() => isOwner && setProjectStatus('at_risk')}>
                             <StatusCard label="At risk" color="amber" active={projectStatus === 'at_risk'} />
                         </div>
-                        <div onClick={() => { setProjectStatus('off_track'); toast.success('Status updated: Off track'); }}>
+                        <div onClick={() => isOwner && setProjectStatus('off_track')}>
                             <StatusCard label="Off track" color="red" active={projectStatus === 'off_track'} />
                         </div>
                     </div>
@@ -271,8 +342,8 @@ const Overview = ({ project, members, tasks, onProjectUpdated }: OverviewProps) 
                         ))}
                     </div>
                 </section>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

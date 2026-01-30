@@ -10,40 +10,79 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
     const [isConnected, setIsConnected] = useState(false);
     const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
 
+    const getOrCreateRoom = async () => {
+        if (!projectId) {
+            console.error('❌ getOrCreateRoom: No projectId provided');
+            return null;
+        }
+
+        console.log('🔍 getOrCreateRoom: Starting for projectId:', projectId);
+
+        try {
+            // Try to find existing room
+            console.log('🔍 getOrCreateRoom: SELECT query...');
+            const { data: rooms, error: selectError } = await supabase
+                .from('chat_rooms')
+                .select('id')
+                .eq('project_id', projectId)
+                .single();
+
+            console.log('🔍 getOrCreateRoom: SELECT result:', { rooms, selectError });
+
+            if (rooms) {
+                console.log('✅ getOrCreateRoom: Found existing room:', rooms.id);
+                return rooms.id;
+            }
+
+            if (selectError && selectError.code !== 'PGRST116') {
+                // PGRST116 = no rows returned, which is fine
+                console.error('❌ getOrCreateRoom: SELECT error:', {
+                    code: selectError.code,
+                    message: selectError.message,
+                    details: selectError.details,
+                    hint: selectError.hint,
+                    full: selectError
+                });
+            }
+
+            // Room doesn't exist, create it
+            console.log('🔨 getOrCreateRoom: Creating new room for project:', projectId);
+            const { data: newRoom, error: createError } = await supabase
+                .from('chat_rooms')
+                .insert({ project_id: projectId })
+                .select()
+                .single();
+
+            console.log('🔨 getOrCreateRoom: INSERT result:', { newRoom, createError });
+
+            if (createError) {
+                console.error('❌ getOrCreateRoom: INSERT error:', {
+                    code: createError.code,
+                    message: createError.message,
+                    details: createError.details,
+                    hint: createError.hint,
+                    full: createError
+                });
+                return null;
+            }
+
+            if (newRoom) {
+                console.log('✅ getOrCreateRoom: Created new room:', newRoom.id);
+                return newRoom.id;
+            }
+        } catch (err) {
+            console.error('❌ getOrCreateRoom: EXCEPTION:', err);
+        }
+        return null;
+    };
+
     // Fetch or create chat room for the project
     useEffect(() => {
-        if (!projectId) return;
-
-        const fetchRoom = async () => {
-            try {
-                // Try to find existing room
-                const { data: rooms, error } = await supabase
-                    .from('chat_rooms')
-                    .select('id')
-                    .eq('project_id', projectId)
-                    .single();
-
-                if (rooms) {
-                    setRoomId(rooms.id);
-                } else if (!rooms && !error) {
-                    // Create if not exists (handled by SQL usually or logic here)
-                    const { data: newRoom, error: createError } = await supabase
-                        .from('chat_rooms')
-                        .insert({ project_id: projectId })
-                        .select()
-                        .single();
-
-                    if (newRoom) setRoomId(newRoom.id);
-                    if (createError && createError.code !== '23505') { // Ignore unique constraint error
-                        console.error('Error creating room:', createError);
-                    }
-                }
-            } catch (err) {
-                console.error('Error fetching chat room:', err);
-            }
+        const init = async () => {
+            const id = await getOrCreateRoom();
+            if (id) setRoomId(id);
         };
-
-        fetchRoom();
+        init();
     }, [projectId]);
 
     // Fetch messages and subscribe
@@ -60,14 +99,18 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                     reads:message_reads(user_id)
                 `)
                 .eq('room_id', roomId)
-                .order('created_at', { ascending: true }); // Oldest first for chat
+                .order('created_at', { ascending: true });
 
             if (error) {
-                toast.error('Failed to load messages');
-                return;
+                console.error("Fetch messages error", error);
+            } else {
+                setMessages(prev => {
+                    const params = data as any[] || [];
+                    const temps = prev.filter(m => m.id.startsWith('temp-'));
+                    // Dedup just in case
+                    return [...params, ...temps];
+                });
             }
-
-            setMessages(data as any[] || []);
             setIsLoading(false);
         };
 
@@ -99,7 +142,15 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                             reads: []
                         } as unknown as MessageWithSender;
 
-                        setMessages(prev => [...prev, newMessage]);
+                        setMessages(prev => {
+                            // Deduplicate: Remove optimistic message if it matches content/sender
+                            const filtered = prev.filter(m =>
+                                !(m.id.startsWith('temp-') && m.content === newMessage.content && m.sender_id === newMessage.sender_id)
+                            );
+                            // Also ensure we don't add the SAME real ID twice
+                            if (filtered.some(m => m.id === newMessage.id)) return filtered;
+                            return [...filtered, newMessage];
+                        });
                     } else if (payload.eventType === 'UPDATE') {
                         setMessages(prev => prev.map(msg =>
                             msg.id === payload.new.id
@@ -122,9 +173,7 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                 (payload) => {
                     setMessages(prev => prev.map(msg => {
                         if (msg.id === payload.new.message_id) {
-                            // Add the new read to the message's reads array
                             const currentReads = msg.reads || [];
-                            // Check duplication just in case
                             if (!currentReads.some(r => r.user_id === payload.new.user_id)) {
                                 return {
                                     ...msg,
@@ -145,7 +194,6 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                         return newSet;
                     });
 
-                    // Clear typing status after timeout
                     setTimeout(() => {
                         setTypingUsers(prev => {
                             const newSet = new Set(prev);
@@ -165,25 +213,82 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
     }, [roomId, currentUserId]);
 
     const sendMessage = async (content: string, mediaUrl?: string) => {
-        if (!roomId || !content.trim()) return;
+        console.log('💬 useChat.sendMessage: START', { content, mediaUrl, roomId, projectId });
+        let activeRoomId = roomId;
+
+        // JIT Room Creation/Fetching if missing
+        if (!activeRoomId && projectId) {
+            console.log('💬 useChat.sendMessage: No roomId, creating...');
+            const id = await getOrCreateRoom();
+            if (id) {
+                activeRoomId = id;
+                setRoomId(id);
+                console.log('💬 useChat.sendMessage: Room created:', id);
+            } else {
+                console.error('💬 useChat.sendMessage: Failed to create room');
+            }
+        }
+
+        if (!activeRoomId || !content.trim()) {
+            console.warn("Cannot send message: No Room ID or empty content", { activeRoomId, content });
+            return;
+        }
+
+        const user = await supabase.auth.getUser();
+        if (!user.data.user) {
+            console.error("Cannot send message: No authenticated user");
+            return;
+        }
+
+        // Optimistic Update
+        const tempId = `temp-${Date.now()}`;
+        const optimisticMessage: MessageWithSender = {
+            id: tempId,
+            room_id: activeRoomId,
+            sender_id: user.data.user.id,
+            content,
+            media_url: mediaUrl || null,
+            created_at: new Date().toISOString(),
+            is_deleted: false,
+            is_edited: false,
+            sender: {
+                id: user.data.user.id,
+                display_name: 'Me',
+                avatar_url: null,
+            } as any,
+            reads: []
+        };
+
+        console.log('💬 useChat.sendMessage: Adding optimistic message', optimisticMessage);
+        setMessages(prev => {
+            const newMessages = [...prev, optimisticMessage];
+            console.log('💬 useChat.sendMessage: New messages array length:', newMessages.length);
+            return newMessages;
+        });
 
         try {
-            const user = await supabase.auth.getUser();
-            if (!user.data.user) return;
-
-            const { error } = await supabase
+            console.log('💬 useChat.sendMessage: Inserting to DB...');
+            const { error, data } = await supabase
                 .from('messages')
                 .insert({
-                    room_id: roomId,
+                    room_id: activeRoomId,
                     sender_id: user.data.user.id,
                     content,
                     media_url: mediaUrl
-                });
+                })
+                .select();
 
-            if (error) throw error;
+            if (error) {
+                console.error("Message insert error:", error);
+                setMessages(prev => prev.filter(m => m.id !== tempId));
+                toast.error('Failed to send message');
+                throw error;
+            } else {
+                console.log('💬 useChat.sendMessage: DB insert SUCCESS', data);
+            }
         } catch (error) {
-            console.error('Error sending message:', error);
-            toast.error('Failed to send message');
+            console.error('💬 useChat.sendMessage: EXCEPTION', error);
+            setMessages(prev => prev.filter(m => m.id !== tempId));
         }
     };
 
@@ -198,11 +303,9 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
     };
 
     const markAsRead = async (messageId: string) => {
-        if (!currentUserId) return;
+        if (!currentUserId || !messageId) return;
 
         try {
-            // Check if already read to avoid error spam? Or rely on unique constraint?
-            // SQL "ON CONFLICT DO NOTHING" is best, but pure insert is fine if we ignore error.
             const { error } = await supabase
                 .from('message_reads')
                 .insert({
@@ -210,7 +313,6 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                     user_id: currentUserId
                 });
 
-            // Ignore duplicate key error (code 23505)
             if (error && error.code !== '23505') {
                 console.error("Error marking read:", error);
             }

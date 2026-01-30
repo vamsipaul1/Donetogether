@@ -125,9 +125,11 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
             {/* Board Header */}
             <header className="px-4 md:px-6 h-14 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 z-20 overflow-x-auto scrollbar-hide shrink-0">
                 <div className="flex items-center gap-3 md:gap-6 min-w-max">
-                    <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-[9px] md:text-[10px] font-black hover:scale-105 transition-all uppercase tracking-widest shadow-lg shadow-zinc-500/20">
-                        <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 invert brightness-0 dark:brightness-200" /> <span className="hidden sm:inline">Add task</span><span className="sm:hidden">Add</span>
-                    </button>
+                    {isOwner && (
+                        <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-[9px] md:text-[10px] font-black hover:scale-105 transition-all uppercase tracking-widest shadow-lg shadow-zinc-500/20">
+                            <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 invert brightness-0 dark:brightness-200" /> <span className="hidden sm:inline">Add task</span><span className="sm:hidden">Add</span>
+                        </button>
+                    )}
                     <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
                     <h2 className="text-xs md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight shrink-0">Operation Board</h2>
                 </div>
@@ -159,9 +161,11 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                         </span>
                                     </div>
                                     <div className="flex gap-1">
-                                        <button onClick={onAddTask} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
-                                            <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" />
-                                        </button>
+                                        {isOwner && (
+                                            <button onClick={onAddTask} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
+                                                <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" />
+                                            </button>
+                                        )}
 
                                     </div>
                                 </div>
@@ -177,7 +181,7 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                             {optimisticTasks
                                                 .filter((t) => t.status === col.id)
                                                 .map((task, index) => (
-                                                    <Draggable key={task.id} draggableId={task.id} index={index}>
+                                                    <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!isOwner}>
                                                         {(provided, snapshot) => (
                                                             <div
                                                                 ref={provided.innerRef}
@@ -195,21 +199,23 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                                     </div>
 
                                                                     <div className="flex justify-end relative z-10">
-                                                                        <DropdownMenu>
-                                                                            <DropdownMenuTrigger asChild>
-                                                                                <button className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-200 transition-all rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700">
-                                                                                    <MoreHorizontal className="w-4 h-4" />
-                                                                                </button>
-                                                                            </DropdownMenuTrigger>
-                                                                            <DropdownMenuContent align="end" className="w-40 rounded-xl p-1 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm z-50">
-                                                                                <DropdownMenuItem onClick={() => onEditTask(task)} className="text-xs font-medium cursor-pointer rounded-lg p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                                                                                    Edit task
-                                                                                </DropdownMenuItem>
-                                                                                <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-xs font-medium cursor-pointer rounded-lg p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 text-rose-500 focus:text-rose-600">
-                                                                                    Delete
-                                                                                </DropdownMenuItem>
-                                                                            </DropdownMenuContent>
-                                                                        </DropdownMenu>
+                                                                        {isOwner && (
+                                                                            <DropdownMenu>
+                                                                                <DropdownMenuTrigger asChild>
+                                                                                    <button className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-200 transition-all rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700">
+                                                                                        <MoreHorizontal className="w-4 h-4" />
+                                                                                    </button>
+                                                                                </DropdownMenuTrigger>
+                                                                                <DropdownMenuContent align="end" className="w-40 rounded-xl p-1 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 shadow-sm z-50">
+                                                                                    <DropdownMenuItem onClick={() => onEditTask(task)} className="text-xs font-medium cursor-pointer rounded-lg p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                                                                        Edit task
+                                                                                    </DropdownMenuItem>
+                                                                                    <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-xs font-medium cursor-pointer rounded-lg p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 text-rose-500 focus:text-rose-600">
+                                                                                        Delete
+                                                                                    </DropdownMenuItem>
+                                                                                </DropdownMenuContent>
+                                                                            </DropdownMenu>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
@@ -237,15 +243,17 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                 ))}
                                             {provided.placeholder}
                                             {provided.placeholder}
-                                            <button
-                                                onClick={() => {
-                                                    onAddTask();
-                                                }}
-                                                className="w-full py-3 md:py-4 rounded-[20px] border-2 border-dashed border-zinc-200/80 dark:border-zinc-800 text-zinc-400 hover:text-violet-500 hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/10 transition-all flex items-center justify-center gap-2 group mt-2"
-                                            >
-                                                <img src="/image copy 4.png" alt="" className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all group-hover:invert group-hover:brightness-0 dark:group-hover:brightness-200" />
-                                                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">Add Task</span>
-                                            </button>
+                                            {isOwner && (
+                                                <button
+                                                    onClick={() => {
+                                                        onAddTask();
+                                                    }}
+                                                    className="w-full py-3 md:py-4 rounded-[20px] border-2 border-dashed border-zinc-200/80 dark:border-zinc-800 text-zinc-400 hover:text-violet-500 hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/10 transition-all flex items-center justify-center gap-2 group mt-2"
+                                                >
+                                                    <img src="/image copy 4.png" alt="" className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all group-hover:invert group-hover:brightness-0 dark:group-hover:brightness-200" />
+                                                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">Add Task</span>
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </Droppable>

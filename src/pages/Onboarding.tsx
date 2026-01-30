@@ -118,33 +118,21 @@ const Onboarding = () => {
         const code = inviteCode.replace(/\s/g, '').toUpperCase();
 
         try {
-            const { data: projects, error } = await supabase
-                .from('projects')
-                .select('*')
-                .eq('join_code', code)
+            // Validate invite code exists
+            const { data: invite, error } = await supabase
+                .from('invites')
+                .select('id, project_id, code')
+                .eq('code', code)
+                .eq('status', 'pending')
                 .single();
 
-            if (error || !projects) throw new Error('Invalid invite code. Please check and try again.');
+            if (error || !invite) throw new Error('Invalid invite code. Please check and try again.');
 
-            const { error: joinError } = await supabase
-                .from('project_members')
-                .insert({
-                    project_id: projects.id,
-                    user_id: currentUser.id,
-                    role: 'member'
-                });
-
-            if (joinError) throw joinError;
-
-            await supabase.from('users').update({ onboarding_completed: true }).eq('id', currentUser.id);
-
-            toast.success('Successfully joined team!');
-            navigate('/dashboard');
+            // Redirect to profile setup with invite data
+            navigate(`/setup-profile?code=${code}&inviteId=${invite.id}`);
         } catch (error: any) {
-            console.error('Join error:', error);
-            let msg = error.message || 'Failed to join team.';
-            if (error.code === '23505') msg = 'You are already a member of this team.';
-            toast.error(msg);
+            console.error('Invite validation error:', error);
+            toast.error(error.message || 'Invalid invite code');
         } finally {
             setLoading(false);
         }

@@ -81,6 +81,7 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
 
     // Manipulation Handlers
     const handleStartTaskManipulation = (e: React.MouseEvent | React.TouchEvent, task: Task, type: 'drag' | 'resize-start' | 'resize-end') => {
+        if (!isOwner) return;
         // e.stopPropagation(); 
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
         setActiveTaskId(task.id);
@@ -279,9 +280,11 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button onClick={onAddTask} className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-500/20">
-                        <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 invert brightness-0 dark:brightness-200" /> Add Task
-                    </button>
+                    {isOwner && (
+                        <button onClick={onAddTask} className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-500/20">
+                            <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 invert brightness-0 dark:brightness-200" /> Add Task
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -389,26 +392,31 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
 
                                                                     return (
                                                                         <div
-                                                                            onMouseDown={(e) => handleDragStart(e, task)}
-                                                                            onTouchStart={(e) => handleDragStart(e, task)}
-                                                                            className={`group/bar absolute h-7 md:h-9 rounded-lg md:rounded-xl px-2 md:px-3 flex items-center gap-1.5 md:gap-2 shadow-lg cursor-grab active:cursor-grabbing border-t border-white/20 hover:brightness-105 active:scale-[0.99] transition-all z-10
+                                                                            onMouseDown={isOwner ? (e) => handleDragStart(e, task) : undefined}
+                                                                            onTouchStart={isOwner ? (e) => handleDragStart(e, task) : undefined}
+                                                                            className={`group/bar absolute h-7 md:h-9 rounded-lg md:rounded-xl px-2 md:px-3 flex items-center gap-1.5 md:gap-2 shadow-lg border-t border-white/20 transition-all z-10
                                                                             ${colorClass} ${activeTaskId === task.id ? 'z-50 ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-black scale-105 opacity-90' : ''}
+                                                                            ${isOwner ? 'cursor-grab active:cursor-grabbing hover:brightness-105 active:scale-[0.99]' : 'cursor-default'}
                                                                         `}
                                                                             style={{ left: style.left, width: style.width }}
                                                                         >
                                                                             {/* Start Resize Handle */}
-                                                                            <div
-                                                                                className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/20 rounded-l-xl z-20"
-                                                                                onMouseDown={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-start'); }}
-                                                                                onTouchStart={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-start'); }}
-                                                                            />
+                                                                            {isOwner && (
+                                                                                <div
+                                                                                    className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/20 rounded-l-xl z-20"
+                                                                                    onMouseDown={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-start'); }}
+                                                                                    onTouchStart={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-start'); }}
+                                                                                />
+                                                                            )}
 
                                                                             {/* End Resize Handle */}
-                                                                            <div
-                                                                                className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/20 rounded-r-xl z-20"
-                                                                                onMouseDown={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-end'); }}
-                                                                                onTouchStart={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-end'); }}
-                                                                            />
+                                                                            {isOwner && (
+                                                                                <div
+                                                                                    className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/20 rounded-r-xl z-20"
+                                                                                    onMouseDown={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-end'); }}
+                                                                                    onTouchStart={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-end'); }}
+                                                                                />
+                                                                            )}
 
                                                                             {/* Grip Handle for visual cue */}
                                                                             <GripVertical className="w-3 h-3 text-white/50 -ml-1 group-hover/bar:text-white transition-colors" />

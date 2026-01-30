@@ -337,7 +337,7 @@ const Dashboard = () => {
                     <div className="space-y-1">
                         <div className="px-4 py-2 flex items-center justify-between group">
                             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Projects</span>
-                            <Plus className="w-3.5 h-3.5 text-zinc-400 opacity-0 group-hover:opacity-100 cursor-pointer" onClick={() => navigate('/create-project')} />
+                            {isOwner && <Plus className="w-3.5 h-3.5 text-zinc-400 opacity-0 group-hover:opacity-100 cursor-pointer" onClick={() => navigate('/create-project')} />}
                         </div>
                         {projects.map(proj => (
                             <button
@@ -389,30 +389,39 @@ const Dashboard = () => {
                             <DropdownMenuContent side="right" align="start" className={`${isMobile ? 'w-52' : 'w-64'} ml-2 rounded-xl p-2 font-sans bg-white dark:bg-black border-zinc-200 dark:border-[#3d3e40] shadow-xl`}>
                                 <DropdownMenuLabel className="text-[11px] text-zinc-500 font-bold uppercase tracking-widest px-2 py-1.5 mb-1">My workspace</DropdownMenuLabel>
 
-                                <DropdownMenuItem onClick={() => setIsInviteOpen(true)} className="flex items-center justify-between px-2 py-2 focus:bg-zinc-100 dark:focus:bg-[#2e2f31] rounded-lg cursor-pointer">
-                                    <div className="flex items-center gap-2">
-                                        <UserPlus className="w-4 h-4 text-zinc-500" />
-                                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Invite teammates</span>
-                                    </div>
-                                    <div className="flex -space-x-1.5">
-                                        <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-[8px] font-bold text-white">VR</div>
-                                        {[1, 2, 3].map((_, i) => (
-                                            <div key={i} className="w-6 h-6 rounded-full border border-dashed border-zinc-300 dark:border-zinc-600 bg-transparent flex items-center justify-center">
-                                                <User className="w-3 h-3 text-zinc-300 dark:text-zinc-600" />
+                                {isOwner && (
+                                    <>
+                                        <DropdownMenuItem onClick={() => setIsInviteOpen(true)} className="flex items-center justify-between px-2 py-2 focus:bg-zinc-100 dark:focus:bg-[#2e2f31] rounded-lg cursor-pointer">
+                                            <div className="flex items-center gap-2">
+                                                <UserPlus className="w-4 h-4 text-zinc-500" />
+                                                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Invite teammates</span>
                                             </div>
-                                        ))}
-                                    </div>
-                                </DropdownMenuItem>
+                                            <div className="flex -space-x-1.5">
+                                                <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-[8px] font-bold text-white">VR</div>
+                                                {[1, 2, 3].map((_, i) => (
+                                                    <div key={i} className="w-6 h-6 rounded-full border border-dashed border-zinc-300 dark:border-zinc-600 bg-transparent flex items-center justify-center">
+                                                        <User className="w-3 h-3 text-zinc-300 dark:text-zinc-600" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </DropdownMenuItem>
 
-                                <DropdownMenuItem onClick={() => navigate('/create-project')} className="flex items-center gap-2 px-2 py-2 focus:bg-zinc-100 dark:focus:bg-[#2e2f31] rounded-lg cursor-pointer">
-                                    <div className="w-8 flex justify-center"><Layout className="w-4 h-4 text-zinc-500" /></div>
-                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Create project</span>
-                                </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => navigate('/create-project')} className="flex items-center gap-2 px-2 py-2 focus:bg-zinc-100 dark:focus:bg-[#2e2f31] rounded-lg cursor-pointer">
+                                            <div className="w-8 flex justify-center"><Layout className="w-4 h-4 text-zinc-500" /></div>
+                                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Create project</span>
+                                        </DropdownMenuItem>
 
-                                <DropdownMenuItem onClick={() => setIsGovernanceOpen(true)} className="flex items-center gap-2 px-2 py-2 focus:bg-zinc-100 dark:focus:bg-[#2e2f31] rounded-lg cursor-pointer">
-                                    <div className="w-8 flex justify-center"><ShieldCheck className="w-4 h-4 text-zinc-500" /></div>
-                                    <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Project Permissions</span>
-                                </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => setIsGovernanceOpen(true)} className="flex items-center gap-2 px-2 py-2 focus:bg-zinc-100 dark:focus:bg-[#2e2f31] rounded-lg cursor-pointer">
+                                            <div className="w-8 flex justify-center"><ShieldCheck className="w-4 h-4 text-zinc-500" /></div>
+                                            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">Project Permissions</span>
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                                {!isOwner && (
+                                    <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-lg cursor-default opacity-50">
+                                        <span className="text-xs text-zinc-500">Member access only</span>
+                                    </DropdownMenuItem>
+                                )}
 
                                 <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2 mx-2" />
 
@@ -454,14 +463,14 @@ const Dashboard = () => {
                             </Button>
                         )}
 
-                        <div className="flex items-center gap-2 group cursor-pointer px-2 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors max-w-full overflow-hidden">
-                            <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                                <LayoutDashboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
-                            </div>
-                            <h1 className="text-xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight truncate">
-                                {selectedProject ? (selectedProject.team_name || selectedProject.title) : (activeView === 'workspace' ? 'Workspace' : (activeView === 'home' ? 'Home' : activeView))}
-                            </h1>
-                            {selectedProject && (
+                        {isOwner && (
+                            <div className="flex items-center gap-2 group cursor-pointer px-2 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors max-w-full overflow-hidden">
+                                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                                    <LayoutDashboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                </div>
+                                <h1 className="text-xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight truncate">
+                                    {selectedProject ? (selectedProject.team_name || selectedProject.title) : (activeView === 'workspace' ? 'Workspace' : (activeView === 'home' ? 'Home' : activeView))}
+                                </h1>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
@@ -483,26 +492,30 @@ const Dashboard = () => {
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
-                            )}
-                        </div>
+                            </div>
+                        )}
+                        {!isOwner && (
+                            <div className="flex items-center gap-2 px-2 py-1 rounded-lg max-w-full overflow-hidden">
+                                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                                    <LayoutDashboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                </div>
+                                <h1 className="text-xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight truncate">
+                                    {selectedProject ? (selectedProject.team_name || selectedProject.title) : (activeView === 'workspace' ? 'Workspace' : (activeView === 'home' ? 'Home' : activeView))}
+                                </h1>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="flex items-center gap-6">
-                        <Button
-                            onClick={() => setIsCreateTaskOpen(true)}
-                            className="bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-[13px] px-5 h-10 rounded-[14px] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-zinc-500/10 hidden md:flex items-center gap-2 group"
-                        >
-                            <img src="/image copy 4.png" alt="" className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300 invert brightness-0 dark:brightness-200" /> Add task
-                        </Button>
 
-                        {/* Chat Toggle Button - Only show for team-complete projects */}
-                        {selectedProject?.is_team_complete && (
+                    <div className="flex items-center gap-6">
+                        {/* Team Chat Button - Always visible if a project is selected */}
+                        {selectedProject && (
                             <Button
                                 onClick={() => setActiveView('messages')}
                                 variant={activeView === 'messages' ? "default" : "outline"}
-                                className={`h-10 px-4 rounded-[14px] hidden md:flex items-center gap-2 transition-all ${activeView === 'messages'
-                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                                    : 'border-zinc-200 dark:border-green-500 hover:bg-green-700 dark:hover:bg-zinc-800'
+                                className={`h-10 px-4 rounded-[14px] hidden md:flex items-center gap-2 transition-all shadow-lg ${activeView === 'messages'
+                                    ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
+                                    : 'border-2 border-emerald-600 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 dark:hover:text-white'
                                     }`}
                             >
                                 <MessageSquare className="w-4 h-4" />
@@ -510,10 +523,19 @@ const Dashboard = () => {
                             </Button>
                         )}
 
+                        {isOwner && (
+                            <Button
+                                onClick={() => setIsCreateTaskOpen(true)}
+                                className="bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-[13px] px-5 h-10 rounded-[14px] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-zinc-500/10 hidden md:flex items-center gap-2 group"
+                            >
+                                <img src="/image copy 4.png" alt="" className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300 invert brightness-0 dark:brightness-200" /> Add task
+                            </Button>
+                        )}
+
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="relative w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-sm font-bold text-white outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-600 transition-all">
+                                <button className="relative w-9 h-9 rounded-full bg-violet-600 flex items-center justify-center text-sm font-bold text-white outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-900 transition-all">
                                     {user?.email?.[0].toUpperCase()}
                                     <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-black rounded-full"></span>
                                 </button>
@@ -533,16 +555,16 @@ const Dashboard = () => {
                                                 {user?.email}
                                             </p>
                                         </div>
-                                        <Settings className="w-4 h-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer" />
+                                        <Settings className="w-4 h-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300" />
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator className="my-1" />
-                                <DropdownMenuItem onClick={toggleTheme} className="rounded-xl h-10 gap-3 cursor-pointer">
+                                <DropdownMenuItem onClick={toggleTheme} className="rounded-xl h-10 gap-3">
                                     {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                                    <span className="text-sm font-bold font-sans tracking-tight">{isDark ? 'Light mode' : 'Dark mode'}</span>
+                                    <span className="text-sm font-bold font-sans">{isDark ? 'Light mode' : 'Dark mode'}</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={signOut} className="rounded-xl h-11 gap-3 text-red-500 cursor-pointer">
-                                    <LogOut className="w-4 h-4" /> <span className="text-sm font-bold font-sans tracking-tight">Log out</span>
+                                <DropdownMenuItem onClick={signOut} className="rounded-xl h-11 gap-3 text-red-500">
+                                    <LogOut className="w-4 h-4" /> <span className="text-sm font-bold font-sans">Log out</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -607,7 +629,7 @@ const Dashboard = () => {
                             <LayoutDashboard className="w-5 h-5" />
                             <span className="text-[10px] font-bold uppercase tracking-tighter">Board</span>
                         </button>
-                        {selectedProject?.is_team_complete && (
+                        {selectedProject && (
                             <button
                                 onClick={() => { setActiveView('messages'); setIsSidebarOpen(false); }}
                                 className={`flex flex-col items-center gap-1 ${activeView === 'messages' ? 'text-emerald-600' : 'text-zinc-400'}`}
@@ -668,7 +690,7 @@ const Dashboard = () => {
     function renderView() {
         switch (activeView) {
             case 'home': return <HomeView user={currentUser} tasks={tasks} onAddTask={handleAddTask} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} />;
-            case 'overview': return selectedProject ? <Overview project={selectedProject} members={members} tasks={tasks} onProjectUpdated={fetchProjectDetails} /> : <HomeView user={currentUser} tasks={tasks} onAddTask={handleAddTask} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} />;
+            case 'overview': return selectedProject ? <Overview project={selectedProject} members={members} tasks={tasks} onProjectUpdated={fetchProjectDetails} isOwner={isOwner} /> : <HomeView user={currentUser} tasks={tasks} onAddTask={handleAddTask} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} />;
             case 'list': return <TaskList tasks={tasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} onAddTask={() => setIsCreateTaskOpen(true)} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
             case 'board': return selectedProject ? <BoardView tasks={tasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={fetchProjectDetails} onAddTask={() => setIsCreateTaskOpen(true)} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} /> : <ComingSoon view="Board" />;
             case 'timeline': return selectedProject ? <TimelineView tasks={tasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={fetchProjectDetails} onAddTask={() => setIsCreateTaskOpen(true)} /> : <ComingSoon view="Timeline" />;

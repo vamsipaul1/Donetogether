@@ -111,15 +111,17 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                                     <div key={task.id} className="flex items-center px-6 border-y border-transparent hover:border-zinc-200 dark:hover:border-[#3d3e40] hover:bg-white dark:hover:bg-[#2e2e30]/50 group transition-all h-12 min-w-[900px]">
                                         {/* Name Row */}
                                         <div className="flex-[4] flex items-center gap-3 min-w-20 pr-4">
-                                            <div className="opacity-0 group-hover:opacity-100 cursor-grab">
-                                                <GripVertical className="w-4 h-4 text-zinc-400 dark:text-zinc-600" />
-                                            </div>
+                                            {isOwner && (
+                                                <div className="opacity-0 group-hover:opacity-100 cursor-grab">
+                                                    <GripVertical className="w-4 h-4 text-zinc-400 dark:text-zinc-600" />
+                                                </div>
+                                            )}
                                             <button
-                                                onClick={() => handleTaskChange(task.id, { status: task.status === 'completed' ? 'not_started' : 'completed' })}
+                                                onClick={() => isOwner && handleTaskChange(task.id, { status: task.status === 'completed' ? 'not_started' : 'completed' })}
                                                 className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${task.status === 'completed'
                                                     ? 'bg-emerald-500 border-emerald-500'
                                                     : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'
-                                                    }`}
+                                                    } ${!isOwner ? 'cursor-not-allowed opacity-80' : ''}`}
                                             >
                                                 {task.status === 'completed' && <CheckCircle2 className="w-3 h-3 text-white" />}
                                             </button>
@@ -181,21 +183,23 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
 
                                         {/* Options */}
                                         <div className="w-10 flex justify-end">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <button className="opacity-0 group-hover:opacity-100 p-10 text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-200 transition-all">
-                                                        <MoreHorizontal className="w-4 h-4" />
-                                                    </button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-40 rounded-xl ml-10 p-1 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-                                                    <DropdownMenuItem onClick={() => onEditTask(task)} className="text-xs font-medium cursor-pointer rounded-lg p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800">
-                                                        Edit task
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-xs font-medium cursor-pointer rounded-lg p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 text-red-500 focus:text-red-500">
-                                                        Delete
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                            {isOwner && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="opacity-0 group-hover:opacity-100 p-10 text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-200 transition-all">
+                                                            <MoreHorizontal className="w-4 h-4" />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-40 rounded-xl ml-10 p-1 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+                                                        <DropdownMenuItem onClick={() => onEditTask(task)} className="text-xs font-medium cursor-pointer rounded-lg p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800">
+                                                            Edit task
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-xs font-medium cursor-pointer rounded-lg p-2 focus:bg-zinc-100 dark:focus:bg-zinc-800 text-red-500 focus:text-red-500">
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
                                         </div>
                                     </div>
                                 );

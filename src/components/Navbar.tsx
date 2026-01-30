@@ -83,8 +83,8 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
                 className="w-6 h-6 "
               />
             </div>
-            <span className="text-[22px] font-black text-zinc-900 dark:text-white transition-colors">
-              Done<span className="text-emerald-500">Together</span>
+            <span className="text-[22px] font-black text-zinc-900 dark:text-white tracking-tight transition-colors">
+              DoneTogether
             </span>
           </Link>
 
@@ -138,17 +138,17 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
                 <Button
                   variant="ghost"
                   onClick={() => signOut()}
-                  className="rounded-2xl px-5 text-[14px] font-semibold text-red-700 hover:bg-transparent transition-all flex items-center gap-2"
+                  className="rounded-2xl px-4 w-22 h-9 text-[13px] font-bold text-red-700 dark:text-red-500 tracking-tight border-2 border-red-700 dark:border-red-500 hover:bg-red-500 dark:hover:bg-black flex items-center"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-2 h-2" />
                   Log Out
                 </Button>
                 <Button
                   asChild
-                  className="rounded-2xl px-6 h-10 text-[14px] font-bold bg-black hover:bg-black/80 dark:hover:bg-black/80 text-white border-none transition-all duration-300 shadow-lg shadow-black/20 active:scale-95"
+                  className="rounded-2xl px-4 h-10 text-[14px] border-2 border-black font-bold bg-black hover:bg-black dark:bg-white dark:hover:bg-white text-white dark:text-black border-none transition-all duration-300 shadow-lg shadow-black/20 active:scale-95"
                 >
                   <Link to="/dashboard">
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    <LayoutDashboard className="w-2 h-2 mr-1" />
                     Dashboard
                   </Link>
                 </Button>

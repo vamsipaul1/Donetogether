@@ -1,9 +1,17 @@
-import { X, FileText, Image as ImageIcon, Video, Star, Trash2, Ban, Phone, Video as VideoCall, MessageSquare } from 'lucide-react';
+import { X, FileText, Image as ImageIcon, Video, Star, Trash2, Ban, Phone, Video as VideoCall, MessageSquare, Pencil, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from '@/lib/utils';
 
 interface ChatInfoSidebarProps {
     onClose: () => void;
@@ -11,7 +19,20 @@ interface ChatInfoSidebarProps {
     members: any[];
 }
 
-export const ChatInfoSidebar = ({ onClose, projectTitle, members }: ChatInfoSidebarProps) => {
+const PRESET_AVATARS = [
+    { color: "bg-emerald-500", label: "TE" },
+    { color: "bg-blue-500", label: "PR" },
+    { color: "bg-purple-500", label: "DE" },
+    { color: "bg-orange-500", label: "MA" },
+    { color: "bg-pink-500", label: "HR" },
+    { color: "bg-zinc-900", label: "CO" },
+];
+
+export const ChatInfoSidebar = ({ onClose, projectTitle: initialTitle, members }: ChatInfoSidebarProps) => {
+    const [projectTitle, setProjectTitle] = useState(initialTitle);
+    const [isEditing, setIsEditing] = useState(false);
+    const [selectedColor, setSelectedColor] = useState(PRESET_AVATARS[0].color);
+
     // Mock files for UI demo
     const sharedFiles = [
         { name: 'Project_Proposal.pdf', date: '12 Aug 2025', size: '2.4 MB', type: 'pdf' },
@@ -31,13 +52,57 @@ export const ChatInfoSidebar = ({ onClose, projectTitle, members }: ChatInfoSide
 
             <ScrollArea className="flex-1">
                 <div className="flex flex-col items-center p-6 text-center">
-                    <Avatar className="h-24 w-24 mb-4 shadow-xl ring-4 ring-zinc-50 dark:ring-zinc-900">
-                        <AvatarFallback className="bg-emerald-100 text-emerald-600 text-2xl font-bold">
-                            {projectTitle.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
-                    <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">{projectTitle}</h3>
-                    <p className="text-xs text-emerald-500 font-medium mt-1">Active Project Team</p>
+                    <div className="relative group">
+                        <Avatar className={cn("h-24 w-24 mb-4 shadow-xl ring-4 ring-zinc-50 dark:ring-zinc-900 transition-all", selectedColor)}>
+                            <AvatarFallback className={cn("text-white text-2xl font-bold bg-transparent")}>
+                                {projectTitle.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                        </Avatar>
+
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button className="absolute bottom-4 right-0 bg-white shadow-md p-1.5 rounded-full border border-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Pencil className="h-3.5 w-3.5 text-zinc-600" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48 p-3">
+                                <h4 className="text-xs font-bold mb-2">Choose Avatar Color</h4>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {PRESET_AVATARS.map((p, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setSelectedColor(p.color)}
+                                            className={cn("h-8 w-8 rounded-full", p.color, selectedColor === p.color && "ring-2 ring-offset-2 ring-black")}
+                                        />
+                                    ))}
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+
+                    {isEditing ? (
+                        <div className="flex items-center gap-2 mb-2 w-full px-4">
+                            <Input
+                                value={projectTitle}
+                                onChange={(e) => setProjectTitle(e.target.value)}
+                                className="h-8 text-center font-bold"
+                                autoFocus
+                            />
+                            <Button size="icon" className="h-8 w-8 shrink-0 bg-emerald-500 hover:bg-emerald-600" onClick={() => setIsEditing(false)}>
+                                <Check className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 mb-1 justify-center group w-full">
+                            <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100 truncate max-w-[200px]">{projectTitle}</h3>
+                            <Pencil
+                                className="h-3 w-3 text-zinc-400 opacity-0 group-hover:opacity-100 cursor-pointer hover:text-emerald-500"
+                                onClick={() => setIsEditing(true)}
+                            />
+                        </div>
+                    )}
+
+                    <p className="text-xs text-emerald-500 font-medium">Active Project Team</p>
 
                     <div className="flex items-center gap-2 mt-6">
                         <Button variant="outline" size="icon" className="h-10 w-10 rounded-full border-zinc-200 hover:bg-zinc-100 hover:text-emerald-600">

@@ -40,6 +40,10 @@ export interface ProjectMember {
     can_invite_members: boolean;
     can_view_analytics: boolean;
     can_edit_project_details: boolean;
+    can_manage_timeline: boolean;
+    can_restore_tasks: boolean;
+    can_manage_resources: boolean;
+    can_post_messages: boolean;
 }
 
 export type TaskStatus = 'not_started' | 'in_progress' | 'completed' | 'blocked' | 'deleted';
