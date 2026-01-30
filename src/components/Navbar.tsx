@@ -10,6 +10,7 @@ const navLinks = [
   { name: 'How It Works', href: '#how-it-works' },
   { name: 'Start Project', href: '/signup' },
   { name: 'Premium', href: '/premium' },
+  { name: 'Contact Us', href: '/contact' },
 ];
 
 interface NavbarProps {
@@ -68,7 +69,7 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
         }`}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        <div className="relative flex items-center justify-between">
           {/* Logo */}
           <Link
             to="/"
@@ -88,14 +89,14 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 bg-zinc-100/50 dark:bg-zinc-900/50 p-1.5 rounded-full border border-zinc-200/50 dark:border-zinc-800/50 backdrop-blur-sm">
+          <nav className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-1 bg-zinc-100/50 dark:bg-zinc-900/50 p-1.5 rounded-full border border-zinc-200/50 dark:border-zinc-800/50 backdrop-blur-sm">
             {navLinks.map((link) => (
               link.href.startsWith('#') ? (
                 <a
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleNavLinkClick(e, link.href)}
-                  className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all rounded-full hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm"
+                  className="px-5 py-2 text-[14px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all rounded-full hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm"
                 >
                   {link.name}
                 </a>
@@ -103,7 +104,7 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
                 <Link
                   key={link.name}
                   to={link.href}
-                  className="px-5 py-2 text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all rounded-full hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm"
+                  className="px-5 py-2 text-[14px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all rounded-full hover:bg-white dark:hover:bg-zinc-800 hover:shadow-sm"
                 >
                   {link.name}
                 </Link>
@@ -133,18 +134,18 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
             </Button>
 
             {user ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 relative z-10">
                 <Button
                   variant="ghost"
                   onClick={() => signOut()}
-                  className="rounded-xl px-5 text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all flex items-center gap-2"
+                  className="rounded-2xl px-5 text-[14px] font-semibold text-red-700 hover:bg-transparent transition-all flex items-center gap-2"
                 >
                   <LogOut className="w-4 h-4" />
                   Log Out
                 </Button>
                 <Button
                   asChild
-                  className="rounded-xl px-6 h-11 font-black uppercase tracking-widest bg-emerald-500 hover:bg-emerald-600 text-white border-none transition-all duration-300 shadow-lg shadow-emerald-500/20 active:scale-95"
+                  className="rounded-2xl px-6 h-10 text-[14px] font-bold bg-black hover:bg-black/80 dark:hover:bg-black/80 text-white border-none transition-all duration-300 shadow-lg shadow-black/20 active:scale-95"
                 >
                   <Link to="/dashboard">
                     <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -157,7 +158,7 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
                 <Button
                   asChild
                   variant="ghost"
-                  className="rounded-xl px-6 text-xs font-black uppercase tracking-widest text-zinc-900 hover:bg-zinc-500 dark:hover:bg-zinc-800 transition-all"
+                  className="rounded-xl px-6 text-xs font-bold uppercase tracking-widest hover:text-white hover:bg-zinc-500 dark:hover:bg-zinc-800 transition-all"
                 >
                   <Link to="/login">
                     Log In
@@ -233,7 +234,7 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
               <div className="flex flex-col gap-3 px-1">
                 {user ? (
                   <>
-                    <Button asChild className="w-full h-12 rounded-xl font-semibold bg-[#E2F0D9] text-black hover:bg-[#C9D6C5] shadow-sm">
+                    <Button asChild className="w-full h-12 rounded-xl font-semibold bg-black text-white hover:bg-black/80 dark:hover:bg-black/80 shadow-sm">
                       <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
                         <LayoutDashboard className="w-4 h-4 mr-2" />
                         Dashboard
@@ -242,7 +243,7 @@ const Navbar = ({ isDark, toggleTheme }: NavbarProps) => {
                     <Button
                       variant="ghost"
                       onClick={() => { signOut(); setIsMobileMenuOpen(false); }}
-                      className="w-full h-12 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                      className="w-full h-12 rounded-xl font-medium text-red-700 hover:bg-red-200 dark:hover:bg-red-950/30"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
                       Log Out

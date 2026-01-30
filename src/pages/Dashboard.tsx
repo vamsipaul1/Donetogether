@@ -160,21 +160,19 @@ const Dashboard = () => {
             setMembers(membersData || []);
             setIsOwner(!!membersData?.find(m => m.user_id === currentUser.id && m.role === 'owner'));
 
-            if (selectedProject.is_team_complete) {
-                // Optimized single-query fetch for tasks and their assigned/creator users
-                const { data: tasksData } = await supabase
-                    .from('tasks')
-                    .select(`
-                        *,
-                        assignedUser:users!tasks_assigned_to_fkey(*),
-                        assignedByUser:users!tasks_assigned_by_fkey(*)
-                    `)
-                    .eq('project_id', selectedProject.id)
-                    .neq('status', 'deleted')
-                    .order('due_date', { ascending: true });
+            // Fetch tasks regardless of team completion status so early joiners can see them
+            const { data: tasksData } = await supabase
+                .from('tasks')
+                .select(`
+                    *,
+                    assignedUser:users!tasks_assigned_to_fkey(*),
+                    assignedByUser:users!tasks_assigned_by_fkey(*)
+                `)
+                .eq('project_id', selectedProject.id)
+                .neq('status', 'deleted')
+                .order('due_date', { ascending: true });
 
-                setTasks(tasksData || []);
-            }
+            setTasks(tasksData || []);
         } catch (err) { console.error(err); }
     };
 
