@@ -187,7 +187,7 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
-                                                                className={`p-5 rounded-[20px] shadow-sm border group hover:shadow-md transition-all ${snapshot.isDragging ? 'rotate-2 shadow-xl scale-105 z-50' : ''} ${getTaskColor(task.id)}`}
+                                                                className={`p-5 rounded-[22px] shadow-sm border group hover:shadow-md transition-all ${snapshot.isDragging ? 'rotate-2 shadow-xl scale-105 z-50' : ''} ${getTaskColor(task.id)}`}
                                                                 style={provided.draggableProps.style}
                                                             >
                                                                 <div className="flex justify-between items-start mb-3">
@@ -222,16 +222,26 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                                 <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4 leading-tight">{task.title}</h4>
 
                                                                 <div className="flex items-center justify-between mt-auto">
-                                                                    <div className="flex items-center -space-x-2">
-                                                                        {members.find(m => m.user_id === task.assigned_to) && (
-                                                                            <div className="w-6 h-6 rounded-full bg-white dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-700 dark:text-zinc-300 shadow-sm">
-                                                                                {members.find(m => m.user_id === task.assigned_to)?.users?.email?.[0]}
-                                                                            </div>
-                                                                        )}
+                                                                    <div className="flex items-center gap-2 max-w-[160px]">
+                                                                        {(() => {
+                                                                            const member = members.find(m => m.user_id === task.assigned_to);
+                                                                            if (!member) return null;
+                                                                            const name = member.users?.full_name || member.users?.email?.split('@')[0] || 'Member';
+                                                                            return (
+                                                                                <>
+                                                                                    <div className="w-6 h-6 rounded-full bg-white dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-700 dark:text-zinc-300 shadow-sm shrink-0">
+                                                                                        {member.users?.email?.[0].toUpperCase()}
+                                                                                    </div>
+                                                                                    <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 truncate tracking-tight">
+                                                                                        {name}
+                                                                                    </span>
+                                                                                </>
+                                                                            );
+                                                                        })()}
                                                                     </div>
 
                                                                     {task.due_date && (
-                                                                        <div className={`flex items-center gap-1.5 text-[10px] font-bold ${new Date(task.due_date) < new Date() ? 'text-rose-500 dark:text-rose-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                                                        <div className={`flex items-center gap-1.5 text-[12px] font-bold ${new Date(task.due_date) < new Date() ? 'text-rose-500 dark:text-rose-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
                                                                             <Calendar className="w-3 h-3" />
                                                                             <span>{new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                                                         </div>

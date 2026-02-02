@@ -5,15 +5,17 @@ import type { Project, ProjectMember } from '@/types/database';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface WaitingRoomProps {
     project: Project;
     members: (ProjectMember & { users?: any })[];
     currentUserId: string;
     onEnterDashboard?: () => void;
+    isSubView?: boolean;
 }
 
-const WaitingRoom = ({ project, members, currentUserId, onEnterDashboard }: WaitingRoomProps) => {
+const WaitingRoom = ({ project, members, currentUserId, onEnterDashboard, isSubView = false }: WaitingRoomProps) => {
     const [sessionTime, setSessionTime] = useState(0);
 
     useEffect(() => {
@@ -46,15 +48,16 @@ const WaitingRoom = ({ project, members, currentUserId, onEnterDashboard }: Wait
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-950 flex items-center justify-center p-6 font-sans relative overflow-hidden">
-
+        <div className={cn(
+            "flex items-center justify-center p-6 font-sans relative overflow-hidden",
+            isSubView ? "h-full bg-transparent" : "min-h-screen bg-white dark:bg-zinc-950"
+        )}>
             <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full max-w-lg"
             >
-                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-
+                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[40px] p-8 shadow-2xl relative overflow-hidden transition-all duration-300">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 mb-4">
@@ -88,7 +91,7 @@ const WaitingRoom = ({ project, members, currentUserId, onEnterDashboard }: Wait
                             />
                         </div>
                         {isReadyToLaunch && (
-                            <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest text-center pt-1">
+                            <p className="text-[12px] text-emerald-500 font-bold tracking-wider text-center pt-1">
                                 Minimum capacity reached - You can now enter
                             </p>
                         )}
@@ -109,14 +112,14 @@ const WaitingRoom = ({ project, members, currentUserId, onEnterDashboard }: Wait
 
                     {/* Info Grid */}
                     <div className="grid grid-cols-2 gap-4 mb-8">
-                        <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                        <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800 transition-colors hover:bg-zinc-100/50">
                             <div className="flex items-center gap-2 mb-1">
                                 <Clock className="w-3.5 h-3.5 text-zinc-400" />
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Duration</span>
                             </div>
                             <p className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-200">{formatTime(sessionTime)}</p>
                         </div>
-                        <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                        <div className="p-4 bg-zinc-50 dark:bg-zinc-800/50 rounded-2xl border border-zinc-100 dark:border-zinc-800 transition-colors hover:bg-zinc-100/50">
                             <div className="flex items-center gap-2 mb-1">
                                 <Users className="w-3.5 h-3.5 text-zinc-400" />
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Status</span>
@@ -135,10 +138,10 @@ const WaitingRoom = ({ project, members, currentUserId, onEnterDashboard }: Wait
                             {members.map((member) => (
                                 <div
                                     key={member.id}
-                                    className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800"
+                                    className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-zinc-800/30 border border-zinc-100 dark:border-zinc-800 group/member hover:border-blue-500/30 transition-all"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-xs font-bold text-white uppercase">
+                                        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-xs font-bold text-white uppercase group-hover/member:scale-110 transition-transform">
                                             {member.users?.email?.[0]}
                                         </div>
                                         <div>
@@ -161,14 +164,16 @@ const WaitingRoom = ({ project, members, currentUserId, onEnterDashboard }: Wait
                         <Button
                             onClick={onEnterDashboard}
                             disabled={!isReadyToLaunch}
-                            className={`w-full h-12 rounded-xl font-bold uppercase tracking-widest transition-all ${isReadyToLaunch
-                                    ? 'bg-zinc-900 dark:bg-white text-white dark:text-black hover:opacity-90 shadow-xl'
-                                    : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed'
-                                }`}
+                            className={cn(
+                                "w-full h-12 rounded-xl font-bold uppercase tracking-widest transition-all",
+                                isReadyToLaunch
+                                    ? "bg-zinc-900 dark:bg-white text-white dark:text-black hover:opacity-90 shadow-xl hover:translate-y-[-2px] active:translate-y-0"
+                                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed"
+                            )}
                         >
                             {isReadyToLaunch ? (
                                 <span className="flex items-center justify-center gap-2">
-                                    Enter Workspace <ArrowRight className="w-4 h-4" />
+                                    {isSubView ? "Back to Activity" : "Enter Workspace"} <ArrowRight className="w-4 h-4" />
                                 </span>
                             ) : (
                                 <span className="flex items-center justify-center gap-2">

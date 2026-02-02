@@ -9,9 +9,10 @@ interface ChatSidebarProps {
     className?: string;
     projectId?: string;
     members?: any[];
+    projectAvatar?: string | null;
 }
 
-export const ChatSidebar = ({ className, projectId, members = [] }: ChatSidebarProps) => {
+export const ChatSidebar = ({ className, projectId, members = [], projectAvatar }: ChatSidebarProps) => {
 
     return (
         <div className={cn("flex flex-col h-full border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black w-80 font-sans", className)}>
@@ -35,16 +36,20 @@ export const ChatSidebar = ({ className, projectId, members = [] }: ChatSidebarP
                     {/* Main Group Item */}
                     <div>
                         <div className="flex items-center justify-between px-3 mb-2">
-                            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">Active Channel</span>
+                            <span className="text-[11px] font-bold text-zinc-400 uppercase">Active Channel</span>
                         </div>
                         <button
                             className={cn(
-                                "flex items-center justify-between w-full p-3 text-left rounded-xl transition-all group bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 transform hover:scale-[1.02] active:scale-95 duration-200"
+                                "flex items-center justify-between w-full p-3 text-left rounded-xl transition-all group dark:bg-emerald-900 bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 transform hover:scale-[1.02] active:scale-95 duration-200"
                             )}
                         >
                             <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/20 text-white">
-                                    <MessageSquare className="h-4 w-4" />
+                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/20 text-white overflow-hidden border border-white/20">
+                                    {projectAvatar ? (
+                                        <img src={projectAvatar} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <MessageSquare className="h-4 w-4" />
+                                    )}
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="font-bold text-[14px]">General</span>

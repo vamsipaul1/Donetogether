@@ -26,6 +26,7 @@ export interface Project {
     is_active: boolean;
     expected_team_size?: number;
     is_team_complete: boolean;
+    avatar_url?: string;
     created_at: string;
     updated_at: string;
 }

@@ -14,6 +14,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 import WaitingRoom from '@/components/WaitingRoom';
 import CreateTaskModal from '@/components/CreateTaskModal';
 import InviteTeamModal from '@/components/InviteTeamModal';
@@ -348,7 +350,17 @@ const Dashboard = () => {
                                     : 'text-zinc-500 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-[#3d3e40]'
                                     }`}
                             >
-                                <div className={`w-2 h-2 rounded-full ${selectedProject?.id === proj.id ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-600'}`} />
+                                <div className="relative shrink-0">
+                                    <Avatar className="w-5 h-5 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-transform group-hover:scale-110">
+                                        <AvatarImage src={proj.avatar_url} />
+                                        <AvatarFallback className={cn("text-[8px] font-black text-white", selectedProject?.id === proj.id ? "bg-emerald-600" : "bg-zinc-400 group-hover:bg-emerald-500")}>
+                                            {proj.team_name?.slice(0, 1).toUpperCase() || proj.title.slice(0, 1).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    {selectedProject?.id === proj.id && (
+                                        <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full ring-1 ring-white dark:ring-black animate-pulse" />
+                                    )}
+                                </div>
                                 <span className="truncate tracking-normal font-medium">{proj.team_name || proj.title}</span>
                             </button>
                         ))}
@@ -465,8 +477,12 @@ const Dashboard = () => {
 
                         {isOwner && (
                             <div className="flex items-center gap-2 group cursor-pointer px-2 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors max-w-full overflow-hidden">
-                                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                                    <LayoutDashboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                                    {selectedProject?.avatar_url ? (
+                                        <img src={selectedProject.avatar_url} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <LayoutDashboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                    )}
                                 </div>
                                 <h1 className="text-xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight truncate">
                                     {selectedProject ? (selectedProject.team_name || selectedProject.title) : (activeView === 'workspace' ? 'Workspace' : (activeView === 'home' ? 'Home' : activeView))}
@@ -496,8 +512,12 @@ const Dashboard = () => {
                         )}
                         {!isOwner && (
                             <div className="flex items-center gap-2 px-2 py-1 rounded-lg max-w-full overflow-hidden">
-                                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                                    <LayoutDashboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 overflow-hidden border border-zinc-200 dark:border-zinc-700">
+                                    {selectedProject?.avatar_url ? (
+                                        <img src={selectedProject.avatar_url} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <LayoutDashboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                                    )}
                                 </div>
                                 <h1 className="text-xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight truncate">
                                     {selectedProject ? (selectedProject.team_name || selectedProject.title) : (activeView === 'workspace' ? 'Workspace' : (activeView === 'home' ? 'Home' : activeView))}
@@ -526,9 +546,9 @@ const Dashboard = () => {
                         {isOwner && (
                             <Button
                                 onClick={() => setIsCreateTaskOpen(true)}
-                                className="bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-[13px] px-5 h-10 rounded-[14px] hover:scale-105 active:scale-95 transition-all shadow-xl shadow-zinc-500/10 hidden md:flex items-center gap-2 group"
+                                className="bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-[13px] px-5 h-10 rounded-[14px] transition-all hidden md:flex items-center gap-2 group hover:bg-black hover:text-white hover:shadow-black hover:shadow-zinc-500/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zinc-500"
                             >
-                                <img src="/image copy 4.png" alt="" className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300 invert brightness-0 dark:brightness-200" /> Add task
+                                <img src="/image copy 4.png" alt="" className="w-4 h-4 bg-white" /> Add task
                             </Button>
                         )}
 

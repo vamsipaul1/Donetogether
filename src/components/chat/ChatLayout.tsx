@@ -21,7 +21,25 @@ interface ChatLayoutProps {
 export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Team" }: ChatLayoutProps) => {
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
+    const [projectAvatar, setProjectAvatar] = useState<string | null>(null);
     const [isInfoOpen, setIsInfoOpen] = useState(false); // Toggle for right sidebar
+
+    // Fetch project details including avatar
+    useEffect(() => {
+        const fetchProjectDetails = async () => {
+            if (!projectId) return;
+            const { data, error } = await supabase
+                .from('projects')
+                .select('avatar_url')
+                .eq('id', projectId)
+                .single();
+
+            if (data && !error) {
+                setProjectAvatar(data.avatar_url);
+            }
+        };
+        fetchProjectDetails();
+    }, [projectId]);
 
     useEffect(() => {
         const getUser = async () => {
@@ -42,8 +60,15 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
         sendMessage,
         sendTyping,
         markAsRead,
+        editMessage,
+        deleteMessage,
+        addReaction,
+        removeReaction,
+        clearChatHistory,
         typingUsers,
         roomId,
+        replyTo,
+        setReplyTo,
     } = useChat(projectId, currentUserId || undefined);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -64,12 +89,12 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
         }
     }, [messages, typingUsers, isInfoOpen]);
 
-    const handleSendMessage = (content: string) => {
-        console.log('📨 ChatLayout: handleSendMessage called with:', content);
+    const handleSendMessage = (content: string, attachmentData?: { url: string; name: string; size: number; type: string }, replyToId?: string) => {
+        console.log('📨 ChatLayout: handleSendMessage called with:', { content, attachmentData, replyToId });
         console.log('📨 ChatLayout: Current messages count:', messages.length);
         console.log('📨 ChatLayout: Project ID:', projectId);
         console.log('📨 ChatLayout: Room ID:', roomId);
-        sendMessage(content);
+        sendMessage(content, attachmentData, replyToId);
     };
 
     const handleInputUserChanges = () => {
@@ -90,58 +115,56 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
         <div className="flex h-full bg-white dark:bg-black w-full overflow-hidden relative">
             {/* Left Sidebar */}
             <div className="hidden md:block h-full border-r border-zinc-100 dark:border-zinc-800 bg-white dark:bg-black w-80 shrink-0">
-                <ChatSidebar projectId={projectId} members={members} />
+                <ChatSidebar projectId={projectId} members={members} projectAvatar={projectAvatar} />
             </div>
 
             {/* Main Chat Area */}
-            <div className="flex-1 flex flex-col h-full min-w-0 bg-[#f8f9fa] dark:bg-[#0a0a0a] relative">
-                {/* Header */}
-                <div className="h-[75px] border-b border-zinc-200/50 dark:border-zinc-800 shrink-0 flex items-center justify-between px-6 bg-gradient-to-r from-white/90 via-white/95 to-white/90 dark:from-black/90 dark:via-black/95 dark:to-black/90 backdrop-blur-2xl z-10 sticky top-0 w-full shadow-lg shadow-zinc-200/5 dark:shadow-none">
+            <div className="flex-1 flex flex-col h-full min-w-0 chat-bg relative">
+                {/* Header - Premium Minimal Design */}
+                <div className="h-[70px] border-b border-zinc-200/40 dark:border-zinc-800/40 shrink-0 flex items-center justify-between px-6 bg-white/95 dark:bg-black/95 backdrop-blur-3xl z-30 sticky top-0 w-full shadow-sm">
                     <div className="flex items-center gap-4">
-                        {/* Group Avatar Stack */}
-                        <div className="relative">
-                            <Avatar className="h-12 w-12 ring-2 ring-emerald-500/30 dark:ring-emerald-500/20 shadow-xl shadow-emerald-500/20">
-                                <AvatarFallback className="bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 text-white font-black text-lg">
+                        {/* Group Avatar with Subtle Glow */}
+                        <div className="relative group">
+                            <Avatar className="h-10 w-10 ring-2 ring-white dark:ring-zinc-900 shadow-lg transition-all duration-500 group-hover:scale-105">
+                                <AvatarImage src={projectAvatar} />
+                                <AvatarFallback className="bg-gradient-to-br from-emerald-400 to-teal-600 text-white font-semibold text-sm">
                                     {projectTitle.slice(0, 1).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
                             {isConnected && (
-                                <span className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-black shadow-lg animate-pulse" />
+                                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-500 border-2 border-white dark:border-zinc-900 shadow-sm animate-pulse" />
                             )}
                         </div>
 
-                        <div>
-                            <div className="flex items-center gap-2.5">
-                                <h3 className="font-black text-base text-zinc-900 dark:text-zinc-50 tracking-tight">
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-bold text-sm text-zinc-900 dark:text-zinc-50 truncate max-w-[150px] md:max-w-xs">
                                     {projectTitle}
                                 </h3>
-                                <span className={cn(
-                                    "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider transition-all",
+                                <div className={cn(
+                                    "px-2 py-0.5 rounded-full text-[10px] font-medium uppercase transition-all duration-500",
                                     isConnected
-                                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 shadow-sm"
-                                        : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 animate-pulse"
+                                        ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+                                        : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 animate-pulse"
                                 )}>
-                                    {isConnected ? '● LIVE' : '○ CONNECTING'}
-                                </span>
+                                    <span className={cn("h-1 w-1 rounded-full", isConnected ? "bg-emerald-500" : "bg-amber-500")} />
+                                    {isConnected ? 'Online' : 'Loading...'}
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2 mt-1">
-                                {/* Member avatars preview */}
-                                <div className="flex -space-x-2">
+                            <div className="flex items-center gap-2">
+                                {/* Member avatars preview - More compact */}
+                                <div className="flex -space-x-1.5">
                                     {members.slice(0, 3).map((member, i) => (
-                                        <Avatar key={i} className="h-5 w-5 border-2 border-white dark:border-black shadow-sm">
-                                            <AvatarFallback className="text-[8px] font-bold bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-700 dark:to-zinc-800 text-zinc-600">
-                                                {member.display_name?.slice(0, 2).toUpperCase() || '?'}
+                                        <Avatar key={i} className="h-5 w-5 border-2 border-white dark:border-zinc-900 ring-1 ring-zinc-100 dark:ring-zinc-800 shadow-sm transition-transform hover:translate-y-[-2px] cursor-pointer">
+                                            <AvatarImage src={member.avatar_url} />
+                                            <AvatarFallback className="text-[8px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+                                                {member.display_name?.slice(0, 1).toUpperCase() || '?'}
                                             </AvatarFallback>
                                         </Avatar>
                                     ))}
-                                    {members.length > 3 && (
-                                        <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-800 border-2 border-white dark:border-black flex items-center justify-center">
-                                            <span className="text-[8px] font-black text-zinc-600 dark:text-zinc-400">+{members.length - 3}</span>
-                                        </div>
-                                    )}
                                 </div>
-                                <span className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">
-                                    {members.length} {members.length === 1 ? 'member' : 'members'} online
+                                <span className="text-[11px] text-zinc-400 font-medium">
+                                    {members.length} members
                                 </span>
                             </div>
                         </div>
@@ -168,8 +191,7 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
 
                 {/* Messages List */}
                 <div className="flex-1 overflow-hidden relative">
-                    {/* Modern background pattern */}
-                    <div className="absolute inset-0 opacity-[0.4] pointer-events-none dotted-pattern"></div>
+                    {/* Background is handled by .chat-bg class on parent */}
 
                     <ScrollArea className="h-full px-4 md:px-8 pt-6 relative z-0">
                         {isLoading ? (
@@ -178,7 +200,7 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                     <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full"></div>
                                     <Loader2 className="h-10 w-10 animate-spin text-emerald-500 relative z-10" />
                                 </div>
-                                <p className="text-sm font-bold text-zinc-500 tracking-wide uppercase">Syncing chat...</p>
+                                <p className="text-xs font-bold text-zinc-400">Loading messages...</p>
                             </div>
                         ) : messages.length === 0 ? (
                             <div className="flex items-center justify-center h-full flex-col gap-6 text-center p-8 opacity-100">
@@ -186,9 +208,9 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                     <span className="text-6xl filter drop-shadow-md">✨</span>
                                 </div>
                                 <div>
-                                    <h3 className="font-black text-2xl text-zinc-900 dark:text-zinc-100 mb-2 tracking-tight">Welcome to Team Chat!</h3>
-                                    <p className="text-zinc-500 font-medium max-w-sm mx-auto leading-relaxed">
-                                        This is the beginning of your legendary project history. Say hello to the team!
+                                    <h3 className="font-bold text-xl text-zinc-900 dark:text-zinc-100 mb-2">Welcome to the group!</h3>
+                                    <p className="text-zinc-500 text-sm max-w-sm mx-auto leading-relaxed">
+                                        Start chatting with your team members here.
                                     </p>
                                 </div>
                             </div>
@@ -196,7 +218,7 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                             <div className="flex flex-col pb-4 max-w-5xl mx-auto">
                                 {/* Date Divider */}
                                 <div className="flex justify-center my-8 sticky top-2 z-10">
-                                    <span className="text-[10px] font-black text-zinc-500 bg-white/90 dark:bg-zinc-900/90 shadow-sm border border-zinc-100 dark:border-zinc-800 px-4 py-1.5 rounded-full uppercase tracking-widest backdrop-blur-md">Today</span>
+                                    <span className="text-[10px] font-bold text-zinc-500 bg-white/90 dark:bg-black/90 shadow-sm border border-zinc-100 dark:border-zinc-800 px-4 py-1.5 rounded-full uppercase tracking-wider backdrop-blur-md">Today</span>
                                 </div>
 
                                 {messages.map((msg, index) => {
@@ -208,6 +230,12 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                             message={msg}
                                             isOwnMessage={msg.sender_id === currentUserId}
                                             onVisible={markAsRead}
+                                            onEdit={editMessage}
+                                            onDelete={deleteMessage}
+                                            onReact={addReaction}
+                                            onRemoveReaction={removeReaction}
+                                            onReply={() => setReplyTo(msg)}
+                                            currentUserId={currentUserId || ''}
                                             totalProjectMembers={members.length}
                                             isSequence={isSequence}
                                         />
@@ -215,7 +243,7 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                 })}
 
                                 {typingUsers.size > 0 && (
-                                    <div className="px-4 py-3 mb-2 text-xs font-bold text-zinc-400 flex items-center gap-3 animate-pulse bg-white/50 dark:bg-zinc-800/50 rounded-2xl w-fit">
+                                    <div className="px-4 py-3 mb-2 text-xs font-bold text-zinc-400 flex items-center gap-3 animate-pulse bg-zinc-50/50 dark:bg-zinc-900/40 rounded-2xl w-fit border border-zinc-100/50 dark:border-zinc-800/50">
                                         <div className="flex -space-x-2">
                                             <Avatar className="h-6 w-6 border-2 border-white dark:border-black"><AvatarFallback>T</AvatarFallback></Avatar>
                                             <Avatar className="h-6 w-6 border-2 border-white dark:border-black"><AvatarFallback>...</AvatarFallback></Avatar>
@@ -233,11 +261,13 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                 </div>
 
                 {/* Input Area */}
-                <div onKeyDown={handleInputUserChanges} className="shrink-0 bg-[#f8f9fa] dark:bg-[#0a0a0a]">
+                <div onKeyDown={handleInputUserChanges} className="shrink-0 bg-transparent">
                     <ChatInput
                         onSendMessage={handleSendMessage}
                         isLoading={false}
                         projectId={projectId}
+                        replyTo={replyTo}
+                        setReplyTo={setReplyTo}
                     />
                 </div>
             </div>
@@ -248,6 +278,11 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                     onClose={() => setIsInfoOpen(false)}
                     projectTitle={projectTitle}
                     members={members}
+                    messages={messages}
+                    onClearChat={clearChatHistory}
+                    projectId={projectId}
+                    projectAvatar={projectAvatar}
+                    onAvatarUpdate={(url) => setProjectAvatar(url)}
                 />
             )}
         </div>
