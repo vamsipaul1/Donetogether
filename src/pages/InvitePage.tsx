@@ -54,7 +54,7 @@ const InvitePage = () => {
             >
                 <div className="bg-white dark:bg-zinc-900 rounded-[40px] p-8 sm:p-10 shadow-xl border border-zinc-200 dark:border-zinc-800 text-center space-y-8">
                     <div className="space-y-3">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold uppercase">
                             Project Created
                         </div>
                         <h1 className="text-3xl font-bold">{project.title}</h1>
@@ -79,12 +79,12 @@ const InvitePage = () => {
 
                         <div className="flex items-center justify-center gap-2">
                             <div className="h-px bg-zinc-200 dark:bg-zinc-800 flex-grow"></div>
-                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2">OR CODE</span>
+                            <span className="text-xs font-bold text-muted-foreground uppercase px-2">OR CODE</span>
                             <div className="h-px bg-zinc-200 dark:bg-zinc-800 flex-grow"></div>
                         </div>
 
                         <div className="text-center">
-                            <div className="text-5xl font-black tracking-[0.2em] text-zinc-900 dark:text-white my-4">
+                            <div className="text-5xl font-black text-zinc-900 dark:text-white my-4">
                                 {project.join_code}
                             </div>
                             <p className="text-xs text-muted-foreground font-medium">

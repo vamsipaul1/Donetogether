@@ -30,8 +30,8 @@ const NotFound = () => {
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-7xl font-black tracking-tight text-zinc-900 dark:text-white">404</h1>
-            <h2 className="text-2xl font-bold">Lost in the group chat?</h2>
+            <h1 className="text-7xl font-black text-zinc-900 dark:text-white">404</h1>
+            <h2 className="text-2xl font-bold">Lost in the project?</h2>
             <p className="text-muted-foreground text-lg leading-relaxed">
               The page you're looking for was either deleted, renamed, or never existed in the first place.
             </p>

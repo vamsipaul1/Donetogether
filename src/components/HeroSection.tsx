@@ -1,88 +1,79 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden dotted-pattern">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Status Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 mb-10"
-          >
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
-            </span>
-            <span className="font-medium text-muted-foreground tracking-wider">
-              From idea to clear plan&nbsp;
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-[#b8dcfd] via-[#e0f1ff] to-[#ffffff] dark:from-zinc-950 dark:to-black pt-32 pb-20">
 
+      {/* Texture Overlay */}
+      <div className="absolute inset-0 opacity-[0.4] mix-blend-multiply pointer-events-none bg-[url('/image%20copy%208.png')] bg-cover bg-center" />
 
-            </span>
-          </motion.div>
+      {/* Background Ambience */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-zinc-300 dark:via-zinc-700 to-transparent opacity-50" />
+      </div>
 
-          {/* Two-tone Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-6xl md:text-8xl lg:text-8xl font-bold tracking-tight px-2 pl-2 mb-8"
-          >
-            <span className="text-foreground"> One Platform</span>
-            <br />
-            <span className="text-foreground">For </span>
-            <span className="text-muted-foreground font-semibold">Student Teams</span>
-          </motion.h1>
+      <div className="container relative z-10 max-w-5xl mx-auto px-6 text-center">
 
-          {/* Subtitle */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg sm:text-xl text-muted-foreground max-w-xl mx-auto mb-12 leading-relaxed"
-          >
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8 inline-block"
+        >
+          <span className="px-4 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-zinc-900/10 text-zinc-900 text-[11px] font-mono tracking-widest uppercase font-bold shadow-sm">
+            only for students
+          </span>
+        </motion.div>
 
-            Plan. Collaborate. Execute.
-            Everything student projects need to deliver better work together.
-            <br />
+        {/* Hero Headline - Mixed Typography like Reference */}
+        {/* Hero Headline - Mixed Typography like Reference */}
+        <h1 className="text-center mb-6 sm:mb-8 leading-tight sm:leading-[0.9] text-zinc-900 dark:text-white">
+          <span className="block font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem] tracking-tighter mb-2">
+            A Workspace
+          </span>
+          <span className="block font-sans font-bold text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[6rem]">
+            for Student Projects
+          </span>
+        </h1>
 
-          </motion.p>
+        {/* Subtext - straight Serif like reference */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-base sm:text-xl md:text-2xl text-zinc-800 dark:text-zinc-300 max-w-2xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4 sm:px-0"
+        >
+          Plan, collaborate, and execute your semester projects with professional clarity from first idea to final submission.
+        </motion.p>
 
-          {/* CTA Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Link to="/signup">
-              <Button
-                size="lg"
-                className="rounded-full px-9 py-7 text-lg font-medium shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 group"
-              >
-                Start Your Project
-                <ArrowRight className="ml-3 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-              </Button>
-            </Link>
-          </motion.div>
+        {/* CTA Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="flex flex-col xs:flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0"
+        >
+          <Link to="/signup" className="w-full xs:w-auto">
+            <Button
+              className="h-12 sm:h-14 w-full xs:w-auto px-6 sm:px-8 rounded-xl bg-black dark:bg-white text-white hover:bg-black/80 dark:hover:bg-white/80 dark:text-black font-sans text-sm tracking-wider transition-all duration-300"
+            >
+              Start Your Project
+              <ArrowRight className="ml-3 h-5 w-5" />
+            </Button>
+          </Link>
+          <Link to="#how-it-works" className="w-full xs:w-auto">
+            <Button
+              className="h-12 sm:h-14 w-full xs:w-auto px-6 sm:px-8 rounded-xl bg-white dark:bg-black text-black dark:text-white border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-sans text-sm tracking-wider transition-all duration-300"
+            >
+              How it works
+              <ArrowRight className="ml-3 h-5 w-5" />
+            </Button>
+          </Link>
+        </motion.div>
 
-          {/* Floating "Say Hello" button - positioned absolutely */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="absolute right-[10%] absolute-top[10%] top-1/2 mb-20 hidden lg:block"
-          >
-            <span className="rounded-full px-3 py-3 text-sm font-medium bg-black text-white">
-              Hello Students!
-            </span>
-
-          </motion.div>
-        </div>
       </div>
     </section>
   );

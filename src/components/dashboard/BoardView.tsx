@@ -79,6 +79,15 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
     const onDragEnd = async (result: any) => {
         if (!result.destination) return;
         const { draggableId, destination } = result;
+        const task = optimisticTasks.find(t => t.id === draggableId);
+
+        // Check if user has permission to move this task
+        const hasPermission = isOwner || (task && task.assigned_to === currentUserId);
+        if (!hasPermission) {
+            toast.error('You can only move tasks assigned to you');
+            return;
+        }
+
         const newStatus = destination.droppableId as TaskStatus;
 
         // 1. Optimistic Update
@@ -88,7 +97,7 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
         setOptimisticTasks(updatedTasks);
 
         // 2. Network Request
-        try {
+        const movePromise = async () => {
             const { error } = await supabase
                 .from('tasks')
                 .update({ status: newStatus })
@@ -96,11 +105,17 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
 
             if (error) throw error;
             onTasksUpdated(); // Background revalidation
-        } catch (error) {
-            console.error('Error:', error);
-            toast.error('Failed to move task');
-            setOptimisticTasks(tasks); // Revert on error
-        }
+        };
+
+        toast.promise(movePromise(), {
+            loading: 'Updating status...',
+            success: 'Status updated',
+            error: (err) => {
+                console.error('Move error:', err);
+                setOptimisticTasks(tasks); // Revert on error
+                return 'Failed to sync status';
+            }
+        });
     };
 
     const handleDeleteTask = async (taskId: string) => {
@@ -121,26 +136,26 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
     };
 
     return (
-        <div className="h-full flex flex-col bg-[#f9f8f8] dark:bg-black font-outfit dotted-pattern">
+        <div className="h-full flex flex-col bg-background dark:bg-black font-sans dotted-pattern">
             {/* Board Header */}
-            <header className="px-4 md:px-6 h-14 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 sticky top-0 z-20 overflow-x-auto scrollbar-hide shrink-0">
+            <header className="px-4 md:px-6 h-14 flex items-center justify-between border-b border-zinc-200/50 dark:border-white/5 bg-background/50 dark:bg-zinc-900/50 backdrop-blur-xl sticky top-0 z-20 overflow-x-auto scrollbar-hide shrink-0">
                 <div className="flex items-center gap-3 md:gap-6 min-w-max">
                     {isOwner && (
-                        <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-[9px] md:text-[10px] font-black hover:scale-105 transition-all uppercase tracking-widest shadow-lg shadow-zinc-500/20">
+                        <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-[9px] md:text-[10px] font-black hover:scale-105 transition-all uppercase shadow-lg shadow-zinc-500/20">
                             <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 invert brightness-0 dark:brightness-200" /> <span className="hidden sm:inline">Add task</span><span className="sm:hidden">Add</span>
                         </button>
                     )}
                     <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
-                    <h2 className="text-xs md:text-sm font-black text-zinc-900 dark:text-white uppercase tracking-tight shrink-0">Operation Board</h2>
+                    <h2 className="text-xs md:text-sm font-black text-zinc-900 dark:text-white uppercase shrink-0">Operation Board</h2>
                 </div>
                 <div className="flex items-center gap-1.5 md:gap-3 ml-4">
-                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase tracking-widest px-2 py-1 rounded-md">
+                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase px-2 py-1 rounded-md">
                         <Filter className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Filter</span>
                     </button>
-                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase tracking-widest px-2 py-1 rounded-md">
+                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase px-2 py-1 rounded-md">
                         <ArrowDownAZ className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Sort</span>
                     </button>
-                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase tracking-widest px-2 py-1 rounded-md">
+                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase px-2 py-1 rounded-md">
                         <Layers className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Group</span>
                     </button>
                 </div>
@@ -151,11 +166,11 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                 <DragDropContext onDragEnd={onDragEnd}>
                     <div className="flex gap-3 md:gap-6 h-full min-w-max pb-2 md:pb-4">
                         {COLUMNS.map((col) => (
-                            <div key={col.id} className="w-[80vw] sm:w-80 flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-900/30 rounded-2xl md:rounded-3xl p-3 md:p-4 border border-zinc-200 dark:border-zinc-800/50 snap-center">
+                            <div key={col.id} className="w-[80vw] sm:w-80 flex flex-col h-full bg-white/40 dark:bg-zinc-900/40 rounded-[32px] p-4 md:p-5 border border-white dark:border-white/5 snap-center shadow-sm">
                                 {/* Column Header */}
                                 <div className="flex items-center justify-between mb-6 px-2">
                                     <div className="flex items-center gap-3">
-                                        <h3 className="font-black text-sm text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">{col.label}</h3>
+                                        <h3 className="font-black text-sm text-zinc-900 dark:text-zinc-100 uppercase">{col.label}</h3>
                                         <span className="text-[10px] font-black text-zinc-500 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 px-2 py-0.5 rounded-md shadow-sm">
                                             {tasks.filter(t => t.status === col.id).length}
                                         </span>
@@ -181,17 +196,17 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                             {optimisticTasks
                                                 .filter((t) => t.status === col.id)
                                                 .map((task, index) => (
-                                                    <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!isOwner}>
+                                                    <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!(isOwner || task.assigned_to === currentUserId)}>
                                                         {(provided, snapshot) => (
                                                             <div
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
-                                                                className={`p-5 rounded-[20px] shadow-sm border group hover:shadow-md transition-all ${snapshot.isDragging ? 'rotate-2 shadow-xl scale-105 z-50' : ''} ${getTaskColor(task.id)}`}
+                                                                className={`p-5 rounded-[22px] shadow-sm border group hover:shadow-md transition-all ${snapshot.isDragging ? 'rotate-2 shadow-xl scale-105 z-50' : ''} ${getTaskColor(task.id)}`}
                                                                 style={provided.draggableProps.style}
                                                             >
                                                                 <div className="flex justify-between items-start mb-3">
-                                                                    <div className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest bg-white/50 dark:bg-black/20 ${task.priority === 'high' ? 'text-rose-600 dark:text-rose-400' :
+                                                                    <div className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase bg-white/50 dark:bg-black/20 ${task.priority === 'high' ? 'text-rose-600 dark:text-rose-400' :
                                                                         task.priority === 'medium' ? 'text-amber-600 dark:text-amber-400' :
                                                                             'text-emerald-600 dark:text-emerald-400'
                                                                         }`}>
@@ -222,16 +237,26 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                                 <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-4 leading-tight">{task.title}</h4>
 
                                                                 <div className="flex items-center justify-between mt-auto">
-                                                                    <div className="flex items-center -space-x-2">
-                                                                        {members.find(m => m.user_id === task.assigned_to) && (
-                                                                            <div className="w-6 h-6 rounded-full bg-white dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-700 dark:text-zinc-300 shadow-sm">
-                                                                                {members.find(m => m.user_id === task.assigned_to)?.users?.email?.[0]}
-                                                                            </div>
-                                                                        )}
+                                                                    <div className="flex items-center gap-2 max-w-[160px]">
+                                                                        {(() => {
+                                                                            const member = members.find(m => m.user_id === task.assigned_to);
+                                                                            if (!member) return null;
+                                                                            const name = member.users?.full_name || member.users?.email?.split('@')[0] || 'Member';
+                                                                            return (
+                                                                                <>
+                                                                                    <div className="w-6 h-6 rounded-full bg-white dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-[8px] font-black text-zinc-700 dark:text-zinc-300 shadow-sm shrink-0">
+                                                                                        {member.users?.email?.[0]?.toUpperCase() || '?'}
+                                                                                    </div>
+                                                                                    <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 truncate">
+                                                                                        {name}
+                                                                                    </span>
+                                                                                </>
+                                                                            );
+                                                                        })()}
                                                                     </div>
 
                                                                     {task.due_date && (
-                                                                        <div className={`flex items-center gap-1.5 text-[10px] font-bold ${new Date(task.due_date) < new Date() ? 'text-rose-500 dark:text-rose-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                                                        <div className={`flex items-center gap-1.5 text-[12px] font-bold ${new Date(task.due_date) < new Date() ? 'text-rose-500 dark:text-rose-400' : 'text-zinc-500 dark:text-zinc-400'}`}>
                                                                             <Calendar className="w-3 h-3" />
                                                                             <span>{new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                                                         </div>
@@ -242,16 +267,15 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                     </Draggable>
                                                 ))}
                                             {provided.placeholder}
-                                            {provided.placeholder}
                                             {isOwner && (
                                                 <button
                                                     onClick={() => {
                                                         onAddTask();
                                                     }}
-                                                    className="w-full py-3 md:py-4 rounded-[20px] border-2 border-dashed border-zinc-200/80 dark:border-zinc-800 text-zinc-400 hover:text-violet-500 hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/10 transition-all flex items-center justify-center gap-2 group mt-2"
+                                                    className="w-full py-3 md:py-4 rounded-[20px] border-2 border-dashed border-zinc-200/80 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-center gap-2 group mt-2"
                                                 >
                                                     <img src="/image copy 4.png" alt="" className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all group-hover:invert group-hover:brightness-0 dark:group-hover:brightness-200" />
-                                                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">Add Task</span>
+                                                    <span className="text-[9px] md:text-[10px] font-black uppercase">Add Task</span>
                                                 </button>
                                             )}
                                         </div>
@@ -267,7 +291,7 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
 };
 
 const HeaderButton = ({ icon: Icon, label }: any) => (
-    <button className="flex items-center gap-2 px-2 py-1.5 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase tracking-widest border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 rounded-lg">
+    <button className="flex items-center gap-2 px-2 py-1.5 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase border border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 rounded-lg">
         <Icon className="w-3.5 h-3.5" />
         <span className="hidden md:inline">{label}</span>
     </button>

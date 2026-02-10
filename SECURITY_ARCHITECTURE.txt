@@ -1,0 +1,74 @@
+/*
+ * AI ASSISTANT - SECURITY ARCHITECTURE
+ * =====================================
+ * 
+ * CORRECT SETUP (Secure):
+ * 
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │ FRONTEND (.env)                                             │
+ * │ ✅ VITE_SUPABASE_URL=https://rpfztwbqlgoxeefthexa.supabase.co│
+ * │ ✅ VITE_SUPABASE_ANON_KEY=sb_publishable_...                │
+ * │    ↓ (Safe - public, protected by RLS)                     │
+ * │                                                             │
+ * │ User clicks AI button                                       │
+ * │    ↓                                                        │
+ * │ AIAssistant.tsx sends request to Edge Function              │
+ * │    ↓ (includes auth token)                                 │
+ * └────────|────────────────────────────────────────────────────┘
+ *          │
+ *          ↓
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │ BACKEND (Supabase Edge Function Secrets) 🔒                 │
+ * │ ✅ GROQ_API_KEY=gsk_...                                     │
+ * │ ✅ SUPABASE_SERVICE_ROLE_KEY=...                            │
+ * │    ↓ (Secure - never exposed to client)                    │
+ * │                                                             │
+ * │ Edge Function (ai-assistant/index.ts):                      │
+ * │  1. Verifies user auth ✓                                    │
+ * │  2. Calls Groq API with secret key 🔐                       │
+ * │  3. Logs to database (ai_logs table) 📊                     │
+ * │  4. Returns response to client                              │
+ * │     ↓                                                       │
+ * └────────|────────────────────────────────────────────────────┘
+ *          │
+ *          ↓
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │ DATABASE (Supabase)                                         │
+ * │ ✅ ai_logs table with RLS                                   │
+ * │    - Users can only see their own logs                      │
+ * │    - Service role can insert (via Edge Function)            │
+ * │    - Users can delete their own history                     │
+ * └─────────────────────────────────────────────────────────────┘
+ * 
+ * 
+ * WRONG SETUP (Insecure - DON'T DO THIS!):
+ * 
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │ FRONTEND (.env)                                             │
+ * │ ❌ GROQ_API_KEY=gsk_...  ← EXPOSED TO BROWSER! 🚨           │
+ * │    ↑                                                        │
+ * │    Anyone can open DevTools and steal your API key!         │
+ * │    They can use YOUR key and rack up costs!                 │
+ * └─────────────────────────────────────────────────────────────┘
+ * 
+ * 
+ * KEY TAKEAWAYS:
+ * ==============
+ * 
+ * 1. Frontend .env = Public (visible in browser)
+ *    - Only put PUBLIC variables here
+ *    - Prefix with VITE_ so Vite includes them
+ * 
+ * 2. Supabase Edge Function Secrets = Private (server-side only)
+ *    - Put SECRET API keys here
+ *    - Never exposed to client
+ * 
+ * 3. Edge Functions = Serverless Backend
+ *    - Run on Deno (like Node.js but for serverless)
+ *    - Have access to secrets
+ *    - Can safely call external APIs
+ * 
+ * 4. RLS (Row Level Security) = Database-level access control
+ *    - Users can only access their own data
+ *    - Service role can bypass RLS (for backend operations)
+ */

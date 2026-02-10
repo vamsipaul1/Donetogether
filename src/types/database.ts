@@ -7,6 +7,8 @@ export interface User {
     email: string;
     full_name?: string;
     avatar_url?: string;
+    has_seen_welcome?: boolean;
+    role?: 'LEADER' | 'MEMBER';
     created_at: string;
     updated_at: string;
 }
@@ -26,6 +28,7 @@ export interface Project {
     is_active: boolean;
     expected_team_size?: number;
     is_team_complete: boolean;
+    avatar_url?: string;
     created_at: string;
     updated_at: string;
 }
@@ -44,6 +47,17 @@ export interface ProjectMember {
     can_restore_tasks: boolean;
     can_manage_resources: boolean;
     can_post_messages: boolean;
+}
+
+export interface AILog {
+    id: string;
+    user_id: string;
+    project_id?: string;
+    mode: 'task_assistant' | 'progress_analyst' | 'team_mentor' | 'reflection_coach';
+    prompt: string;
+    response: any; // JSONB - structured AI response
+    tokens_used: number;
+    created_at: string;
 }
 
 export type TaskStatus = 'not_started' | 'in_progress' | 'completed' | 'blocked' | 'deleted';

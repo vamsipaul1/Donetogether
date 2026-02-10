@@ -39,7 +39,7 @@ const InviteTeamModal = ({ isOpen, onClose, project }: InviteTeamModalProps) => 
             <DialogContent className="sm:max-w-md bg-white dark:bg-[#1e1f21] font-sans border-zinc-200 dark:border-[#3d3e40] p-3 overflow-hidden rounded-2xl shadow-2xl">
                 <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
                     <div className="space-y-1">
-                        <DialogTitle className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white">Invite Team</DialogTitle>
+                        <DialogTitle className="text-lg font-bold text-zinc-900 dark:text-white">Invite Team</DialogTitle>
                         <p className="text-xs text-zinc-500 font-medium">Add members to {project.title}</p>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-zinc-500/10 flex items-center justify-center">
@@ -49,7 +49,7 @@ const InviteTeamModal = ({ isOpen, onClose, project }: InviteTeamModalProps) => 
 
                 <div className="p-6 space-y-6">
                     <div className="space-y-3">
-                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide">Invite by email</label>
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Invite by email</label>
                         <div className="flex gap-2">
                             <input
                                 placeholder="name@company.com"
@@ -86,7 +86,7 @@ const InviteTeamModal = ({ isOpen, onClose, project }: InviteTeamModalProps) => 
                     </div>
 
                     <div className="space-y-3">
-                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide">Project Link</label>
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Project Link</label>
                         <div className="flex items-center gap-2">
                             <div className="flex-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 h-10 rounded-xl flex items-center px-3 text-xs text-zinc-500 truncate select-all">
                                 {inviteLink}
@@ -102,9 +102,9 @@ const InviteTeamModal = ({ isOpen, onClose, project }: InviteTeamModalProps) => 
                     </div>
 
                     <div className="space-y-3">
-                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide">Access Code</label>
+                        <label className="text-xs font-bold text-zinc-500 uppercase">Access Code</label>
                         <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 h-10 rounded-xl flex items-center px-4 font-mono text-sm font-bold tracking-widest text-zinc-900 dark:text-zinc-100">
+                            <div className="flex-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 h-10 rounded-xl flex items-center px-4 font-mono text-sm font-bold text-zinc-900 dark:text-zinc-100">
                                 {project.join_code}
                             </div>
                             <Button onClick={handleCopyCode} size="icon" variant="outline" className="h-10 w-10 rounded-xl border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800">

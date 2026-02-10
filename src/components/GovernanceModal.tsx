@@ -65,9 +65,10 @@ const GovernanceModal = ({
             toast.success("Member removed.");
             onPermissionsUpdated();
         } catch (err: any) {
-            console.error("Supabase error (ignored for demo):", err);
-            // Don't revert UI for smoother demo if DB fails
-            toast.success("Member removed.");
+            console.error("Failed to remove member:", err);
+            toast.error(err.message || "Failed to remove member");
+            // Revert local state on failure
+            setLocalMembers(members);
         } finally {
             setLoading(null);
         }
@@ -127,16 +128,16 @@ const GovernanceModal = ({
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-xl bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 rounded-3xl p-0 overflow-hidden font-sans shadow-2xl">
-                <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-violet-600 to-indigo-600" />
+                <div className="absolute top-0 inset-x-0 h-1.5 bg-black dark:bg-zinc-800" />
 
                 <DialogHeader className="p-6 md:p-8 pb-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <DialogTitle className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white mb-1">
+                            <DialogTitle className="text-2xl font-bold text-zinc-900 dark:text-white mb-1">
                                 Team Permissions
                             </DialogTitle>
                             <DialogDescription className="text-zinc-500 font-medium text-sm">
-                                Configure access levels and capabilities for your team.
+                                Define role-based permissions for every team member.
                             </DialogDescription>
                         </div>
                         <div className="w-10 h-10 rounded-full bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center border border-zinc-100 dark:border-zinc-800">
@@ -161,9 +162,9 @@ const GovernanceModal = ({
                                                         {member.users?.full_name || member.users?.email?.split('@')[0]}
                                                     </span>
                                                     {member.role === 'owner' ? (
-                                                        <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-none text-[9px] uppercase font-black px-2 py-0.5 tracking-wider">Owner</Badge>
+                                                        <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-none text-[9px] uppercase font-black px-2 py-0.5">Owner</Badge>
                                                     ) : (
-                                                        <Badge variant="outline" className="text-[9px] text-zinc-400 border-zinc-200 dark:border-zinc-700 uppercase font-black px-2 py-0.5 tracking-wider">Member</Badge>
+                                                        <Badge variant="outline" className="text-[9px] text-zinc-400 border-zinc-200 dark:border-zinc-700 uppercase font-black px-2 py-0.5">Member</Badge>
                                                     )}
                                                 </div>
                                                 <p className="text-xs text-zinc-400 font-medium truncate max-w-[180px]">{member.users?.email}</p>
@@ -200,7 +201,7 @@ const GovernanceModal = ({
                                             <div className="flex items-center gap-2 py-2">
                                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
                                                     <Check className="w-3 h-3 text-emerald-500" />
-                                                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Full Admin Access</span>
+                                                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Full Admin Access</span>
                                                 </div>
                                             </div>
                                         ) : (
@@ -264,7 +265,7 @@ const GovernanceModal = ({
                 </div>
 
                 <div className="p-6 bg-zinc-50 dark:bg-zinc-900/40 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
-                    <Button onClick={onClose} className="bg-zinc-900 dark:bg-white text-white dark:text-black font-bold rounded-xl px-6 h-10 hover:opacity-90 transition-opacity shadow-sm">
+                    <Button onClick={onClose} className="bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl px-6 h-10 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors shadow-sm">
                         Save & Close
                     </Button>
                 </div>
@@ -320,11 +321,11 @@ const PermissionButton = ({ label, active, disabled, onClick, icon }: Permission
         onClick={disabled ? undefined : onClick}
         disabled={disabled}
         className={`
-            px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all select-none
+            px-3 py-1.5 rounded-lg text-[10px] transition-all select-none
             flex items-center gap-1.5 border
             ${active
-                ? 'bg-zinc-900 dark:bg-white text-white dark:text-black border-zinc-900 dark:border-white shadow-sm'
-                : 'bg-white dark:bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-600 dark:hover:text-zinc-300'
+                ? 'bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-900 dark:hover:bg-zinc-200 border-black dark:border-white'
+                : 'bg-white dark:bg-transparent text-zinc-500 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-100'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-95'}
         `}

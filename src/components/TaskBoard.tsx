@@ -207,7 +207,7 @@ const TaskBoard = ({ tasks, members, currentUser, isOwner, onTaskUpdate }: TaskB
                                             {/* Priority Label */}
                                             <div className="flex items-center gap-1.5">
                                                 <ArrowUpCircle className={`w-3.5 h-3.5 ${PRIORITY_CONFIG[task.priority].color.replace('bg-', 'text-')}`} />
-                                                <span className="text-xs font-bold uppercase text-zinc-400 tracking-wider">
+                                                <span className="text-xs font-bold uppercase text-zinc-400">
                                                     {task.priority}
                                                 </span>
                                             </div>

@@ -16,6 +16,7 @@ export default function SetupProfile() {
 
     const inviteCode = searchParams.get('code');
     const inviteId = searchParams.get('inviteId');
+    const projectId = searchParams.get('projectId');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -35,49 +36,63 @@ export default function SetupProfile() {
                 return;
             }
 
-            // Update profile with display name
+            // Update profile with display name - also mark onboarding as completed
             const { error: profileError } = await supabase
                 .from('profiles')
                 .update({
                     display_name: fullName.trim(),
+                    onboarding_completed: true,
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', user.id);
 
             if (profileError) throw profileError;
 
-            // If there's an invite code, join the project
-            if (inviteCode && inviteId) {
-                // Accept the invite
-                const { data: invite, error: inviteError } = await supabase
-                    .from('invites')
-                    .select('id, project_id, role')
-                    .eq('id', inviteId)
-                    .eq('code', inviteCode)
-                    .single();
+            // Also update users table if it's separate
+            await supabase.from('users').update({
+                full_name: fullName.trim(),
+                onboarding_completed: true
+            }).eq('id', user.id);
 
-                if (inviteError || !invite) {
-                    throw new Error('Invalid invite code');
+            // If there's an invite or project ID, join the project
+            if (inviteCode && (inviteId || projectId)) {
+                let targetProjectId = projectId;
+                let role = 'member';
+
+                if (inviteId) {
+                    // Try to fetch invite details with flexible column names
+                    let inviteResult = await supabase
+                        .from('invites')
+                        .select('*')
+                        .eq('id', inviteId)
+                        .single();
+
+                    if (inviteResult.data) {
+                        targetProjectId = inviteResult.data.project_id || inviteResult.data.team_id;
+                        role = inviteResult.data.role || 'member';
+
+                        // Mark invite as used
+                        await supabase
+                            .from('invites')
+                            .update({ status: 'accepted' })
+                            .eq('id', inviteId);
+                    }
                 }
 
-                // Add user to project
-                const { error: memberError } = await supabase
-                    .from('project_members')
-                    .insert({
-                        project_id: invite.project_id,
-                        user_id: user.id,
-                        role: invite.role || 'member'
-                    });
+                if (targetProjectId) {
+                    // Add user to project
+                    const { error: memberError } = await supabase
+                        .from('project_members')
+                        .insert({
+                            project_id: targetProjectId,
+                            user_id: user.id,
+                            role: role
+                        });
 
-                if (memberError && memberError.code !== '23505') { // Ignore duplicate errors
-                    throw memberError;
+                    if (memberError && memberError.code !== '23505') { // Ignore duplicate errors
+                        console.error('Project member insert error:', memberError);
+                    }
                 }
-
-                // Mark invite as used
-                await supabase
-                    .from('invites')
-                    .update({ status: 'accepted' })
-                    .eq('id', inviteId);
             }
 
             // Show success animation
@@ -140,9 +155,9 @@ export default function SetupProfile() {
                                 >
                                     <div className="flex items-center justify-center gap-2 mb-2">
                                         <Sparkles className="w-5 h-5 text-purple-500 animate-pulse" />
-                                        <span className="text-xs font-black text-purple-500 uppercase tracking-wider">One Last Step</span>
+                                        <span className="text-xs font-black text-purple-500 uppercase">One Last Step</span>
                                     </div>
-                                    <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white mb-3 tracking-tight">
+                                    <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white mb-3">
                                         What's your name?
                                     </h1>
                                     <p className="text-zinc-600 dark:text-zinc-400 font-medium text-sm leading-relaxed">

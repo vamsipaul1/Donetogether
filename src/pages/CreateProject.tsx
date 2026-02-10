@@ -14,7 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Loader2, Sun, Moon, Calendar as CalendarIcon, ArrowRight, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Loader2, Sun, Moon, Calendar as CalendarIcon, ArrowRight, ShieldCheck, Search } from 'lucide-react';
 
 const domains = [
     'Web Development',
@@ -25,8 +25,8 @@ const domains = [
     'Game Development',
     'Blockchain',
     'IoT',
+    'Data Analytics',
     'Other',
-    'LayoutDashboard',
 ];
 
 const durations = [
@@ -160,25 +160,30 @@ const CreateProject = () => {
                         className="group text-zinc-500 hover:text-zinc-900 dark:hover:text-white rounded-full px-4 py-2 flex items-center gap-2 transition-all hover:bg-white/50 dark:hover:bg-zinc-900/50"
                     >
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        <span className="text-[11px] font-black uppercase tracking-widest">Back to Dashboard</span>
+                        <span className="text-[11px] font-black uppercase">Back to Dashboard</span>
                     </Button>
                 </div>
 
                 <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-[32px] md:rounded-[48px] shadow-2xl shadow-zinc-200/50 dark:shadow-none overflow-hidden">
                     <div className="flex flex-col md:flex-row">
                         {/* Left Info Panel */}
-                        <div className="md:w-[35%] bg-zinc-900 dark:bg-zinc-950 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/20 blur-[100px] -mr-32 -mt-32" />
-                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/10 blur-[100px] -ml-32 -mb-32" />
+                        {/* Left Info Panel */}
+                        <div className="md:w-[35%] bg-zinc-950 p-8 md:p-12 flex flex-col justify-between relative overflow-hidden">
+                            {/* Insane Background Effects */}
+                            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-zinc-900/50 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-zinc-900/50 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none" />
+                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
 
+                            {/* Content */}
                             <div className="relative z-10">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-zinc-700 to-zinc-900 flex items-center justify-center mb-8 shadow-xl">
-                                    <Sun className="w-6 h-6 text-white" />
+                                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-10 shadow-2xl backdrop-blur-sm group hover:scale-105 transition-transform duration-500">
+                                    <Sun className="w-7 h-7 text-white" />
                                 </div>
-                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 leading-tight">
-                                    Start New <br />Project
+                                <h1 className="text-4xl md:text-5xl font-black text-zinc-100 mb-6 leading-[1.1] tracking-tight relative z-20">
+                                    Start New <br />
+                                    <span className="text-zinc-400">Project</span>
                                 </h1>
-                                <p className="text-zinc-400 text-sm font-medium leading-relaxed">
+                                <p className="text-zinc-400 text-sm font-medium leading-relaxed max-w-[280px]">
                                     Setup your project basics to invite team members and start collaborating.
                                 </p>
                             </div>
@@ -187,15 +192,15 @@ const CreateProject = () => {
                                 <div className="flex flex-col gap-6">
                                     <div className="flex items-center gap-4">
                                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-bold border border-white/10">01</div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Project Info</span>
+                                        <span className="text-[10px] font-black uppercase text-zinc-400">Project Info</span>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-bold border border-white/10 opacity-50">02</div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 opacity-50">Team Setup</span>
+                                        <span className="text-[10px] font-black uppercase text-zinc-400 opacity-50">Team Setup</span>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-bold border border-white/10 opacity-50">03</div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 opacity-50">Timeline</span>
+                                        <span className="text-[10px] font-black uppercase text-zinc-400 opacity-50">Timeline</span>
                                     </div>
                                 </div>
                             </div>
@@ -207,7 +212,7 @@ const CreateProject = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                     {/* Project Title */}
                                     <div className="space-y-2 md:col-span-2">
-                                        <Label htmlFor="title" className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Project Title</Label>
+                                        <Label htmlFor="title" className="text-[11px] font-black uppercase text-zinc-500 ml-1">Project Title</Label>
                                         <Input
                                             id="title"
                                             placeholder="e.g. Smart Library System"
@@ -218,24 +223,32 @@ const CreateProject = () => {
                                     </div>
 
                                     {/* Team Name */}
-                                    <div className="space-y-2">
+                                    <div className="space-y-2.5">
                                         <div className="flex items-center justify-between px-1">
-                                            <Label htmlFor="team_name" className="text-[11px] font-black uppercase tracking-widest text-zinc-500">Team Name</Label>
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-amber-500">Unique Identity</span>
+                                            <Label htmlFor="team_name" className="text-[11px] font-black uppercase text-zinc-400">Team Name</Label>
+                                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                                                <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
+                                                <span className="text-[9px] font-black uppercase text-amber-600">Unique Identity</span>
+                                            </div>
                                         </div>
-                                        <Input
-                                            id="team_name"
-                                            placeholder="e.g. CodeWarriors"
-                                            className="h-12 bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-800 rounded-xl px-5 text-sm font-semibold transition-all shadow-sm"
-                                            value={formData.team_name}
-                                            onChange={(e) => setFormData({ ...formData, team_name: e.target.value })}
-                                        />
-                                        <p className="text-[9px] text-zinc-500 dark:text-zinc-500 font-bold uppercase pl-1">Others can search for this to join</p>
+                                        <div className="relative group">
+                                            <Input
+                                                id="team_name"
+                                                placeholder="e.g. CodeWarriors"
+                                                className="h-14 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-6 text-base font-bold transition-all shadow-sm focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500/50"
+                                                value={formData.team_name}
+                                                onChange={(e) => setFormData({ ...formData, team_name: e.target.value })}
+                                            />
+                                        </div>
+                                        <p className="text-[11px] text-zinc-500 font-bold flex items-center gap-2 pl-1">
+                                            <Search className="w-3 h-3 text-zinc-400" />
+                                            Others can search for this to join
+                                        </p>
                                     </div>
 
                                     {/* Domain */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="domain" className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Project Domain</Label>
+                                        <Label htmlFor="domain" className="text-[11px] font-black uppercase text-zinc-500 ml-1">Project Domain</Label>
                                         <Select onValueChange={(val) => setFormData({ ...formData, domain: val })}>
                                             <SelectTrigger className="h-12 bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-800 rounded-xl px-5 text-sm font-semibold shadow-sm">
                                                 <SelectValue placeholder="Select domain" />
@@ -252,7 +265,7 @@ const CreateProject = () => {
 
                                     {/* Goal */}
                                     <div className="space-y-2 md:col-span-2">
-                                        <Label htmlFor="goal" className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Project Goal</Label>
+                                        <Label htmlFor="goal" className="text-[11px] font-black uppercase text-zinc-500 ml-1">Project Goal</Label>
                                         <Textarea
                                             id="goal"
                                             placeholder="What are you trying to achieve?"
@@ -264,7 +277,7 @@ const CreateProject = () => {
 
                                     {/* Team Size & Duration */}
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Team Size</Label>
+                                        <Label className="text-[11px] font-black uppercase text-zinc-500 ml-1">Team Size</Label>
                                         <Select
                                             value={formData.teamSize.toString()}
                                             onValueChange={(val) => setFormData({ ...formData, teamSize: parseInt(val) })}
@@ -283,7 +296,7 @@ const CreateProject = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Expected Duration</Label>
+                                        <Label className="text-[11px] font-black uppercase text-zinc-500 ml-1">Expected Duration</Label>
                                         <Select
                                             value={formData.duration}
                                             onValueChange={(val) => setFormData({ ...formData, duration: val })}
@@ -304,7 +317,7 @@ const CreateProject = () => {
                                     {/* Dates */}
                                     <div className="grid grid-cols-2 gap-4 md:col-span-2">
                                         <div className="space-y-2">
-                                            <Label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Start Date</Label>
+                                            <Label className="text-[11px] font-black uppercase text-zinc-500 ml-1">Start Date</Label>
                                             <Popover>
                                                 <PopoverTrigger asChild>
                                                     <Button
@@ -329,7 +342,7 @@ const CreateProject = () => {
                                             </Popover>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">End Date</Label>
+                                            <Label className="text-[11px] font-black uppercase text-zinc-500 ml-1">End Date</Label>
                                             <Popover>
                                                 <PopoverTrigger asChild>
                                                     <Button
@@ -360,7 +373,7 @@ const CreateProject = () => {
                                     <Button
                                         type="submit"
                                         disabled={loading}
-                                        className="w-full h-14 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-black uppercase tracking-widest transition-all hover:opacity-90 active:scale-[0.98] shadow-xl group relative overflow-hidden"
+                                        className="w-full h-14 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-sm font-black uppercase transition-all hover:opacity-90 active:scale-[0.98] shadow-xl group relative overflow-hidden"
                                     >
                                         {loading ? (
                                             <Loader2 className="w-5 h-5 animate-spin mx-auto" />
@@ -370,8 +383,8 @@ const CreateProject = () => {
                                             </span>
                                         )}
                                     </Button>
-                                    <div className="mt-8 flex items-center justify-center gap-2 text-[10px] font-bold text-zinc-500 uppercase ">
-                                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                                    <div className="mt-8 flex items-center justify-center gap-2 text-[12px] font-bold text-zinc-500  ">
+                                        <ShieldCheck className="w-4 h-4 text-emerald-500" />
                                         <span>Secure Project Environment</span>
                                     </div>
                                 </div>

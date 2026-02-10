@@ -25,7 +25,7 @@ const Premium = () => {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 font-bold text-[11px] uppercase tracking-widest border border-violet-200 dark:border-violet-800"
+                            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-300 font-bold text-[11px] uppercase border border-violet-200 dark:border-violet-800"
                         >
                             <BadgePercent className="w-3.5 h-3.5" />
                             Premium Suite for Teams
@@ -35,7 +35,7 @@ const Premium = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight"
+                            className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white"
                         >
                             Supercharge your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-amber-500 to-amber-600 animate-gradient-x">Project.</span>
                         </motion.h1>
@@ -67,14 +67,14 @@ const Premium = () => {
 
                             <div className="relative bg-white dark:bg-zinc-900/90 backdrop-blur-3xl rounded-[34px] p-8 h-full border border-violet-100 dark:border-violet-900/50 text-left flex flex-col shadow-xl">
                                 {/* Recommended Badge */}
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-[11px] font-black uppercase tracking-widest rounded-full shadow-lg shadow-violet-500/30 flex items-center gap-2 z-20">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-[11px] font-black uppercase rounded-full shadow-lg shadow-violet-500/30 flex items-center gap-2 z-20">
                                     <Star className="w-4 h-4 fill-current animate-pulse" /> Recommended
                                 </div>
                                 <div className="flex justify-between items-start mb-6 pt-2">
                                     <div className="p-3.5 rounded-2xl bg-violet-50 dark:bg-violet-900/10 text-violet-600 dark:text-violet-400">
                                         <Gem className="w-7 h-7" />
                                     </div>
-                                    <div className="px-3.5 py-1.5 rounded-full bg-violet-100/50 dark:bg-violet-900/20 text-[11px] font-black uppercase tracking-wider text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
+                                    <div className="px-3.5 py-1.5 rounded-full bg-violet-100/50 dark:bg-violet-900/20 text-[11px] font-black uppercase text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
                                         Team Essentials
                                     </div>
                                 </div>
@@ -83,7 +83,7 @@ const Premium = () => {
                                 <p className="text-sm text-zinc-500 dark:text-zinc-500 font-medium mb-8">Everything for a semester project.</p>
 
                                 <div className="space-y-6 flex-1 mb-8">
-                                    <h4 className="text-[12px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600">Necessary Features</h4>
+                                    <h4 className="text-[12px] font-black uppercase text-zinc-500 dark:text-zinc-600">Necessary Features</h4>
                                     <ul className="space-y-4">
                                         {[
                                             { icon: Users, text: "Real-time Collaboration", desc: "Work together instantly" },
@@ -130,7 +130,7 @@ const Premium = () => {
                                     <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-500">
                                         <Crown className="w-7 h-7" />
                                     </div>
-                                    <div className="px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-[11px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-500 border border-amber-200 dark:border-amber-800">
+                                    <div className="px-3.5 py-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-[11px] font-black uppercase text-amber-700 dark:text-amber-500 border border-amber-200 dark:border-amber-800">
                                         Advanced
                                     </div>
                                 </div>
@@ -139,7 +139,7 @@ const Premium = () => {
                                 <p className="text-sm text-zinc-500 dark:text-zinc-500 font-medium mb-8">For Capstone projects & leaders.</p>
 
                                 <div className="space-y-6 flex-1 mb-8">
-                                    <h4 className="text-[12px] font-black uppercase tracking-widest text-zinc-500 dark:text-zinc-600">Advanced Control</h4>
+                                    <h4 className="text-[12px] font-black uppercase text-zinc-500 dark:text-zinc-600">Advanced Control</h4>
                                     <ul className="space-y-4">
                                         {[
                                             { icon: GraduationCap, text: "Professor Sync Portal", desc: "Live progress dashboard" },
@@ -165,13 +165,12 @@ const Premium = () => {
                                     </ul>
                                 </div>
 
-                                <Button variant="outline" disabled className="w-full h-14 rounded-2xl border-2 border-amber-300 text-amber-700 dark:text-amber-500 font-bold text-sm shadow-sm opacity-80 cursor-not-allowed uppercase tracking-widest">
+                                <Button variant="outline" disabled className="w-full h-14 rounded-2xl border-2 border-amber-300 text-amber-700 dark:text-amber-500 font-bold text-sm shadow-sm opacity-80 cursor-not-allowed uppercase">
                                     Next Update
                                 </Button>
                             </div>
                         </motion.div>
                     </div>
-
                     {/* Bottom CTA with BITS Colors Insane Underline */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -179,15 +178,12 @@ const Premium = () => {
                         transition={{ delay: 0.6 }}
                         className="mt-14 h-24 pt-6 text-center"
                     >
-                        <p className="text-zinc-500 dark:text-zinc-500 text-[11px] font-bold tracking-wider uppercase mb-2">
-                            Trusted by college students
-                        </p>
                         <div className="relative inline-block pb-8">
-                            <span className="text-xl md:text-[1.5rem] font-black text-zinc-800 dark:text-zinc-200 tracking-normal relative z-10 px-2 block">
-                                <span className="text-pink-500 tracking-wider">B</span>
-                                <span className="text-lime-500 tracking-wider">I</span>
-                                <span className="text-yellow-500 tracking-wider">T</span>
-                                <span className="text-blue-500 tracking-wider">S</span>
+                            <span className="text-xl md:text-[1.5rem] font-black text-zinc-800 dark:text-zinc-200 relative z-10 px-2 block">
+                                <span className="text-pink-500">B</span>
+                                <span className="text-lime-500">I</span>
+                                <span className="text-yellow-500">T</span>
+                                <span className="text-blue-500">S</span>
                                 <span className="bg-gradient-to-r from-violet-600 to-amber-500 bg-clip-text text-transparent ml-2">VIZAG  </span> <span className="px-1"> Students</span>
                             </span>
 

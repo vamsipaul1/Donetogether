@@ -157,7 +157,7 @@ const JoinProject = () => {
                                 value={code}
                                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                                 placeholder="ENTER CODE"
-                                className="h-16 text-center text-3xl font-black tracking-[0.3em] rounded-2xl border-2 border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 uppercase placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
+                                className="h-16 text-center text-3xl font-black rounded-2xl border-2 border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 uppercase placeholder:text-zinc-300 dark:placeholder:text-zinc-700"
                                 maxLength={6}
                             />
                         </div>

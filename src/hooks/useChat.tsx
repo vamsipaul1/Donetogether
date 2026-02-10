@@ -9,69 +9,37 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
     const [roomId, setRoomId] = useState<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+    const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
 
     const getOrCreateRoom = async () => {
         if (!projectId) {
-            console.error('❌ getOrCreateRoom: No projectId provided');
             return null;
         }
 
-        console.log('🔍 getOrCreateRoom: Starting for projectId:', projectId);
-
         try {
             // Try to find existing room
-            console.log('🔍 getOrCreateRoom: SELECT query...');
             const { data: rooms, error: selectError } = await supabase
                 .from('chat_rooms')
                 .select('id')
                 .eq('project_id', projectId)
-                .single();
-
-            console.log('🔍 getOrCreateRoom: SELECT result:', { rooms, selectError });
+                .maybeSingle();
 
             if (rooms) {
-                console.log('✅ getOrCreateRoom: Found existing room:', rooms.id);
                 return rooms.id;
             }
 
-            if (selectError && selectError.code !== 'PGRST116') {
-                // PGRST116 = no rows returned, which is fine
-                console.error('❌ getOrCreateRoom: SELECT error:', {
-                    code: selectError.code,
-                    message: selectError.message,
-                    details: selectError.details,
-                    hint: selectError.hint,
-                    full: selectError
-                });
-            }
-
             // Room doesn't exist, create it
-            console.log('🔨 getOrCreateRoom: Creating new room for project:', projectId);
             const { data: newRoom, error: createError } = await supabase
                 .from('chat_rooms')
                 .insert({ project_id: projectId })
                 .select()
                 .single();
 
-            console.log('🔨 getOrCreateRoom: INSERT result:', { newRoom, createError });
-
-            if (createError) {
-                console.error('❌ getOrCreateRoom: INSERT error:', {
-                    code: createError.code,
-                    message: createError.message,
-                    details: createError.details,
-                    hint: createError.hint,
-                    full: createError
-                });
-                return null;
-            }
-
             if (newRoom) {
-                console.log('✅ getOrCreateRoom: Created new room:', newRoom.id);
                 return newRoom.id;
             }
         } catch (err) {
-            console.error('❌ getOrCreateRoom: EXCEPTION:', err);
+            console.error('❌ useChat: getOrCreateRoom exception:', err);
         }
         return null;
     };
@@ -90,27 +58,94 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
         if (!roomId) return;
 
         const fetchMessages = async () => {
+            console.log('🔍 Fetching messages for room:', roomId);
             setIsLoading(true);
-            const { data, error } = await supabase
-                .from('messages')
-                .select(`
-                    *,
-                    sender:profiles(*),
-                    reads:message_reads(user_id)
-                `)
-                .eq('room_id', roomId)
-                .order('created_at', { ascending: true });
 
-            if (error) {
-                console.error("Fetch messages error", error);
-            } else {
-                setMessages(prev => {
-                    const params = data as any[] || [];
-                    const temps = prev.filter(m => m.id.startsWith('temp-'));
-                    // Dedup just in case
-                    return [...params, ...temps];
-                });
+
+            try {
+                // Fetch messages with basic relationships (simplified to avoid 409 errors)
+                const { data, error } = await supabase
+                    .from('messages')
+                    .select(`
+                        *,
+                        sender:profiles(*),
+                        reads:message_reads(user_id)
+                    `)
+                    .eq('room_id', roomId)
+                    .order('created_at', { ascending: true });
+
+                if (error) {
+                    console.error("❌ Fetch messages error:", error);
+                    toast.error(`Failed to load messages: ${error.message}`);
+                } else {
+                    console.log(`✅ Fetched ${data?.length || 0} messages from database`);
+
+                    // Try to fetch reactions separately (won't break if relationship is broken)
+                    try {
+                        const messageIds = data?.map(m => m.id) || [];
+                        if (messageIds.length > 0) {
+                            const { data: reactions } = await supabase
+                                .from('message_reactions')
+                                .select('*, user:profiles(*)')
+                                .in('message_id', messageIds);
+
+                            // Fetch replied messages separately
+                            const replyToIds = data?.filter(m => m.reply_to).map(m => m.reply_to).filter(Boolean) || [];
+                            let repliedMessagesMap: Record<string, any> = {};
+
+                            if (replyToIds.length > 0) {
+                                try {
+                                    const { data: repliedMessages } = await supabase
+                                        .from('messages')
+                                        .select('id, content, sender:profiles(display_name, avatar_url)')
+                                        .in('id', replyToIds);
+
+                                    // Create a map for quick lookup
+                                    repliedMessagesMap = (repliedMessages || []).reduce((acc, msg) => {
+                                        acc[msg.id] = msg;
+                                        return acc;
+                                    }, {} as Record<string, any>);
+                                } catch (replyError) {
+                                    console.warn("⚠️ Could not fetch replied messages:", replyError);
+                                }
+                            }
+
+                            // Attach reactions AND replied messages to messages
+                            const messagesWithReactions = data?.map(msg => ({
+                                ...msg,
+                                reactions: reactions?.filter(r => r.message_id === msg.id) || [],
+                                replied_message: msg.reply_to ? repliedMessagesMap[msg.reply_to] : null
+                            }));
+
+                            setMessages(prev => {
+                                const params = messagesWithReactions as any[] || [];
+                                const temps = prev.filter(m => m.id.startsWith('temp-'));
+                                console.log(`📊 Setting messages: ${params.length} from DB + ${temps.length} temp`);
+                                return [...params, ...temps];
+                            });
+                        } else {
+                            setMessages(prev => {
+                                const params = data as any[] || [];
+                                const temps = prev.filter(m => m.id.startsWith('temp-'));
+                                console.log(`📊 Setting messages: ${params.length} from DB + ${temps.length} temp`);
+                                return [...params, ...temps];
+                            });
+                        }
+                    } catch (reactionError) {
+                        console.warn("⚠️ Could not fetch reactions (table may not exist yet):", reactionError);
+                        // Still set messages without reactions
+                        setMessages(prev => {
+                            const params = data as any[] || [];
+                            const temps = prev.filter(m => m.id.startsWith('temp-'));
+                            return [...params, ...temps];
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("❌ Fatal error fetching messages:", error);
+                toast.error("Failed to load chat");
             }
+
             setIsLoading(false);
         };
 
@@ -129,26 +164,44 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                 },
                 async (payload) => {
                     if (payload.eventType === 'INSERT') {
+                        // Resilient column handling: DB might use sender_id or user_id
+                        const senderId = payload.new.sender_id || payload.new.user_id;
+                        const roomIdFromPayload = payload.new.room_id || payload.new.chat_room_id;
+
+                        // Verify it belongs to this room
+                        if (roomIdFromPayload !== roomId) return;
+
                         // Fetch the sender details for the new message
                         const { data: senderData } = await supabase
                             .from('profiles')
                             .select('*')
-                            .eq('id', payload.new.sender_id)
-                            .single();
+                            .eq('id', senderId)
+                            .maybeSingle();
 
                         const newMessage = {
                             ...payload.new,
-                            sender: senderData,
+                            sender_id: senderId, // Ensure we have common field names
+                            room_id: roomIdFromPayload,
+                            sender: senderData || {
+                                id: senderId,
+                                display_name: 'Team Member',
+                                avatar_url: null
+                            },
                             reads: []
                         } as unknown as MessageWithSender;
 
                         setMessages(prev => {
-                            // Deduplicate: Remove optimistic message if it matches content/sender
-                            const filtered = prev.filter(m =>
-                                !(m.id.startsWith('temp-') && m.content === newMessage.content && m.sender_id === newMessage.sender_id)
-                            );
-                            // Also ensure we don't add the SAME real ID twice
+                            // Deduplicate: Compare by content AND sender, or by ID if already exists
+                            const isOptimisticMatch = (m: any) =>
+                                m.id.startsWith('temp-') &&
+                                m.content === newMessage.content &&
+                                m.sender_id === newMessage.sender_id;
+
+                            const filtered = prev.filter(m => !isOptimisticMatch(m));
+
+                            // Prevent duplicates by ID
                             if (filtered.some(m => m.id === newMessage.id)) return filtered;
+
                             return [...filtered, newMessage];
                         });
                     } else if (payload.eventType === 'UPDATE') {
@@ -185,6 +238,31 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                     }));
                 }
             )
+            // Listen for reactions (inserts/deletes into message_reactions)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'message_reactions'
+                },
+                async (payload) => {
+                    // Refetch reactions for the affected message
+                    const messageId = (payload.new as any)?.message_id || (payload.old as any)?.message_id;
+                    if (messageId) {
+                        const { data: reactions } = await supabase
+                            .from('message_reactions')
+                            .select('*, user:profiles(*)')
+                            .eq('message_id', messageId);
+
+                        setMessages(prev => prev.map(msg =>
+                            msg.id === messageId
+                                ? { ...msg, reactions: reactions || [] }
+                                : msg
+                        ));
+                    }
+                }
+            )
             // Typing indicators via Broadcast
             .on('broadcast', { event: 'typing' }, (payload) => {
                 if (payload.payload.userId !== currentUserId) {
@@ -212,8 +290,8 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
         };
     }, [roomId, currentUserId]);
 
-    const sendMessage = async (content: string, mediaUrl?: string) => {
-        console.log('💬 useChat.sendMessage: START', { content, mediaUrl, roomId, projectId });
+    const sendMessage = async (content: string, attachmentData?: { url: string; name: string; size: number; type: string }, replyToId?: string) => {
+        console.log('💬 useChat.sendMessage: START', { content, attachmentData, roomId, projectId });
         let activeRoomId = roomId;
 
         // JIT Room Creation/Fetching if missing
@@ -229,8 +307,8 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
             }
         }
 
-        if (!activeRoomId || !content.trim()) {
-            console.warn("Cannot send message: No Room ID or empty content", { activeRoomId, content });
+        if (!activeRoomId || (!content.trim() && !attachmentData)) {
+            console.warn("Cannot send message: No Room ID or empty content", { activeRoomId, content, attachmentData });
             return;
         }
 
@@ -247,7 +325,7 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
             room_id: activeRoomId,
             sender_id: user.data.user.id,
             content,
-            media_url: mediaUrl || null,
+            media_url: attachmentData?.url || null,
             created_at: new Date().toISOString(),
             is_deleted: false,
             is_edited: false,
@@ -256,15 +334,17 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                 display_name: 'Me',
                 avatar_url: null,
             } as any,
-            reads: []
+            reads: [],
+            // Add attachment fields for optimistic rendering
+            ...(attachmentData && {
+                attachment_url: attachmentData.url,
+                attachment_name: attachmentData.name,
+                attachment_size: attachmentData.size,
+                attachment_type: attachmentData.type,
+            })
         };
 
-        console.log('💬 useChat.sendMessage: Adding optimistic message', optimisticMessage);
-        setMessages(prev => {
-            const newMessages = [...prev, optimisticMessage];
-            console.log('💬 useChat.sendMessage: New messages array length:', newMessages.length);
-            return newMessages;
-        });
+        setMessages(prev => [...prev, optimisticMessage]);
 
         try {
             console.log('💬 useChat.sendMessage: Inserting to DB...');
@@ -273,8 +353,13 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
                 .insert({
                     room_id: activeRoomId,
                     sender_id: user.data.user.id,
-                    content,
-                    media_url: mediaUrl
+                    content: content || (attachmentData ? '' : ''),
+                    media_url: attachmentData?.url,
+                    attachment_url: attachmentData?.url,
+                    attachment_name: attachmentData?.name,
+                    attachment_size: attachmentData?.size,
+                    attachment_type: attachmentData?.type,
+                    reply_to: replyToId || null,  // Now enabled - make sure SQL migration is run!
                 })
                 .select();
 
@@ -321,6 +406,126 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
         }
     };
 
+    const editMessage = async (messageId: string, newContent: string) => {
+        if (!newContent.trim()) {
+            toast.error('Message cannot be empty');
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('messages')
+                .update({
+                    content: newContent,
+                    is_edited: true
+                })
+                .eq('id', messageId);
+
+            if (error) {
+                console.error('Edit message error:', error);
+                toast.error('Failed to edit message');
+            } else {
+                toast.success('Message edited');
+            }
+        } catch (err) {
+            console.error('Edit message exception:', err);
+            toast.error('Failed to edit message');
+        }
+    };
+
+    const deleteMessage = async (messageId: string) => {
+        try {
+            const { error } = await supabase
+                .from('messages')
+                .update({ is_deleted: true })
+                .eq('id', messageId);
+
+            if (error) {
+                console.error('Delete message error:', error);
+                toast.error('Failed to delete message');
+            } else {
+                toast.success('Message deleted');
+            }
+        } catch (err) {
+            console.error('Delete message exception:', err);
+            toast.error('Failed to delete message');
+        }
+    };
+
+    const addReaction = async (messageId: string, emoji: string) => {
+        if (!currentUserId) return;
+
+        try {
+            const { error } = await supabase
+                .from('message_reactions')
+                .insert({
+                    message_id: messageId,
+                    user_id: currentUserId,
+                    emoji
+                });
+
+            if (error && error.code !== '23505') { // Ignore duplicate error
+                console.error('Add reaction error:', error);
+                toast.error('Failed to add reaction');
+            }
+        } catch (err) {
+            console.error('Add reaction exception:', err);
+        }
+    };
+
+    const removeReaction = async (messageId: string, emoji: string) => {
+        if (!currentUserId) return;
+
+        // Optimistic Removal
+        setMessages(prev => prev.map(msg => {
+            if (msg.id === messageId) {
+                return {
+                    ...msg,
+                    reactions: (msg.reactions || []).filter(r => !(r.user_id === currentUserId && r.emoji === emoji))
+                };
+            }
+            return msg;
+        }));
+
+        try {
+            const { error } = await supabase
+                .from('message_reactions')
+                .delete()
+                .eq('message_id', messageId)
+                .eq('user_id', currentUserId)
+                .eq('emoji', emoji);
+
+            if (error) {
+                console.error('Remove reaction error:', error);
+                // Revert on error if needed, but usually real-time will sync it back
+            }
+        } catch (err) {
+            console.error('Remove reaction exception:', err);
+        }
+    };
+
+    const clearChatHistory = async () => {
+        if (!roomId) return;
+
+        try {
+            const { error } = await supabase
+                .from('messages')
+                .delete()
+                .eq('room_id', roomId);
+
+            if (error) {
+                console.error('Clear chat history error:', error);
+                toast.error('Failed to clear chat history');
+            } else {
+                setMessages([]);
+                toast.success('Chat history cleared');
+            }
+        } catch (err) {
+            console.error('Clear chat history exception:', err);
+            toast.error('Failed to clear chat history');
+        }
+    };
+
     return {
         messages,
         isLoading,
@@ -328,7 +533,14 @@ export const useChat = (projectId: string | undefined, currentUserId?: string) =
         sendMessage,
         sendTyping,
         markAsRead,
+        editMessage,
+        deleteMessage,
+        addReaction,
+        removeReaction,
+        clearChatHistory,
         typingUsers,
-        roomId
+        roomId,
+        replyTo,
+        setReplyTo
     };
 };

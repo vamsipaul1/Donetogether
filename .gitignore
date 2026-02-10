@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 .env
+API_KEY_LOCAL.md
+supabase/.env
+.env.*
+supabase/.env
+supabase/.env.*
+supabase/.temp/
+supabase/.branches/
 
 # Editor directories and files
 .vscode/*

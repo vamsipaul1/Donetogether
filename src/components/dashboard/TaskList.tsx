@@ -83,7 +83,7 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
     return (
         <div className="bg-transparent h-full overflow-y-auto overflow-x-auto">
             {/* Table Header */}
-            <div className="flex items-center px-6 py-2 border-b border-zinc-200 dark:border-[#3d3e40] text-[11px] font-bold text-zinc-500 uppercase tracking-widest sticky top-0 bg-white/50 dark:bg-black/50 backdrop-blur-md z-10 min-w-[900px]">
+            <div className="flex items-center px-6 py-2 border-b border-zinc-200/50 dark:border-white/5 text-[11px] font-bold text-zinc-500 uppercase sticky top-0 bg-background/50 dark:bg-black/50 backdrop-blur-md z-10 min-w-[900px]">
                 <div className="flex-[4] px-4">Name</div>
                 <div className="flex-1 px-4">Assignee</div>
                 <div className="flex-1 px-4 pl-8">Start date</div>
@@ -108,7 +108,7 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                             {sectionTasks[section.id].map(task => {
                                 const assignee = members.find(m => m.user_id === task.assigned_to)?.users;
                                 return (
-                                    <div key={task.id} className="flex items-center px-6 border-y border-transparent hover:border-zinc-200 dark:hover:border-[#3d3e40] hover:bg-white dark:hover:bg-[#2e2e30]/50 group transition-all h-12 min-w-[900px]">
+                                    <div key={task.id} className="flex items-center px-6 border-y border-transparent hover:border-zinc-200/50 dark:hover:border-white/5 hover:bg-white/40 dark:hover:bg-zinc-900/40 group transition-all h-12 min-w-[900px]">
                                         {/* Name Row */}
                                         <div className="flex-[4] flex items-center gap-3 min-w-20 pr-4">
                                             {isOwner && (
@@ -117,11 +117,11 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                                                 </div>
                                             )}
                                             <button
-                                                onClick={() => isOwner && handleTaskChange(task.id, { status: task.status === 'completed' ? 'not_started' : 'completed' })}
+                                                onClick={() => (isOwner || task.assigned_to === currentUserId) && handleTaskChange(task.id, { status: task.status === 'completed' ? 'not_started' : 'completed' })}
                                                 className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${task.status === 'completed'
                                                     ? 'bg-emerald-500 border-emerald-500'
                                                     : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'
-                                                    } ${!isOwner ? 'cursor-not-allowed opacity-80' : ''}`}
+                                                    } ${(isOwner || task.assigned_to === currentUserId) ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                                             >
                                                 {task.status === 'completed' && <CheckCircle2 className="w-3 h-3 text-white" />}
                                             </button>
@@ -134,7 +134,7 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                                         <div className="flex-1 px-4 flex items-center gap-2 overflow-hidden">
                                             {assignee ? (
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-[11px] font-bold text-white">
+                                                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[11px] font-bold text-white">
                                                         {assignee.email?.[0]}
                                                     </div>
                                                     <span className="text-xs text-zinc-600 dark:text-zinc-500 truncate hidden xl:inline">{assignee.full_name || assignee.email?.split('@')[0]}</span>
@@ -219,7 +219,7 @@ const PriorityBadge = ({ priority }: { priority: string }) => {
         low: 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30',
     };
     return (
-        <span className={`px-3 py-1 rounded-md text-[11px] font-black uppercase tracking-wider ${colors[priority]}`}>
+        <span className={`px-3 py-1 rounded-md text-[11px] font-black uppercase ${colors[priority]}`}>
             {priority}
         </span>
     );
@@ -237,7 +237,7 @@ const StatusBadge = ({ status }: { status: string }) => {
         not_started: 'To do',
     };
     return (
-        <span className={`px-3 py-1 rounded-md text-[11px] font-black uppercase tracking-wider ${colors[status]}`}>
+        <span className={`px-3 py-1 rounded-md text-[11px] font-black uppercase ${colors[status]}`}>
             {labels[status]}
         </span>
     );

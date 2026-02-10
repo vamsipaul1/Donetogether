@@ -1,8 +1,11 @@
 import { useState, useRef, KeyboardEvent, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Send, Paperclip, Smile, Image as ImageIcon, Mic, Plus, FileText, X, CheckSquare } from 'lucide-react';
+import { Send, Paperclip, Smile, Image as ImageIcon, Mic, Plus, FileText, X, CheckSquare, Loader2, Reply } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
+import { uploadFile, formatFileSize, FileUploadResult } from '@/lib/fileUpload';
+import { toast } from 'sonner';
 import {
     Popover,
     PopoverContent,
@@ -11,20 +14,24 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ChatInputProps {
-    onSendMessage: (content: string) => void;
+    onSendMessage: (content: string, attachmentData?: FileUploadResult, replyToId?: string) => void;
     isLoading?: boolean;
     projectId?: string;
+    replyTo?: any;
+    setReplyTo?: (msg: any) => void;
 }
 
 // Simple curated emoji list to avoid large deps
 const EMOJIS = ["👍", "👋", "🔥", "❤️", "😂", "😮", "😢", "😡", "🎉", "👀", "🚀", "💯", "✅", "✨", "🤔", "🙌", "💀", "💩", "🥳", "🤖", "👻", "🎃", "💪", "🙏", "🤝", "💅", "🎈", "🎂", "🎁", "🏆", "🥇", "⭐", "🌟", "💡", "💣", "💤", "💬", "📅", "📎", "📌"];
 
-export const ChatInput = ({ onSendMessage, isLoading, projectId }: ChatInputProps) => {
+export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setReplyTo }: ChatInputProps) => {
     const [message, setMessage] = useState('');
     const [isFocused, setIsFocused] = useState(false);
-    const [attachment, setAttachment] = useState<{ name: string; type: 'image' | 'file'; size: string } | null>(null);
+    const [uploadedFile, setUploadedFile] = useState<FileUploadResult | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const imageInputRef = useRef<HTMLInputElement>(null);
 
     // Task autocomplete state
     const [showTaskSuggestions, setShowTaskSuggestions] = useState(false);
@@ -66,19 +73,23 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId }: ChatInputProp
     }, [projectId, showTaskSuggestions, taskQuery]);
 
     const handleSend = () => {
-        if ((!message.trim() && !attachment) || isLoading) return;
+        if ((!message.trim() && !uploadedFile) || isLoading || isUploading) return;
 
-        // Mock sending logic - in real app, separate file upload
-        let fullMessage = message;
-        if (attachment) {
-            fullMessage = `[Attachment: ${attachment.name} (${attachment.size})] \n${message}`;
-        }
+        console.log('🚀 ChatInput: Sending message:', {
+            text: message,
+            hasAttachment: !!uploadedFile,
+            attachment: uploadedFile,
+            replyToId: replyTo?.id
+        });
 
-        console.log('🚀 ChatInput: Sending message:', fullMessage);
-        onSendMessage(fullMessage);
+        // Send message with optional attachment data and reply ID
+        onSendMessage(message, uploadedFile || undefined, replyTo?.id);
+
+        // Clear state
         setMessage('');
-        setAttachment(null);
+        setUploadedFile(null);
         setShowTaskSuggestions(false);
+        if (setReplyTo) setReplyTo(null); // Clear reply context
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto'; // Reset height
         }
@@ -144,233 +155,213 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId }: ChatInputProp
         setMessage(prev => prev + emoji);
     };
 
-    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'file') => {
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate file size (max 10MB)
-        const maxSize = 10 * 1024 * 1024;
+        // Clear the input so the same file can be selected again
+        e.target.value = '';
+
+        // Validate file size (max 50MB)
+        const maxSize = 50 * 1024 * 1024;
         if (file.size > maxSize) {
-            alert('File is too large. Maximum size is 10MB.');
+            toast.error('File is too large. Maximum size is 50MB.');
             return;
         }
 
-        // Validate file type
-        if (type === 'image') {
-            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            if (!validImageTypes.includes(file.type)) {
-                alert('Invalid image type. Please upload JPEG, PNG, GIF, or WebP.');
-                return;
-            }
+        // Show upload progress
+        setIsUploading(true);
+        toast.loading(`Uploading ${file.name}...`, { id: 'file-upload' });
+
+        try {
+            // Upload file to Supabase Storage
+            const uploadResult = await uploadFile(file, 'chat-files', projectId);
+
+            setUploadedFile(uploadResult);
+            toast.success(`${file.name} uploaded successfully!`, { id: 'file-upload' });
+
+            console.log('✅ File uploaded:', uploadResult);
+        } catch (error: any) {
+            console.error('❌ File upload error:', error);
+            toast.error(`Upload failed: ${error.message}`, { id: 'file-upload' });
+        } finally {
+            setIsUploading(false);
         }
-
-        setAttachment({
-            name: file.name,
-            type: type,
-            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
-        });
-
-        // TODO: Upload to Supabase Storage
-        // const { data, error } = await supabase.storage
-        //     .from('chat-files')
-        //     .upload(`${projectId}/${Date.now()}-${file.name}`, file);
     };
 
     return (
-        <div className="relative px-4 pb-6 pt-2 bg-gradient-to-t from-white via-white to-transparent dark:from-black dark:via-black dark:to-transparent z-20 font-sans">
-
-            {/* Task Suggestions Dropdown */}
-            {showTaskSuggestions && taskSuggestions.length > 0 && (
-                <div className="absolute bottom-full left-4 right-4 mb-2 max-w-5xl mx-auto">
-                    <div className="bg-white dark:bg-zinc-900 border-2 border-purple-500/50 dark:border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/10 overflow-hidden backdrop-blur-xl">
-                        <div className="px-4 py-2.5 bg-purple-50 dark:bg-purple-950/30 border-b border-purple-200 dark:border-purple-900/50 flex items-center gap-2">
-                            <CheckSquare className="w-4 h-4 text-purple-500" />
-                            <span className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                                Project Tasks {taskQuery && `• Searching "${taskQuery}"`}
-                            </span>
-                            <span className="ml-auto text-[10px] font-bold text-purple-500">
-                                {taskSuggestions.length} {taskSuggestions.length === 1 ? 'task' : 'tasks'}
-                            </span>
-                        </div>
-                        <ScrollArea className="max-h-64">
-                            <div className="p-2 space-y-1">
-                                {taskSuggestions.map((task) => (
-                                    <button
-                                        key={task.id}
-                                        onClick={() => insertTaskMention(task)}
-                                        className="w-full flex items-start gap-3 p-3 rounded-xl hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-all group text-left border border-transparent hover:border-purple-200 dark:hover:border-purple-900/50"
-                                    >
-                                        <div className={cn(
-                                            "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 font-black text-xs shadow-sm transition-transform group-hover:scale-105",
-                                            task.status === 'done' ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400" :
-                                                task.status === 'in-progress' ? "bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400" :
-                                                    "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
-                                        )}>
-                                            #{task.task_number || task.id}
-                                        </div>
-                                        <div className="flex-1 min-w-0 pt-0.5">
-                                            <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100 mb-1.5 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors leading-tight line-clamp-1">
-                                                {task.title}
-                                            </p>
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <span className={cn(
-                                                    "text-[10px] font-bold px-2 py-1 rounded-md",
-                                                    task.status === 'done' ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400" :
-                                                        task.status === 'in-progress' ? "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400" :
-                                                            "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
-                                                )}>
-                                                    {task.status?.replace('-', ' ').toUpperCase() || 'TODO'}
-                                                </span>
-                                                {task.priority && (
-                                                    <span className={cn(
-                                                        "text-[10px] font-bold px-2 py-1 rounded-md",
-                                                        task.priority === 'high' ? "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-400" :
-                                                            task.priority === 'medium' ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400" :
-                                                                "bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400"
-                                                    )}>
-                                                        {task.priority.toUpperCase()}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-950/50 flex items-center justify-center">
-                                                <CheckSquare className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                                            </div>
-                                        </div>
-                                    </button>
-                                ))}
+        <div className="relative px-2 sm:px-4 md:px-6 pb-2 sm:pb-4 md:pb-6 pt-2 z-40">
+            <div className="max-w-5xl mx-auto relative">
+                {/* Reply Context Bar */}
+                {replyTo && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-2 px-1"
+                    >
+                        <div className="flex items-center gap-3 px-4 py-2 bg-zinc-50 dark:bg-zinc-800 border-l-4 border-zinc-900 dark:border-zinc-600 rounded-r-xl shadow-sm">
+                            <Reply className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+                            <div className="flex-1 min-w-0">
+                                <div className="text-[10px] font-bold text-zinc-900 dark:text-zinc-100 uppercase">
+                                    Replying to {replyTo.sender?.display_name || 'Partner'}
+                                </div>
+                                <div className="text-xs text-zinc-600 dark:text-zinc-400 truncate">
+                                    {replyTo.content || '📎 Attachment'}
+                                </div>
                             </div>
-                        </ScrollArea>
-                        <div className="px-4 py-2.5 bg-zinc-50 dark:bg-zinc-950/30 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-                            <p className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-500">
-                                💡 Click to insert task reference
-                            </p>
-                            <p className="text-[10px] font-semibold text-zinc-400">
-                                Press ESC to close
-                            </p>
+                            <button onClick={() => setReplyTo(null)} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-colors">
+                                <X className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+                            </button>
                         </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Attachment Preview */}
-            {attachment && (
-                <div className="absolute -top-12 left-6 bg-white dark:bg-zinc-800 border dark:border-zinc-700 p-2 rounded-xl shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom-2">
-                    <div className="h-8 w-8 bg-zinc-100 dark:bg-zinc-700 rounded-lg flex items-center justify-center text-zinc-500">
-                        {attachment.type === 'image' ? <ImageIcon className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                    </div>
-                    <div className="mr-2">
-                        <p className="text-xs font-bold text-zinc-700 dark:text-zinc-200 truncate max-w-[150px]">{attachment.name}</p>
-                        <p className="text-[10px] text-zinc-400">{attachment.size}</p>
-                    </div>
-                    <button onClick={() => setAttachment(null)} className="h-5 w-5 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center">
-                        <X className="h-3 w-3 text-zinc-500" />
-                    </button>
-                </div>
-            )}
-
-            <div
-                className={cn(
-                    "relative flex items-end gap-2 max-w-5xl mx-auto rounded-[24px] p-2 transition-all duration-300 border",
-                    isFocused
-                        ? "bg-white dark:bg-zinc-900 border-emerald-500/30 shadow-2xl shadow-emerald-500/10 ring-4 ring-emerald-500/5"
-                        : "bg-zinc-50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 shadow-lg"
+                    </motion.div>
                 )}
-            >
-                {/* Plus / Attach Actions */}
-                <div className="flex items-center gap-1 pb-1 pl-1">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className={cn(
-                                    "h-9 w-9 rounded-full transition-all duration-300",
-                                    isFocused ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300" : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                                )}
-                            >
-                                <Plus className={cn("h-5 w-5 transition-transform duration-300", isFocused ? "rotate-90" : "")} />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent side="top" align="start" className="w-48 p-2 rounded-2xl shadow-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-                            <input type="file" ref={fileInputRef} accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.pptx,.ppt" className="hidden" onChange={(e) => handleFileSelect(e, 'file')} />
-                            <input type="file" id="image-upload" accept="image/*" className="hidden" onChange={(e) => handleFileSelect(e, 'image')} />
-                            <div className="grid gap-1">
-                                <Button onClick={() => document.getElementById('image-upload')?.click()} variant="ghost" className="justify-start gap-2 h-9 rounded-xl text-sm font-medium hover:bg-black dark:hover:bg-zinc-800 text-black dark:text-white">
-                                    <ImageIcon className="h-4 w-4 text-purple-500" /> Photos & Videos
-                                </Button>
-                                <Button onClick={() => fileInputRef.current?.click()} variant="ghost" className="justify-start gap-2 h-9 rounded-xl text-sm font-medium hover:bg-black dark:hover:bg-zinc-800 text-black dark:text-white">
-                                    <Paperclip className="h-4 w-4 text-blue-500" /> Document
-                                </Button>
+
+                {/* Task Suggestions Popup */}
+                {showTaskSuggestions && taskSuggestions.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        className="absolute bottom-full mb-3 left-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl w-80 overflow-hidden z-50 flex flex-col"
+                    >
+                        <div className="p-2.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 text-[10px] font-black text-zinc-400 uppercase tracking-wider flex items-center justify-between">
+                            <span>Suggested Tasks</span>
+                            <span className="text-[9px] bg-zinc-200 dark:bg-zinc-700 px-1.5 rounded text-zinc-500 dark:text-zinc-300">ESC to close</span>
+                        </div>
+                        <div className="max-h-60 overflow-y-auto p-1 space-y-0.5">
+                            {taskSuggestions.map((task, i) => (
+                                <button
+                                    key={task.id}
+                                    onClick={() => insertTaskMention(task)}
+                                    className={cn(
+                                        "w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-3 group",
+                                        i === 0 ? "bg-zinc-50 dark:bg-zinc-800/60" : "hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                                    )}
+                                >
+                                    <div className="shrink-0 w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-[10px] font-black text-zinc-500 group-hover:bg-white dark:group-hover:bg-zinc-700 group-hover:scale-105 transition-all">
+                                        #{task.task_number || '?'}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate mb-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            {task.title}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn(
+                                                "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
+                                                task.priority === 'high' ? "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400" :
+                                                    task.priority === 'medium' ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400" :
+                                                        "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
+                                            )}>
+                                                {task.priority}
+                                            </span>
+                                            <span className="text-[10px] text-zinc-400 capitalize">
+                                                {task.status?.replace('_', ' ')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <CheckSquare className="w-3.5 h-3.5 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+                                </button>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Upload Progress */}
+                {isUploading && (
+                    <div className="absolute -top-12 left-4 px-3 py-2 bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-100 dark:border-zinc-700 flex items-center gap-2 animate-pulse">
+                        <Loader2 className="w-3 h-3 animate-spin text-emerald-500" />
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase">Uploading...</span>
+                    </div>
+                )}
+
+                {/* Refined Minimal Input Capsule */}
+                <div className={cn(
+                    "flex items-end gap-3 p-1.5 px-3 rounded-[24px] transition-all duration-300 shadow-sm",
+                    isFocused
+                        ? "bg-white dark:bg-zinc-900 ring-2 ring-zinc-900/10 dark:ring-zinc-700/50"
+                        : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/50"
+                )}>
+                    {/* Attach Button */}
+                    <div className="pb-0.5">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button className="h-9 w-9 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all">
+                                    <Plus className="w-5 h-5" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent side="top" align="start" className="w-56 p-2 rounded-2xl shadow-xl border-zinc-200 dark:border-zinc-800 backdrop-blur-xl">
+                                <div className="flex flex-col gap-1">
+                                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 text-sm font-semibold text-zinc-600 dark:text-zinc-300 text-left">
+                                        <Paperclip className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />
+                                        Files & Docs
+                                    </button>
+                                    <button onClick={() => imageInputRef.current?.click()} className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 text-sm font-semibold text-zinc-600 dark:text-zinc-300 text-left">
+                                        <ImageIcon className="w-4 h-4 text-blue-500" />
+                                        Photos
+                                    </button>
+                                </div>
+                                <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
+                                <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={handleFileSelect} />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+
+                    {/* Main Input Area */}
+                    <div className="flex-1 flex flex-col gap-1.5 py-1.5">
+                        {uploadedFile && (
+                            <div className="flex items-center gap-2 p-2 bg-emerald-50/50 dark:bg-zinc-800/50 rounded-xl border border-emerald-100/50 dark:border-zinc-700/50 w-fit">
+                                <FileText className="w-3.5 h-3.5 text-emerald-500" />
+                                <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400 truncate max-w-[150px]">{uploadedFile.name}</span>
+                                <button onClick={() => setUploadedFile(null)} className="p-0.5 hover:bg-red-500/10 rounded-md text-zinc-400 hover:text-red-500 transition-colors">
+                                    <X className="w-3 h-3" />
+                                </button>
                             </div>
-                        </PopoverContent>
-                    </Popover>
-                </div>
+                        )}
+                        <textarea
+                            ref={textareaRef}
+                            value={message}
+                            onChange={handleInput}
+                            onKeyDown={handleKeyDown}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            placeholder="Type a message..."
+                            className="w-full bg-transparent border-0 ring-0 focus:ring-0 focus:outline-none p-0 text-[15px] leading-relaxed max-h-32 resize-none placeholder:text-zinc-400 text-zinc-800 dark:text-zinc-100"
+                            rows={1}
+                        />
+                    </div>
 
-                {/* Text Area */}
-                <div className="flex-1 min-w-0 h-10 py-1.5">
-                    <textarea
-                        ref={textareaRef}
-                        value={message}
-                        onChange={handleInput}
-                        onKeyDown={handleKeyDown}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        placeholder="Message Project Team..."
-                        rows={1}
-                        className="w-full bg-transparent border-0 focus:ring-0 p-0 text-[15px] font-medium leading-relaxed max-h-[150px] resize-none placeholder:text-zinc-400 text-zinc-900 dark:text-zinc-100 placeholder:select-none"
-                        style={{ minHeight: '24px', outline: 'none' }}
-                    />
-                </div>
-
-                {/* Right Actions */}
-                <div className="flex items-center gap-2 pb-1 pr-1">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 text-zinc-400 hover:text-orange-500 dark:hover:text-orange-400 rounded-full hidden sm:flex transition-colors">
-                                <Smile className="h-5 w-5" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent side="top" align="end" className="w-64 p-3 rounded-2xl shadow-xl border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-                            <h4 className="text-xs font-bold text-zinc-400 dark:text-zinc-400 mb-2 uppercase tracking-wide">Favorites</h4>
-                            <ScrollArea className="h-48">
-                                <div className="grid grid-cols-5 gap-1">
+                    {/* Emoji + Send */}
+                    <div className="flex items-center gap-1 pb-0.5">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <button className="h-9 w-9 rounded-full flex items-center justify-center text-zinc-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
+                                    <Smile className="w-5 h-5" />
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent side="top" align="end" className="w-[280px] p-3 rounded-2xl shadow-2xl border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl">
+                                <div className="grid grid-cols-7 gap-1">
                                     {EMOJIS.map(emoji => (
-                                        <button
-                                            key={emoji}
-                                            onClick={() => addEmoji(emoji)}
-                                            className="h-8 w-8 flex items-center justify-center text-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
-                                        >
+                                        <button key={emoji} onClick={() => addEmoji(emoji)} className="h-8 w-8 flex items-center justify-center text-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
                                             {emoji}
                                         </button>
                                     ))}
                                 </div>
-                            </ScrollArea>
-                        </PopoverContent>
-                    </Popover>
+                            </PopoverContent>
+                        </Popover>
 
-                    <Button
-                        onClick={handleSend}
-                        disabled={(!message.trim() && !attachment) || isLoading}
-                        className={cn(
-                            "h-9 w-9 rounded-full transition-all duration-300 flex items-center justify-center p-0 shadow-lg",
-                            (message.trim() || attachment)
-                                ? "bg-emerald-500 hover:bg-emerald-600 text-white scale-100 hover:scale-105 hover:shadow-emerald-500/25"
-                                : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 scale-90 opacity-70 cursor-not-allowed"
-                        )}
-                    >
-                        <Send className={cn("h-4 w-4 ml-0.5", (message.trim() || attachment) ? "fill-current" : "")} />
-                    </Button>
+                        <button
+                            onClick={handleSend}
+                            disabled={(!message.trim() && !uploadedFile) || isLoading || isUploading}
+                            className={cn(
+                                "h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300",
+                                (message.trim() || uploadedFile)
+                                    ? "bg-zinc-900 text-white shadow-md hover:scale-110 active:scale-95 dark:bg-white dark:text-black"
+                                    : "text-zinc-300 dark:text-zinc-700 cursor-not-allowed"
+                            )}
+                        >
+                            <Send className={cn("w-4 h-4 ml-0.5", (message.trim() || uploadedFile) && "fill-current")} />
+                        </button>
+                    </div>
                 </div>
-            </div>
-
-            {/* Enter hint */}
-            <div className={cn(
-                "absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-0.5 rounded-full transition-all duration-300 pointer-events-none",
-                isFocused ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-            )}>
-                Hit Enter to send
             </div>
         </div>
     );

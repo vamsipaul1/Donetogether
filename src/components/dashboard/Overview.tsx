@@ -117,7 +117,7 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
     };
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-full bg-stone-50 dark:bg-black font-sans text-zinc-900 dark:text-zinc-100 overflow-hidden">
+        <div className="flex flex-col lg:flex-row min-h-full bg-[#F9F8F6] dark:bg-black font-sans text-zinc-900 dark:text-zinc-100 overflow-hidden transition-colors duration-500">
             <div className="flex-1 p-8 overflow-y-auto space-y-12 scrollbar-hide">
                 {/* Team Workload Section */}
                 <section className="relative group">
@@ -154,12 +154,12 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                                             key={member.user_id}
                                             initial={{ opacity: 0, scale: 0.95 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className="relative group/member p-4 rounded-3xl border-amber-200/50 dark:border-amber-500/20 bg-white dark:bg-stone-900/20 border border-amber-400 dark:border-stone-800 shadow-sm hover:shadow-md transition-all duration-100"
+                                            className="relative group/member p-4 rounded-3xl border-zinc-200/50 dark:border-white/5 bg-white/40 dark:bg-zinc-900/20 border shadow-sm hover:shadow-md transition-all duration-300"
                                         >
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-sm font-bold text-white dark:text-zinc-900 shadow-md">
-                                                        {member.users?.email?.[0].toUpperCase()}
+                                                        {member.users?.email?.[0]?.toUpperCase() || '?'}
                                                     </div>
                                                     <div className="min-w-0 flex-1">
                                                         <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">{member.users?.full_name || 'Team Member'}</p>
@@ -265,7 +265,7 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                                 </div>
                             ) : (
                                 <div className="relative">
-                                    <div className="bg-stone-50/50 dark:bg-stone-900/30 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 text-stone-600 dark:text-stone-400 min-h-[140px] cursor-text transition-all text-sm leading-relaxed text-left hover:border-stone-300 dark:hover:border-stone-700 hover:bg-white dark:hover:bg-stone-900/50 whitespace-pre-wrap font-medium">
+                                    <div className="bg-white/40 dark:bg-zinc-900/30 border border-white dark:border-white/5 rounded-[32px] p-8 text-zinc-600 dark:text-zinc-400 min-h-[160px] cursor-text transition-all text-sm leading-relaxed text-left hover:border-zinc-950/10 dark:hover:border-zinc-800 backdrop-blur-sm shadow-sm whitespace-pre-wrap font-medium">
                                         {projectGoal || (isOwner ? "What's this project about? Click the edit icon to add a description." : "No project description set.")}
                                     </div>
                                     {isOwner && (
@@ -293,7 +293,7 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                                 <div key={m.id} className="flex items-center justify-between p-4 bg-stone-50/50 dark:bg-stone-900/30 border border-stone-200 dark:border-stone-800/50 rounded-2xl hover:border-stone-300 dark:hover:border-stone-700 transition-all cursor-pointer group/card active:scale-[0.99] shadow-sm">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center text-[11px] font-bold text-white shadow-lg shadow-violet-500/10">
-                                            {m.users?.email?.[0].toUpperCase()}
+                                            {m.users?.email?.[0]?.toUpperCase() || '?'}
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200">{m.users?.full_name || m.users?.email?.split('@')[0]}</p>
