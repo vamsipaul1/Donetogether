@@ -22,7 +22,7 @@ Your code is already on GitHub, so deployment is **SUPER EASY** - just use the S
 6. Click: **Add new secret** button
 7. Enter:
    - **Name:** `GROQ_API_KEY`
-   - **Value:** `YOUR_GROQ_API_KEY_HERE`
+   - **Value:** `[See API_KEY_LOCAL.md]`
 8. Click: **Save**
 
 ✅ API Key saved!
