@@ -54,22 +54,22 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col xs:flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0"
+          className="flex flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0"
         >
-          <Link to="/signup" className="w-full xs:w-auto">
+          <Link to="/signup" className="w-auto">
             <Button
-              className="h-12 sm:h-14 w-full xs:w-auto px-6 sm:px-8 rounded-xl bg-black dark:bg-white text-white hover:bg-black/80 dark:hover:bg-white/80 dark:text-black font-sans text-sm tracking-wider transition-all duration-300"
+              className="h-12 sm:h-14 px-4 sm:px-6 md:px-8 rounded-xl bg-black dark:bg-white text-white hover:bg-black/80 dark:hover:bg-white/80 dark:text-black font-sans text-xs sm:text-sm tracking-wider transition-all duration-300 whitespace-nowrap"
             >
               Start Your Project
-              <ArrowRight className="ml-3 h-5 w-5" />
+              <ArrowRight className="ml-2 sm:ml-3 h-5 w-5 sm:h-5 sm:w-5" />
             </Button>
           </Link>
-          <Link to="#how-it-works" className="w-full xs:w-auto">
+          <Link to="#how-it-works" className="w-auto">
             <Button
-              className="h-12 sm:h-14 w-full xs:w-auto px-6 sm:px-8 rounded-xl bg-white dark:bg-black text-black dark:text-white border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-sans text-sm tracking-wider transition-all duration-300"
+              className="h-16 sm:h-16 px-6 sm:px-6 md:px-8 rounded-xl bg-white dark:bg-black text-black dark:text-white border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-sans text-xs sm:text-sm tracking-wider transition-all duration-300 whitespace-nowrap"
             >
               How it works
-              <ArrowRight className="ml-3 h-5 w-5" />
+              <ArrowRight className="ml-2 sm:ml-3 h-5 w-5 sm:h-5 sm:w-5" />
             </Button>
           </Link>
         </motion.div>

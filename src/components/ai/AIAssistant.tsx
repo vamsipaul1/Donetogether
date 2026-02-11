@@ -1,33 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Sparkles, Send, Mic, X, Lightbulb, Target, Users,
-    TrendingUp, Clock, CheckCircle2, AlertCircle, History
-} from 'lucide-react';
+import { X, Send, Sparkles, Copy, Check, ExternalLink, Layers, Zap, Calendar, Search, Music, Image as ImageIcon, History, Clock, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useTheme } from '@/contexts/ThemeContext';
 import { supabase } from '@/lib/supabase';
-import type { Project, Task, ProjectMember, User } from '@/types/database';
-import AIHistory from './AIHistory';
 
-type AIMode = 'task_assistant' | 'progress_analyst' | 'team_mentor' | 'reflection_coach';
-
-interface AIAssistantProps {
-    isOpen: boolean;
-    onClose: () => void;
-    project: Project;
-    tasks: Task[];
-    members: (ProjectMember & { users?: User })[];
-    currentUserId: string;
-    defaultMode?: AIMode;
-}
-
-interface AISuggestion {
+interface Message {
     id: string;
-    title: string;
-    description: string;
-    icon: any;
-    mode: AIMode;
+    role: 'user' | 'bot';
+    content: string;
+    timestamp: Date;
 }
 
 const AIAssistant = ({
@@ -36,204 +17,222 @@ const AIAssistant = ({
     project,
     tasks,
     members,
-    currentUserId,
-    defaultMode = 'task_assistant'
-}: AIAssistantProps) => {
-    const { theme } = useTheme();
-    const [activeMode, setActiveMode] = useState<AIMode>(defaultMode);
-    const [input, setInput] = useState('');
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [aiResponse, setAiResponse] = useState<any>(null);
-    const [showHistory, setShowHistory] = useState(false);
-
-    // Popular AI prompts based on context
-    const popularIdeas: AISuggestion[] = [
+    user
+}: any) => {
+    const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
-            title: 'Break down project',
-            description: 'Get suggested task breakdown',
-            icon: Target,
-            mode: 'task_assistant'
-        },
-        {
-            id: '2',
-            title: 'Analyze progress',
-            description: 'Check project health & risks',
-            icon: TrendingUp,
-            mode: 'progress_analyst'
-        },
-        {
-            id: '3',
-            title: 'Team workload',
-            description: 'Balance task distribution',
-            icon: Users,
-            mode: 'team_mentor'
-        },
-        {
-            id: '4',
-            title: 'Weekly reflection',
-            description: 'What went well? What to improve?',
-            icon: Lightbulb,
-            mode: 'reflection_coach'
+            role: 'bot',
+            content: `Hi! 👋\nHow can I help you today?`,
+            timestamp: new Date()
         }
-    ];
+    ]);
+    const [input, setInput] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const handleSuggestionClick = (suggestion: AISuggestion) => {
-        setActiveMode(suggestion.mode);
-        // Auto-trigger AI based on mode
-        triggerAI(suggestion.mode);
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const triggerAI = async (mode: string, customPrompt?: string) => {
-        try {
-            setIsProcessing(true);
-            setAiResponse(null);
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, isTyping]);
 
-            // Build context payload
-            const context = buildContext(mode);
-
-            // Get session and Supabase URL
-            const { data: { session } } = await supabase.auth.getSession();
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-
-            if (!session?.access_token) {
-                throw new Error('No active session. Please log in again.');
-            }
-
-            console.log('Calling AI Assistant:', { mode, supabaseUrl });
-
-            // Call AI Assistant Edge Function
-            const response = await fetch(`${supabaseUrl}/functions/v1/ai-assistant`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({
-                    mode,
-                    context,
-                    prompt: customPrompt
-                })
-            });
-
-            console.log('AI Response status:', response.status);
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('AI Error response:', errorText);
-                throw new Error(`AI request failed: ${response.status} - ${errorText}`);
-            }
-
-            const aiData = await response.json();
-            setAiResponse(aiData);
-
-        } catch (error) {
-            console.error('AI Error:', error);
-            setAiResponse({
-                error: true,
-                message: error instanceof Error ? error.message : 'AI temporarily unavailable. Please try again.'
-            });
-        } finally {
-            setIsProcessing(false);
-        }
-    };
-
-    const buildContext = (mode: string) => {
-        const completedTasks = tasks.filter(t => t.status === 'completed').length;
-        const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
-        const overdueTasks = tasks.filter(t =>
-            t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed'
-        ).length;
-
+    const buildContext = () => {
         return {
-            mode,
             project: {
                 id: project.id,
                 name: project.title,
                 goal: project.description,
-                duration: `${project.start_date} to ${project.end_date}`,
                 team_size: members.length
             },
             tasks: {
                 total: tasks.length,
-                done: completedTasks,
-                in_progress: inProgressTasks,
-                overdue: overdueTasks
+                done: tasks.filter((t: any) => t.status === 'completed').length,
+                in_progress: tasks.filter((t: any) => t.status === 'in_progress').length
             },
-            team: {
-                leader: members.find(m => m.role === 'owner')?.users?.full_name || 'Unknown',
-                members: members.map(m => ({
-                    name: m.users?.full_name || 'Anonymous',
-                    role: m.role,
-                    tasks: tasks.filter(t => t.assigned_to === m.user_id).length
-                }))
-            }
+            detailed_tasks: tasks.slice(0, 20).map((t: any) =>
+                `- [${t.status.toUpperCase()}] ${t.title} (Priority: ${t.priority})`
+            ).join('\n')
         };
     };
 
-    const getMockResponse = (mode: AIMode) => {
-        switch (mode) {
-            case 'task_assistant':
-                return {
-                    title: 'Suggested Task Breakdown',
-                    insights: [
-                        'Your project needs 3 major phases',
-                        'Backend setup is critical and should start first',
-                        'Frontend can start in parallel after week 1'
-                    ],
-                    actions: [
-                        { type: 'create_task', label: 'Setup Database Schema', priority: 'high' },
-                        { type: 'create_task', label: 'Design API Routes', priority: 'high' },
-                        { type: 'create_task', label: 'Build Landing Page', priority: 'medium' }
-                    ]
-                };
-            case 'progress_analyst':
-                return {
-                    title: 'Project Health Analysis',
-                    score: 72,
-                    status: 'At Risk',
-                    insights: [
-                        `${tasks.filter(t => t.status === 'completed').length}/${tasks.length} tasks completed`,
-                        `${tasks.filter(t => t.due_date && new Date(t.due_date) < new Date()).length} tasks overdue`,
-                        'Team is on track but needs to accelerate in week 2'
-                    ],
-                    recommendations: [
-                        'Focus on overdue high-priority tasks first',
-                        'Consider reassigning blocked tasks',
-                        'Schedule a quick sync to unblock progress'
-                    ]
-                };
-            case 'team_mentor':
-                return {
-                    title: 'Team Workload Analysis',
-                    insights: [
-                        'Workload is unevenly distributed',
-                        'Some members have 3x more tasks than others',
-                        'No one is overloaded yet'
-                    ],
-                    actions: [
-                        { type: 'reassign', label: 'Redistribute 2 tasks from Member A', member: 'A' },
-                        { type: 'check_in', label: 'Check with inactive member B' }
-                    ]
-                };
-            case 'reflection_coach':
-                return {
-                    title: 'Weekly Reflection',
-                    questions: [
-                        'What went well this week?',
-                        'What blocked your progress?',
-                        'What will you improve next week?'
-                    ],
-                    insights: [
-                        'Completed 8 tasks this week',
-                        'Team collaboration improved',
-                        'Focus area: Testing & documentation'
-                    ]
-                };
-            default:
-                return { title: 'AI Response', insights: [] };
+    const SYSTEM_INSTRUCTION = `
+    You are ThinkSense AI. Your goal is to provide neat, clear, and concise answers.
+    - Keep responses small to mid-size unless explicitly asked for details.
+    - If the user asks for detailed explanation, then provide a comprehensive answer.
+    - Be advanced, context-aware, and intelligent.
+    - Do not use markdown headers (#) excessively, use bolding for emphasis.
+    `;
+
+    const sendMessage = async (text?: string) => {
+        const contentToSend = typeof text === 'string' ? text : input;
+        if (!contentToSend.trim()) return;
+
+        const userMessage: Message = {
+            id: Date.now().toString(),
+            role: 'user',
+            content: contentToSend,
+            timestamp: new Date()
+        };
+
+        setMessages(prev => [...prev, userMessage]);
+        setInput('');
+        setIsTyping(true);
+
+        try {
+            const context = buildContext();
+            const { data: { session } } = await supabase.auth.getSession();
+            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+
+            const response = await fetch(`${supabaseUrl}/functions/v1/quick-api`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({
+                    mode: 'task_assistant',
+                    context,
+                    prompt: `${SYSTEM_INSTRUCTION}\n\nUSER REQUEST: ${contentToSend}`
+                })
+            });
+
+            const data = await response.json();
+
+            setIsTyping(false);
+
+            const botMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: 'bot',
+                content: data.response || 'Sorry, I couldn\'t process that.',
+                timestamp: new Date()
+            };
+
+            setMessages(prev => [...prev, botMessage]);
+
+            // Save to History (Non-blocking)
+            if (user?.id) {
+                try {
+                    await supabase.from('ai_logs').insert({
+                        user_id: user.id,
+                        project_id: project.id,
+                        prompt: contentToSend,
+                        response: data.response,
+                        mode: 'task_assistant',
+                        tokens_used: 0
+                    });
+                } catch (logError) {
+                    console.error("Failed to save history:", logError);
+                    // Do not show error to user if just logging fails
+                }
+            }
+
+        } catch (error) {
+            console.error("AI Error:", error);
+            setIsTyping(false);
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: 'bot',
+                content: 'Sorry, there was an error processing your request.',
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMessage]);
         }
     };
+
+    // History Feature
+    const [showHistory, setShowHistory] = useState(false);
+    const [historyLogs, setHistoryLogs] = useState<any[]>([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+    const fetchHistory = async () => {
+        if (!user?.id) return;
+        setIsLoadingHistory(true);
+        const { data, error } = await supabase
+            .from('ai_logs')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (!error && data) {
+            setHistoryLogs(data);
+        }
+        setIsLoadingHistory(false);
+    };
+
+    const loadHistoryItem = (log: any) => {
+        setMessages([
+            {
+                id: 'history-start',
+                role: 'bot',
+                content: 'I loaded this from your history for you.',
+                timestamp: new Date()
+            },
+            {
+                id: `user-${log.id}`,
+                role: 'user',
+                content: log.prompt,
+                timestamp: new Date(log.created_at)
+            },
+            {
+                id: `bot-${log.id}`,
+                role: 'bot',
+                content: log.response,
+                timestamp: new Date(log.created_at)
+            }
+        ]);
+        setShowHistory(false);
+    };
+
+    useEffect(() => {
+        if (showHistory) {
+            fetchHistory();
+        }
+    }, [showHistory]);
+
+    const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
+    const popularIdeas = [
+        {
+            label: 'Contribute ideas',
+            sub: 'Offer feedback & manage tasks',
+            icon: Layers,
+            prompt: 'How can I contribute to the project tasks effectively?',
+            color: 'text-orange-600 dark:text-orange-400',
+            bg: 'from-orange-500/20 to-amber-500/20'
+        },
+        {
+            label: 'Stay connected',
+            sub: 'Align goals effortlessly',
+            icon: Zap,
+            prompt: 'Help me align with the team goals',
+            color: 'text-violet-600 dark:text-violet-400',
+            bg: 'from-violet-500/20 to-fuchsia-500/20'
+        },
+        {
+            label: 'Organize time',
+            sub: 'Set clear priorities',
+            icon: Calendar,
+            prompt: 'Help me prioritize my current tasks',
+            color: 'text-blue-600 dark:text-blue-400',
+            bg: 'from-blue-500/20 to-cyan-500/20'
+        }
+    ];
+
+    // const actionPills = [
+    //     { label: 'Deep Research', icon: Search },
+    //     { label: 'Make an Image', icon: ImageIcon },
+    //     { label: 'Create music', icon: Music },
+    //     { label: 'Analyze', icon: Sparkles }
+    // ];
 
     if (!isOpen) return null;
 
@@ -243,254 +242,377 @@ const AIAssistant = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-50 flex items-center justify-center p-4"
                 onClick={onClose}
             >
                 <motion.div
-                    initial={{ scale: 0.92, opacity: 0, y: 20 }}
+                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 10 }}
-                    transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full max-w-2xl bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 rounded-[3rem] shadow-2xl overflow-hidden relative"
+                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    className="w-full max-w-[900px] h-[85vh] max-h-[800px] bg-white dark:bg-[#0A0A0A] rounded-[32px] shadow-2xl flex flex-col overflow-hidden border border-white/50 dark:border-white/5 relative"
+                    onClick={e => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="px-6 py-3 border-b border-zinc-200/50 dark:border-zinc-700/50 flex items-center justify-between">
-                        <h2 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight">
-                            Project AI
-                        </h2>
+                    <div className="px-4 md:px-8 py-6 flex items-center justify-between z-10">
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-zinc-900 dark:text-white" />
+                            <span className="text-sm font-semibold text-zinc-900 dark:text-white">ThinkSense AI</span>
+                        </div>
+
+                        <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 absolute left-1/2 -translate-x-1/2 hidden md:block">
+                            {user?.full_name || 'Daily Assistant'}
+                        </div>
+
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="ghost"
-                                size="icon"
-                                onClick={() => setShowHistory(true)}
-                                className="rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700"
-                                title="View AI History"
+                                size="sm"
+                                onClick={() => setShowHistory(!showHistory)}
+                                className={`text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors rounded-full px-3 h-8 text-xs font-medium gap-2 ${showHistory ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white' : ''}`}
                             >
-                                <History className="w-5 h-5" />
+                                <History className="w-4 h-4" />
+                                <span className="hidden sm:inline">History</span>
                             </Button>
+
                             <Button
                                 variant="ghost"
-                                size="icon"
+                                size="sm"
                                 onClick={onClose}
-                                className="rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-700"
+                                className="bg-black text-white hover:bg-zinc-800 rounded-full px-4 h-8 text-xs font-medium"
                             >
-                                <X className="w-5 h-5" />
+                                Close
                             </Button>
                         </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-5 min-h-[380px] max-h-[550px] overflow-y-auto">
-                        {!aiResponse && !isProcessing && (
-                            <div className="text-center py-12">
-                                {/* AI Orb */}
-                                <motion.div
-                                    animate={{
-                                        scale: [1, 1.1, 1],
-                                        rotate: [0, 180, 360]
-                                    }}
-                                    transition={{
-                                        duration: 8,
-                                        repeat: Infinity,
-                                        ease: "linear"
-                                    }}
-                                    className="w-32 h-32 mx-auto mb-8 rounded-full bg-gradient-to-br from-blue-400 via-cyan-300 to-purple-400 shadow-2xl shadow-blue-500/50"
-                                />
-
-                                <h3 className="text-3xl font-black text-zinc-900 dark:text-white mb-2">
-                                    Hey, what can I do<br />for you today?
-                                </h3>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                                    I'm here to help with your project
-                                </p>
-
-                                {/* Popular Ideas */}
-                                <div className="mt-8">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                                            Popular Ideas
-                                        </span>
-                                        <span className="text-xs text-zinc-400">See all</span>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {popularIdeas.map((idea) => (
-                                            <motion.button
-                                                key={idea.id}
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                onClick={() => handleSuggestionClick(idea)}
-                                                className="p-4 rounded-2xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-left hover:shadow-lg transition-all"
-                                            >
-                                                <idea.icon className="w-5 h-5 text-violet-500 mb-2" />
-                                                <h4 className="text-sm font-bold text-zinc-900 dark:text-white">
-                                                    {idea.title}
-                                                </h4>
-                                                <p className="text-xs text-zinc-500 mt-1">
-                                                    {idea.description}
-                                                </p>
-                                            </motion.button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {isProcessing && (
-                            <div className="text-center py-20">
-                                <motion.div
-                                    animate={{ rotate: 360 }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                    className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-400 via-cyan-300 to-purple-400 shadow-2xl"
-                                />
-                                <p className="text-lg font-bold text-zinc-700 dark:text-zinc-300">
-                                    Analyzing your project...
-                                </p>
-                            </div>
-                        )}
-
-                        {aiResponse && !aiResponse.error && (
+                    {/* Content Area */}
+                    <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-32 scrollbar-hide relative">
+                        {showHistory ? (
                             <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="space-y-6"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="max-w-3xl mx-auto pt-4 space-y-4"
                             >
-                                <div className="flex items-center gap-3 pb-4 border-b border-zinc-200 dark:border-zinc-700">
-                                    <Sparkles className="w-6 h-6 text-violet-500" />
-                                    <h3 className="text-xl font-black text-zinc-900 dark:text-white">
-                                        {aiResponse.title}
-                                    </h3>
+                                <div className="flex items-center gap-2 mb-6">
+                                    <button onClick={() => setShowHistory(false)} className="hover:bg-zinc-100 dark:hover:bg-zinc-800 p-2 rounded-full transition-colors">
+                                        <ArrowLeft className="w-5 h-5 text-zinc-500" />
+                                    </button>
+                                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Chat History</h2>
                                 </div>
 
-                                {aiResponse.score && (
-                                    <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 text-white">
-                                        <div className="text-5xl font-black mb-1">{aiResponse.score}%</div>
-                                        <div className="text-sm font-bold opacity-90">{aiResponse.status}</div>
+                                {isLoadingHistory ? (
+                                    <div className="flex justify-center py-10">
+                                        <Sparkles className="w-6 h-6 animate-spin text-zinc-300" />
                                     </div>
-                                )}
-
-                                {aiResponse.insights && (
-                                    <div className="space-y-2">
-                                        <h4 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                                            Insights
-                                        </h4>
-                                        {aiResponse.insights.map((insight: string, i: number) => (
-                                            <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
-                                                <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                                                <p className="text-sm text-zinc-700 dark:text-zinc-300">{insight}</p>
-                                            </div>
-                                        ))}
+                                ) : historyLogs.length === 0 ? (
+                                    <div className="text-center py-10 text-zinc-500">
+                                        No history found.
                                     </div>
-                                )}
-
-                                {aiResponse.recommendations && (
-                                    <div className="space-y-2">
-                                        <h4 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                                            Recommendations
-                                        </h4>
-                                        {aiResponse.recommendations.map((rec: string, i: number) => (
-                                            <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
-                                                <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                                                <p className="text-sm text-amber-900 dark:text-amber-200">{rec}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {aiResponse.actions && (
-                                    <div className="space-y-2">
-                                        <h4 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                                            Quick Actions
-                                        </h4>
-                                        {aiResponse.actions.map((action: any, i: number) => (
-                                            <Button
-                                                key={i}
-                                                className="w-full justify-start bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700"
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {historyLogs.map((log) => (
+                                            <button
+                                                key={log.id}
+                                                onClick={() => loadHistoryItem(log)}
+                                                className="w-full text-left p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800/50 hover:border-violet-500/50 hover:scale-[1.02] dark:hover:border-violet-500/50 hover:shadow-lg transition-all group flex flex-col justify-between h-32 relative overflow-hidden"
                                             >
-                                                <Target className="w-4 h-4 mr-2" />
-                                                {action.label}
-                                            </Button>
-                                        ))}
-                                    </div>
-                                )}
+                                                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-violet-500/5 to-transparent rounded-bl-3xl" />
 
-                                {aiResponse.questions && (
-                                    <div className="space-y-3">
-                                        <h4 className="text-sm font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
-                                            Reflection Questions
-                                        </h4>
-                                        {aiResponse.questions.map((q: string, i: number) => (
-                                            <div key={i} className="p-4 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
-                                                <p className="text-sm font-bold text-zinc-900 dark:text-white mb-2">{q}</p>
-                                                <textarea
-                                                    placeholder="Your answer..."
-                                                    className="w-full p-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-sm text-zinc-900 dark:text-white resize-none"
-                                                    rows={2}
-                                                />
-                                            </div>
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Clock className="w-3 h-3 text-violet-500" />
+                                                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                            {new Date(log.created_at).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                    <h3 className="font-bold text-sm text-zinc-900 dark:text-white line-clamp-1 mb-1 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                                        {log.prompt}
+                                                    </h3>
+                                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                                                        {typeof log.response === 'string' ? log.response.replace(/[#*]/g, '') : 'Tap to view response'}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <span className="text-[10px] font-bold text-violet-600 flex items-center gap-1">
+                                                        Resume <ArrowLeft className="w-3 h-3 rotate-180" />
+                                                    </span>
+                                                </div>
+                                            </button>
                                         ))}
                                     </div>
                                 )}
                             </motion.div>
-                        )}
+                        ) : messages.length <= 1 ? (
+                            <div className="flex flex-col h-full justify-center max-w-4xl mx-auto pb-2">
+                                {/* Hero Greeting */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="text-center space-y-2 mb-16"
+                                >
+                                    <h1 className="text-4xl md:text-[40px] font-bold text-zinc-900 dark:text-white tracking-tight leading-[1.1]">
+                                        Hi {user?.full_name?.split(' ')[0] || 'There'},<br></br> Ready to Achieve<span className="text-blue-500 gradient-to-br from-blue-500/5 to-transparent"> Great Things?</span>
+                                    </h1>
+                                </motion.div>
 
-                        {aiResponse?.error && (
-                            <div className="text-center py-20">
-                                <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                                <p className="text-lg font-bold text-zinc-700 dark:text-zinc-300">
-                                    {aiResponse.message}
-                                </p>
+                                {/* Popular Ideas Cards */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                                >
+                                    {popularIdeas.map((idea, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => sendMessage(idea.prompt)}
+                                            className="group relative p-6 rounded-[24px] overflow-hidden transition-all duration-300 hover:scale-[1.02] text-left h-full flex flex-col justify-between"
+                                        >
+                                            <div className={`absolute inset-0 bg-gradient-to-br ${idea.bg} opacity-50 dark:opacity-20 group-hover:opacity-100 transition-opacity`} />
+                                            <div className="absolute inset-0 backdrop-blur-3xl" />
+                                            <div className="absolute inset-0 bg-white/40 dark:bg-black/20" />
+
+                                            <div className="relative z-10 w-12 h-12 rounded-2xl bg-white/80 dark:bg-black/50 backdrop-blur-md flex items-center justify-center mb-4 shadow-lg ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-300">
+                                                <idea.icon className={`w-6 h-6 ${idea.color}`} />
+                                            </div>
+
+                                            <div className="relative z-10">
+                                                <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2 leading-tight tracking-tight">
+                                                    {idea.label}
+                                                </h3>
+                                                <p className="text-[13px] text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
+                                                    {idea.sub}
+                                                </p>
+                                            </div>
+
+                                            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                                                <div className="w-8 h-8 rounded-full bg-white/90 dark:bg-black/90 flex items-center justify-center shadow-sm">
+                                                    <ExternalLink className="w-4 h-4 text-zinc-900 dark:text-white" />
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            </div>
+                        ) : (
+                            <div className="space-y-6 pt-4 max-w-3xl mx-auto">
+                                {messages.slice(1).map((message, idx) => (
+                                    <MessageBubble key={message.id} message={message} isLast={idx === messages.length - 2} />
+                                ))}
+                                {isTyping && <TypingIndicator />}
+                                <div ref={messagesEndRef} />
                             </div>
                         )}
                     </div>
 
-                    {/* Input Area */}
-                    <div className="px-5 py-3.5 border-t border-zinc-200/50 dark:border-zinc-700/50 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl">
-                        <div className="flex items-center gap-3">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-full shrink-0"
-                            >
-                                <Lightbulb className="w-5 h-5" />
-                            </Button>
-                            <input
-                                type="text"
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ask me anything about your project..."
-                                className="flex-1 px-5 py-3 rounded-full bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-sm text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && input.trim()) {
-                                        triggerAI(activeMode, input);
-                                        setInput('');
-                                    }
-                                }}
-                            />
-                            <Button
-                                size="icon"
-                                className="rounded-full bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-zinc-200 shrink-0"
-                                onClick={() => {
-                                    if (input.trim()) {
-                                        triggerAI(activeMode, input);
-                                        setInput('');
-                                    }
-                                }}
-                            >
-                                <Send className="w-4 h-4" />
-                            </Button>
+                    {/* Footer Input Area */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-[#0A0A0A] dark:via-[#0A0A0A] dark:to-transparent pt-20">
+                        <div className="max-w-3xl mx-auto space-y-4">
+
+                            {/* Input Container */}
+                            <div className="bg-white dark:bg-zinc-900 p-2 pl-4 rounded-[24px] shadow-[0_8px_40px_rgb(0,0,0,0.08)] border border-zinc-200 dark:border-zinc-800 flex items-center gap-3 w-full relative z-20">
+                                <span className="text-zinc-400 text-lg">+</span>
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    placeholder="Ask your Thinksense ..........."
+                                    className="flex-1 bg-transparent border-none outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400 text-[15px] font-medium min-w-0"
+                                />
+                                <div className="flex gap-2">
+                                    <button className="w-10 h-10 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-500 transition-colors">
+                                        <ImageIcon className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={() => sendMessage()}
+                                        disabled={!input.trim() || isTyping}
+                                        className="w-10 h-10 rounded-full bg-black dark:bg-white flex items-center justify-center hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all text-white dark:text-black"
+                                    >
+                                        <Send className="w-4 h-4 ml-0.5" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Action Pills */}
+                            {/* {messages.length <= 1 && (
+                                <div className="flex flex-wrap gap-2 justify-center">
+                                    {actionPills.map((pill, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => sendMessage(pill.label)}
+                                            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[11px] md:text-xs font-bold text-zinc-600 dark:text-zinc-400 transition-colors"
+                                        >
+                                            <pill.icon className="w-3 md:w-3.5 h-3 md:h-3.5" />
+                                            {pill.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )} */}
                         </div>
                     </div>
                 </motion.div>
             </motion.div>
-
-            {/* AI History Modal */}
-            <AIHistory
-                isOpen={showHistory}
-                onClose={() => setShowHistory(false)}
-                projectId={project.id}
-            />
         </AnimatePresence>
+    );
+};
+
+// Message Bubble Component
+const MessageBubble = ({ message, isLast }: { message: Message; isLast: boolean }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex gap-4 py-2 w-full ${message.role === 'user' ? 'justify-end' : ''}`}
+        >
+            {message.role === 'bot' && (
+                <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-white flex-shrink-0 flex items-center justify-center mt-1 hidden md:flex">
+                    <Sparkles className="w-4 h-4 text-white dark:text-black" />
+                </div>
+            )}
+
+            <div className={`flex-1 md:max-w-[85%] max-w-[95%] min-w-0 ${message.role === 'user'
+                ? 'bg-zinc-100 dark:bg-zinc-800 rounded-[20px] rounded-tr-sm px-5 md:px-6 py-4 text-zinc-900 dark:text-white'
+                : 'bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800 rounded-[20px] rounded-tl-sm px-4 md:px-5 py-4 md:py-5 shadow-sm'
+                }`}>
+                {message.role === 'bot' && (
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-100 dark:border-zinc-800/50">
+                        <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                        <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600">ThinkSense AI</span>
+                    </div>
+                )}
+                {message.role === 'user' ? (
+                    <p className="text-[15px] font-medium leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                ) : (
+                    isLast ? <TypewriterText text={message.content} /> : <AdvancedMarkdown text={message.content} />
+                )}
+            </div>
+
+            {message.role === 'user' && (
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold shadow-lg shadow-violet-500/20 mt-1">
+                    YOU
+                </div>
+            )}
+        </motion.div>
+    );
+};
+
+// Advanced Markdown Parser
+const AdvancedMarkdown = ({ text }: { text: string }) => {
+    const parseMarkdown = (content: string) => {
+        // Strip leading # from headings just in case standard parser doesn't catch them all
+        const cleanContent = content; // We'll handle per line
+
+        const elements: JSX.Element[] = [];
+        const lines = cleanContent.split('\n');
+
+        lines.forEach((line, idx) => {
+            const key = idx;
+
+            // Handle Headings (Replace # with styled Headers)
+            if (line.match(/^#{1,3}\s/)) {
+                const headingText = line.replace(/^#{1,3}\s+/, '');
+                elements.push(
+                    <h3 key={key} className="text-lg font-bold text-zinc-900 dark:text-white mt-6 mb-3 first:mt-0 tracking-tight">
+                        {formatInline(headingText)}
+                    </h3>
+                );
+            }
+            // Bullet points
+            else if (line.match(/^[\s]*[-•*]\s/)) {
+                elements.push(
+                    <div key={key} className="flex gap-3 mb-2 ml-1">
+                        <span className="text-zinc-400 mt-1.5">•</span>
+                        <span className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
+                            {formatInline(line.replace(/^[\s]*[-•*]\s/, ''))}
+                        </span>
+                    </div>
+                );
+            }
+            // Numbered list
+            else if (line.match(/^\d+\.\s/)) {
+                const number = line.match(/^(\d+)\./)?.[1];
+                elements.push(
+                    <div key={key} className="flex gap-3 mb-2 ml-1">
+                        <span className="text-zinc-900 dark:text-white font-bold">{number}.</span>
+                        <span className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
+                            {formatInline(line.replace(/^\d+\.\s/, ''))}
+                        </span>
+                    </div>
+                );
+            }
+            // Empty line
+            else if (line.trim() === '') {
+                elements.push(<div key={key} className="h-3" />);
+            }
+            // Regular text
+            else {
+                elements.push(
+                    <p key={key} className="text-zinc-700 dark:text-zinc-300 leading-relaxed mb-1 text-[15px] font-medium">
+                        {formatInline(line)}
+                    </p>
+                );
+            }
+        });
+
+        return elements;
+    };
+
+    const formatInline = (text: string) => {
+        // Simplified inline formatter
+        const parts: (string | JSX.Element)[] = [];
+        // Bold **text**
+        const boldRegex = /\*\*([^*]+)\*\*/g;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = boldRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push(text.substring(lastIndex, match.index));
+            }
+            parts.push(<strong key={match.index} className="font-bold text-zinc-900 dark:text-white">{match[1]}</strong>);
+            lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < text.length) {
+            parts.push(text.substring(lastIndex));
+        }
+        return <>{parts}</>;
+    };
+
+    return <div className="space-y-0.5">{parseMarkdown(text)}</div>;
+};
+
+// Typewriter Effect
+const TypewriterText = ({ text }: { text: string }) => {
+    const [displayedText, setDisplayedText] = useState('');
+
+    useEffect(() => {
+        let i = 0;
+        setDisplayedText('');
+        const timer = setInterval(() => {
+            if (i < text.length) {
+                setDisplayedText(prev => prev + text.charAt(i));
+                i++;
+            } else {
+                clearInterval(timer);
+            }
+        }, 10); // Faster speed
+        return () => clearInterval(timer);
+    }, [text]);
+
+    return <AdvancedMarkdown text={displayedText} />;
+};
+
+// Typing Indicator
+const TypingIndicator = () => {
+    return (
+        <div className="flex gap-2 items-center text-zinc-400 text-sm pl-4 animate-pulse">
+
+            <span className="font-medium">Thinking...</span>
+        </div>
     );
 };
 

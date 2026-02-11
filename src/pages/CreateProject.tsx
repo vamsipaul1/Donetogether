@@ -167,23 +167,18 @@ const CreateProject = () => {
                 <div className="bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-[32px] md:rounded-[48px] shadow-2xl shadow-zinc-200/50 dark:shadow-none overflow-hidden">
                     <div className="flex flex-col md:flex-row">
                         {/* Left Info Panel */}
-                        {/* Left Info Panel */}
-                        <div className="md:w-[35%] bg-zinc-950 p-8 md:p-12 flex flex-col justify-between relative overflow-hidden">
-                            {/* Insane Background Effects */}
-                            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-zinc-900/50 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-zinc-900/50 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none" />
-                            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+                        <div className="md:w-[35%] bg-zinc-900 dark:bg-zinc-950 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/20 blur-[100px] -mr-32 -mt-32" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/10 blur-[100px] -ml-32 -mb-32" />
 
-                            {/* Content */}
                             <div className="relative z-10">
-                                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-10 shadow-2xl backdrop-blur-sm group hover:scale-105 transition-transform duration-500">
-                                    <Sun className="w-7 h-7 text-white" />
+                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-zinc-700 to-zinc-900 flex items-center justify-center mb-8 shadow-xl">
+                                    <Sun className="w-6 h-6 text-white" />
                                 </div>
-                                <h1 className="text-4xl md:text-5xl font-black text-zinc-100 mb-6 leading-[1.1] tracking-tight relative z-20">
-                                    Start New <br />
-                                    <span className="text-zinc-400">Project</span>
+                                <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                                    Start New <br />Project
                                 </h1>
-                                <p className="text-zinc-400 text-sm font-medium leading-relaxed max-w-[280px]">
+                                <p className="text-zinc-400 text-sm font-medium leading-relaxed">
                                     Setup your project basics to invite team members and start collaborating.
                                 </p>
                             </div>

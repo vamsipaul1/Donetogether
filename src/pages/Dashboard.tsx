@@ -384,36 +384,69 @@ const Dashboard = () => {
                         <NavItem icon={CheckCircle2} label="My tasks" active={activeView === 'list' && !selectedProject} onClick={() => { setActiveView('list'); setSelectedProject(null); }} />
                         <NavItem icon={Inbox} label="Inbox" active={activeView === 'messages'} onClick={() => { setActiveView('messages'); setSelectedProject(null); }} />
 
+                        {selectedProject && (
+                            <button
+                                onClick={() => setIsAIOpen(true)}
+                                className="flex items-center justify-start gap-2 px-4 py-3 w-full rounded-xl transition-all group active:scale-95 hover:bg-zinc-100 dark:hover:bg-[#3d3e40]"
+                            >
+                                <span className="text-[16px] font-semibold tracking-wide text-[#3b82f6] dark:text-[#60a5fa] transition-all duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-violet-600 group-hover:to-pink-600">
+                                    ThinkSense <span className="text-[10px]">AI</span>
+                                </span>
+                            </button>
+                        )}
                     </div>
 
                     <div className="space-y-1">
                         <div className="px-4 py-2 flex items-center justify-between group">
                             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Projects</span>
-                            {isOwner && <Plus className="w-3.5 h-3.5 text-zinc-400 opacity-0 group-hover:opacity-100 cursor-pointer" onClick={() => navigate('/create-project')} />}
+                            {isOwner && projects.length > 0 && <Plus className="w-3.5 h-3.5 text-zinc-400 opacity-0 group-hover:opacity-100 cursor-pointer" onClick={() => navigate('/create-project')} />}
                         </div>
-                        {projects.map(proj => (
-                            <button
-                                key={proj.id}
-                                onClick={() => { setSelectedProject(proj); setActiveView('overview'); }}
-                                className={`flex items-center gap-3 px-3 py-2 w-full rounded-xl text-sm font-bold transition-all group active:scale-95 ${selectedProject?.id === proj.id
-                                    ? 'bg-zinc-200 dark:bg-[#454547] text-zinc-900 dark:text-white shadow-sm'
-                                    : 'text-zinc-500 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-[#3d3e40]'
-                                    }`}
-                            >
-                                <div className="relative shrink-0">
-                                    <Avatar className="w-5 h-5 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-transform group-hover:scale-110">
-                                        <AvatarImage src={proj.avatar_url} />
-                                        <AvatarFallback className={cn("text-[8px] font-black text-white", selectedProject?.id === proj.id ? "bg-emerald-600" : "bg-zinc-400 group-hover:bg-emerald-500")}>
-                                            {proj.team_name?.slice(0, 1).toUpperCase() || proj.title.slice(0, 1).toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    {selectedProject?.id === proj.id && (
-                                        <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full ring-1 ring-white dark:ring-black animate-pulse" />
-                                    )}
+
+                        {/* Empty State - No Projects */}
+                        {projects.length === 0 ? (
+                            <div className="px-3 py-6 space-y-3">
+                                <div className="flex flex-col items-center text-center space-y-2">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 dark:from-violet-500/20 dark:to-purple-500/20 flex items-center justify-center mb-1">
+                                        <Layout className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+                                    </div>
+                                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 leading-relaxed px-1">
+                                        No projects yet
+                                    </p>
                                 </div>
-                                <span className="truncate tracking-normal font-medium">{proj.team_name || proj.title}</span>
-                            </button>
-                        ))}
+                                <button
+                                    onClick={() => navigate('/create-project')}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-bold transition-all active:scale-95 shadow-lg shadow-violet-500/20"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Create Project
+                                </button>
+                            </div>
+                        ) : (
+                            /* Project List */
+                            projects.map(proj => (
+                                <button
+                                    key={proj.id}
+                                    onClick={() => { setSelectedProject(proj); setActiveView('overview'); }}
+                                    className={`flex items-center gap-3 px-3 py-2 w-full rounded-xl text-sm font-bold transition-all group active:scale-95 ${selectedProject?.id === proj.id
+                                        ? 'bg-zinc-200 dark:bg-[#454547] text-zinc-900 dark:text-white shadow-sm'
+                                        : 'text-zinc-500 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-[#3d3e40]'
+                                        }`}
+                                >
+                                    <div className="relative shrink-0">
+                                        <Avatar className="w-5 h-5 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-transform group-hover:scale-110">
+                                            <AvatarImage src={proj.avatar_url} />
+                                            <AvatarFallback className={cn("text-[8px] font-black text-white", selectedProject?.id === proj.id ? "bg-emerald-600" : "bg-zinc-400 group-hover:bg-emerald-500")}>
+                                                {proj.team_name?.slice(0, 1).toUpperCase() || proj.title.slice(0, 1).toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        {selectedProject?.id === proj.id && (
+                                            <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full ring-1 ring-white dark:ring-black animate-pulse" />
+                                        )}
+                                    </div>
+                                    <span className="truncate tracking-normal font-medium">{proj.team_name || proj.title}</span>
+                                </button>
+                            ))
+                        )}
                     </div>
                     {/* 
                     <div className="space-y-1">
@@ -593,19 +626,6 @@ const Dashboard = () => {
                             </motion.div>
                         )}
 
-                        {/* AI Assistant Button */}
-                        {selectedProject && (
-                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                <Button
-                                    onClick={() => setIsAIOpen(true)}
-                                    className="h-10 px-4 rounded-2xl hidden md:flex items-center gap-2 
-                                     bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white transition-all shadow-lg shadow-violet-500/20"
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    <span>AI Assistant</span>
-                                </Button>
-                            </motion.div>
-                        )}
 
                         {isOwner && (
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -804,6 +824,7 @@ const Dashboard = () => {
                     project={selectedProject}
                     tasks={projectTasks}
                     members={members}
+                    user={currentUser}
                     currentUserId={currentUser?.id || ''}
                 />
             )}

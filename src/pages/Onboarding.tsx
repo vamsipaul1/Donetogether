@@ -50,45 +50,12 @@ const Onboarding = () => {
         }
         setCurrentUser(user);
 
-        // Fetch detailed profile
-        const { data: profile } = await supabase
-            .from('users')
-            .select('full_name, role, onboarding_completed, has_seen_welcome')
-            .eq('id', user.id)
-            .single();
-
-        // 1. Strict Redirect: If onboarding is marked complete, GO TO DASHBOARD.
-        if (profile?.onboarding_completed) {
-            navigate('/dashboard');
-            return;
-        }
-
-        // 2. Fallback: If they have a project, they should be in dashboard
-        const { count } = await supabase
-            .from('project_members')
-            .select('id', { count: 'exact', head: true })
-            .eq('user_id', user.id);
-
-        if (count && count > 0) {
-            // Update onboarding_completed for future reference
-            await supabase.from('users').update({ onboarding_completed: true }).eq('id', user.id);
-            navigate('/dashboard');
-            return;
-        }
-
-        // 3. Flow Logic
+        // Check if user already has a name
+        const { data: profile } = await supabase.from('users').select('full_name').eq('id', user.id).single();
         if (profile?.full_name && !profile.full_name.includes('@')) {
             setFullName(profile.full_name);
-            // If they have a role but no project -> they need to create/join
-            if (profile.role) {
-                if (profile.role === 'LEADER') {
-                    navigate('/create-project');
-                } else {
-                    setStep('member-flow');
-                }
-            } else {
-                setStep('welcome');
-            }
+            // Show a welcome screen first, then let the user choose role
+            setStep('welcome');
         }
     };
 
@@ -272,8 +239,8 @@ const Onboarding = () => {
                         <Typewriter
                             text={
                                 step === 'name' ? "First, what's your name?" :
-                                    step === 'welcome' ? `Welcome, ${fullName.split(' ')[0]}` :
-                                        `Welcome, ${fullName.split(' ')[0]}`
+                                step === 'welcome' ? `Welcome, ${fullName.split(' ')[0]}` :
+                                `Welcome, ${fullName.split(' ')[0]}`
                             }
                             delay={40}
                         />
@@ -330,7 +297,7 @@ const Onboarding = () => {
                     >
                         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-8 rounded-3xl shadow-xl text-center space-y-6">
                             <div className="mx-auto w-24 h-24 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-4xl font-extrabold text-blue-600">
-                                {fullName.split(' ')[0].slice(0, 1).toUpperCase()}
+                                {fullName.split(' ')[0].slice(0,1).toUpperCase()}
                             </div>
                             <h3 className="text-2xl font-bold text-zinc-900 dark:text-white">Welcome, {fullName}</h3>
                             <p className="text-sm text-zinc-500">We'll save this name and use it across your projects and tasks.</p>

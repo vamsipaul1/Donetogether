@@ -216,9 +216,9 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                     <div>
                         <motion.h2
                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                            className="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 drop-shadow-sm pb-2"
+                            className="text-l font-black tracking-tigher text-foreground bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 drop-shadow-sm pb-2"
                         >
-                            Analytics Dashboard
+                            ANALYTICS-VIEW
                         </motion.h2>
                         <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-1 tracking-wide">
                             Real-time collaboration metrics & insights
