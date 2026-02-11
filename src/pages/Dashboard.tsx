@@ -698,25 +698,26 @@ const Dashboard = () => {
 
                 {/* Navigation Tabs */}
                 {selectedProject && (
-                    <nav className="h-12 border-b border-zinc-200/50 dark:border-white/5 flex items-center px-4 md:px-6 gap-6 bg-white dark:bg-black z-20 overflow-x-auto scrollbar-hide w-full shadow-sm relative">
+                    <nav className="h-12 border-b border-zinc-100 dark:border-white/5 flex items-center px-4 md:px-6 gap-6 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-20 overflow-x-auto scrollbar-hide w-full sticky top-14 md:top-16 transition-all">
                         <Tab active={activeView === 'overview'} onClick={() => setActiveView('overview')}>Team Activity</Tab>
                         <Tab active={activeView === 'board'} onClick={() => setActiveView('board')}>Task List</Tab>
                         <Tab active={activeView === 'timeline'} onClick={() => setActiveView('timeline')}>Timeline</Tab>
                         <Tab active={activeView === 'progress'} onClick={() => setActiveView('progress')}>Progress</Tab>
+                        {/* <Tab active={activeView === 'dashboard'} onClick={() => setActiveView('dashboard')}>Analytics</Tab> */}
                     </nav>
                 )}
 
                 {/* View Content with Chat Sidebar */}
                 <div className="flex-1 flex overflow-hidden bg-transparent relative font-sans">
                     {/* Main View Content */}
-                    <div className="flex-1 overflow-auto bg-transparent">
+                    <div className={`flex-1 overflow-auto bg-transparent ${isMobile ? 'pb-[85px]' : ''}`}>
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={activeView + (selectedProject?.id || '')}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.2 }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
                                 className="h-full"
                             >
                                 {renderView()}
@@ -727,47 +728,45 @@ const Dashboard = () => {
 
                 </div>
 
-                {/* Bottom Navigation for Mobile */}
+                {/* Bottom Navigation for Mobile - Premium Glassmorphism */}
                 {isMobile && (
-                    <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-around h-[calc(60px+env(safe-area-inset-bottom))] pb-[env(safe-area-inset-bottom)] px-2 z-50 shadow-[0_-5px_10px_rgba(0,0,0,0.05)]">
+                    <nav className="fixed bottom-6 left-4 right-4 bg-black/80 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/10 dark:border-white/10 rounded-[32px] flex items-center justify-between h-[64px] px-6 z-50 shadow-[0_8px_32px_rgba(0,0,0,0.1)]">
                         <button
                             onClick={() => { setActiveView('home'); setSelectedProject(null); setIsSidebarOpen(false); }}
-                            className={`flex flex-col items-center justify-center gap-1 h-full w-full ${activeView === 'home' ? 'text-violet-600 dark:text-violet-400' : 'text-zinc-400'}`}
+                            className={`flex flex-col items-center justify-center gap-1 ${activeView === 'home' ? 'text-white' : 'text-zinc-500'}`}
                         >
                             <Home className="w-5 h-5" />
-                            <span className="text-[10px] font-medium">Home</span>
                         </button>
+
                         <button
                             onClick={() => { if (selectedProject) setActiveView('board'); setIsSidebarOpen(false); }}
                             disabled={!selectedProject}
-                            className={`flex flex-col items-center justify-center gap-1 h-full w-full ${activeView === 'board' ? 'text-violet-600 dark:text-violet-400' : (selectedProject ? 'text-zinc-400' : 'text-zinc-200 dark:text-zinc-800')}`}
+                            className={`flex flex-col items-center justify-center gap-1 ${activeView === 'board' ? 'text-white' : (selectedProject ? 'text-zinc-500' : 'text-zinc-700 opacity-50')}`}
                         >
                             <LayoutDashboard className="w-5 h-5" />
-                            <span className="text-[10px] font-medium">Board</span>
                         </button>
+
                         <button
                             onClick={() => setIsCreateTaskOpen(true)}
-                            className="flex flex-col items-center justify-center -mt-6"
+                            className="relative -top-8 bg-violet-600 hover:bg-violet-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(124,58,237,0.5)] border-4 border-[#F9F8F6] dark:border-black transition-transform active:scale-95"
                         >
-                            <div className="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center shadow-lg shadow-violet-500/30">
-                                <Plus className="w-6 h-6" />
-                            </div>
+                            <Plus className="w-7 h-7" />
                         </button>
+
                         {selectedProject && (
                             <button
                                 onClick={() => { setActiveView('messages'); setIsSidebarOpen(false); }}
-                                className={`flex flex-col items-center justify-center gap-1 h-full w-full ${activeView === 'messages' ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400'}`}
+                                className={`flex flex-col items-center justify-center gap-1 ${activeView === 'messages' ? 'text-white' : 'text-zinc-500'}`}
                             >
                                 <MessageSquare className="w-5 h-5" />
-                                <span className="text-[10px] font-medium">Chat</span>
                             </button>
                         )}
+
                         <button
                             onClick={() => setIsSidebarOpen(true)}
-                            className={`flex flex-col items-center justify-center gap-1 h-full w-full ${isSidebarOpen ? 'text-violet-600 dark:text-violet-400' : 'text-zinc-400'}`}
+                            className={`flex flex-col items-center justify-center gap-1 ${isSidebarOpen ? 'text-white' : 'text-zinc-500'}`}
                         >
                             <Menu className="w-5 h-5" />
-                            <span className="text-[10px] font-medium">Menu</span>
                         </button>
                     </nav>
                 )}

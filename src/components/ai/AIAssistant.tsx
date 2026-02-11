@@ -227,13 +227,6 @@ const AIAssistant = ({
         }
     ];
 
-    // const actionPills = [
-    //     { label: 'Deep Research', icon: Search },
-    //     { label: 'Make an Image', icon: ImageIcon },
-    //     { label: 'Create music', icon: Music },
-    //     { label: 'Analyze', icon: Sparkles }
-    // ];
-
     if (!isOpen) return null;
 
     return (
@@ -436,22 +429,6 @@ const AIAssistant = ({
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Action Pills */}
-                            {/* {messages.length <= 1 && (
-                                <div className="flex flex-wrap gap-2 justify-center">
-                                    {actionPills.map((pill, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => sendMessage(pill.label)}
-                                            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[11px] md:text-xs font-bold text-zinc-600 dark:text-zinc-400 transition-colors"
-                                        >
-                                            <pill.icon className="w-3 md:w-3.5 h-3 md:h-3.5" />
-                                            {pill.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )} */}
                         </div>
                     </div>
                 </motion.div>
