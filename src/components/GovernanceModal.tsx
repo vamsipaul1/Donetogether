@@ -127,10 +127,10 @@ const GovernanceModal = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-xl bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 rounded-3xl p-0 overflow-hidden font-sans shadow-2xl">
-                <div className="absolute top-0 inset-x-0 h-1.5 bg-black dark:bg-zinc-800" />
+            <DialogContent className="max-w-xl bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 rounded-[32px] p-0 overflow-hidden font-sans shadow-2xl flex flex-col h-[80vh] max-h-[850px]">
+                <div className="absolute top-0 inset-x-0 h-1.5 bg-black dark:bg-zinc-800 z-10" />
 
-                <DialogHeader className="p-6 md:p-8 pb-4">
+                <DialogHeader className="p-6 md:p-8 pb-4 flex-shrink-0">
                     <div className="flex items-center justify-between">
                         <div>
                             <DialogTitle className="text-2xl font-bold text-zinc-900 dark:text-white mb-1">
@@ -146,9 +146,9 @@ const GovernanceModal = ({
                     </div>
                 </DialogHeader>
 
-                <div className="px-6 md:px-8 pb-8">
-                    <ScrollArea className="max-h-[500px] pr-4 -mr-4">
-                        <div className="space-y-6">
+                <div className="flex-1 min-h-0 px-6 md:px-8">
+                    <ScrollArea className="h-full pr-4 -mr-4">
+                        <div className="space-y-6 pb-8">
                             {localMembers.map((member) => (
                                 <div key={member.id} className="group relative">
                                     <div className="flex items-start justify-between mb-3">
@@ -254,6 +254,12 @@ const GovernanceModal = ({
                                                     disabled={!isOwner}
                                                     onClick={() => updatePermission(member.id, 'can_post_messages', !member.can_post_messages)}
                                                 />
+                                                <PermissionButton
+                                                    label="Verify Tasks"
+                                                    active={member.can_verify_tasks}
+                                                    disabled={!isOwner}
+                                                    onClick={() => updatePermission(member.id, 'can_verify_tasks', !member.can_verify_tasks)}
+                                                />
                                             </div>
                                         )}
                                     </div>
@@ -264,7 +270,7 @@ const GovernanceModal = ({
                     </ScrollArea>
                 </div>
 
-                <div className="p-6 bg-zinc-50 dark:bg-zinc-900/40 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
+                <div className="p-6 bg-zinc-50 dark:bg-zinc-900/40 border-t border-zinc-100 dark:border-zinc-800 flex justify-end flex-shrink-0">
                     <Button onClick={onClose} className="bg-black dark:bg-white text-white dark:text-black font-bold rounded-xl px-6 h-10 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors shadow-sm">
                         Save & Close
                     </Button>

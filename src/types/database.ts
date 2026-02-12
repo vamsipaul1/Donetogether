@@ -47,6 +47,7 @@ export interface ProjectMember {
     can_restore_tasks: boolean;
     can_manage_resources: boolean;
     can_post_messages: boolean;
+    can_verify_tasks: boolean;
 }
 
 export interface AILog {
@@ -58,6 +59,17 @@ export interface AILog {
     response: any; // JSONB - structured AI response
     tokens_used: number;
     created_at: string;
+}
+
+export interface TaskProof {
+    id: string;
+    task_id: string;
+    user_id: string;
+    image_url: string;
+    status: 'pending' | 'approved' | 'rejected';
+    created_at: string;
+    reviewed_by?: string;
+    reviewed_at?: string;
 }
 
 export type TaskStatus = 'not_started' | 'in_progress' | 'completed' | 'blocked' | 'deleted';

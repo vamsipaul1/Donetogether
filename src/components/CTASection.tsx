@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function CTASection() {
+  const { user } = useAuth();
   return (
     <section className="w-full bg-[#f7f8f9] dark:bg-zinc-950 py-16 sm:py-24 md:py-32 border-t border-zinc-200 dark:border-zinc-800">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
@@ -17,7 +19,7 @@ export default function CTASection() {
 
         {/* Button */}
         <div>
-          <Link to="/signup">
+          <Link to={user ? "/dashboard" : "/signup"}>
             <button className="bg-black dark:bg-white text-white dark:text-black px-6 sm:px-8 py-3 sm:py-4 text-sm font-medium rounded-md hover:opacity-90 transition-all shadow-lg active:scale-95">
               ▪ Get Started Now
             </button>

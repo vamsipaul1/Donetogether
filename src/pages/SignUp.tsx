@@ -17,7 +17,7 @@ const SignUp = () => {
 
     useEffect(() => {
         if (user) {
-            navigate('/onboarding');
+            navigate('/dashboard');
         }
     }, [user, navigate]);
 
@@ -38,10 +38,10 @@ const SignUp = () => {
         } else if (data?.user) {
             toast.success('Account created successfully!');
             if (data?.session) {
-                navigate('/onboarding');
+                navigate('/dashboard');
             } else {
                 toast.info('Please check your email to verify your account.');
-                navigate('/login');
+                navigate(`/verify-email?email=${encodeURIComponent(email)}`);
             }
         }
     };

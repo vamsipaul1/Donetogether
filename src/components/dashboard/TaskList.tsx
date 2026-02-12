@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
     Plus, ChevronDown, CheckCircle2, User, Calendar,
     MoreHorizontal, ArrowUp, GripVertical
@@ -15,6 +15,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import ProofSubmissionModal from '@/components/dashboard/ProofSubmissionModal';
+
 interface TaskListProps {
     tasks: Task[];
     members: (ProjectMember & { users?: UserType })[];
@@ -26,7 +28,11 @@ interface TaskListProps {
     onEditTask: (task: Task) => void;
 }
 
+
 const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAddTask, onEditTask }: TaskListProps) => {
+    const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+    const [taskForProof, setTaskForProof] = useState<Task | null>(null);
+
     // Group tasks by status (To do, Doing, Done)
     const sections = [
         { id: 'not_started', title: 'To do', color: 'text-zinc-500' },
@@ -35,6 +41,21 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
     ];
 
     const handleTaskChange = async (taskId: string, updates: Partial<Task>) => {
+        // Intercept completion
+        if (updates.status === 'completed') {
+            const currentUserMember = members.find(m => m.user_id === currentUserId);
+            const canVerify = isOwner || currentUserMember?.can_verify_tasks;
+
+            if (!canVerify) {
+                const task = tasks.find(t => t.id === taskId);
+                if (task) {
+                    setTaskForProof(task);
+                    setIsProofModalOpen(true);
+                }
+                return;
+            }
+        }
+
         try {
             const { error } = await supabase.from('tasks').update(updates).eq('id', taskId);
             if (error) throw error;
@@ -43,6 +64,10 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
             toast.error(err instanceof Error ? err.message : 'Failed to update task');
         }
     };
+
+
+
+    // Copy the rest of the component body, ensuring we insert the Modal at the end
 
     const handleDeleteTask = async (taskId: string) => {
         if (!confirm('Are you sure you want to move this task to history?')) return;
@@ -82,18 +107,120 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
 
     return (
         <div className="bg-transparent h-full overflow-y-auto overflow-x-auto">
-            {/* Table Header */}
-            <div className="flex items-center px-6 py-2 border-b border-zinc-200/50 dark:border-white/5 text-[11px] font-bold text-zinc-500 uppercase sticky top-0 bg-background/50 dark:bg-black/50 backdrop-blur-md z-10 min-w-[900px]">
-                <div className="flex-[4] px-4">Name</div>
-                <div className="flex-1 px-4">Assignee</div>
-                <div className="flex-1 px-4 pl-8">Start date</div>
-                <div className="flex-1 px-4 pl-8">Due date</div>
-                <div className="flex-1 px-4">Priority</div>
-                <div className="flex-1 px-4">Status</div>
-                <div className="w-10"></div>
+            {/* Mobile Card View */}
+            <div className="md:hidden pb-24 px-4 space-y-6">
+                {sections.map(section => (
+                    <div key={section.id} className="space-y-3">
+                        <div className="flex items-center gap-2 py-2 sticky top-0 bg-[#F9F8F6] dark:bg-black z-10 backdrop-blur-sm">
+                            <h3 className="font-bold text-lg text-zinc-900 dark:text-zinc-100">{section.title}</h3>
+                            <span className="px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-xs font-bold text-zinc-600 dark:text-zinc-400">
+                                {sectionTasks[section.id].length}
+                            </span>
+                        </div>
+
+                        <div className="space-y-3">
+                            {sectionTasks[section.id].map(task => {
+                                const assignee = members.find(m => m.user_id === task.assigned_to)?.users;
+                                return (
+                                    <div
+                                        key={task.id}
+                                        onClick={() => isOwner && onEditTask(task)}
+                                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-transform"
+                                    >
+                                        <div className="flex items-start justify-between gap-3 mb-3">
+                                            <div className="flex items-start gap-3">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (isOwner || task.assigned_to === currentUserId) {
+                                                            handleTaskChange(task.id, { status: task.status === 'completed' ? 'not_started' : 'completed' });
+                                                        }
+                                                    }}
+                                                    className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${task.status === 'completed'
+                                                            ? 'bg-emerald-500 border-emerald-500'
+                                                            : 'border-zinc-300 dark:border-zinc-700'
+                                                        }`}
+                                                >
+                                                    {task.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+                                                </button>
+                                                <div>
+                                                    <h4 className={`font-bold text-[15px] leading-snug ${task.status === 'completed' ? 'text-zinc-500 line-through' : 'text-zinc-900 dark:text-white'}`}>
+                                                        {task.title}
+                                                    </h4>
+                                                    {/* Mobile Priority Badge */}
+                                                    <div className="mt-1.5 flex flex-wrap gap-2">
+                                                        <PriorityBadge priority={task.priority} />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {isOwner && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <button className="p-1 -mr-2 text-zinc-400">
+                                                            <MoreHorizontal className="w-5 h-5" />
+                                                        </button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-40 rounded-xl bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+                                                        <DropdownMenuItem onClick={() => onEditTask(task)} className="text-xs font-medium cursor-pointer rounded-lg p-2">
+                                                            Edit task
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-xs font-medium cursor-pointer rounded-lg p-2 text-red-500">
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800/50">
+                                            <div className="flex items-center gap-2">
+                                                {assignee ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-[10px] font-bold text-white">
+                                                            {assignee.email?.[0]?.toUpperCase()}
+                                                        </div>
+                                                        <span className="text-xs text-zinc-500 max-w-[80px] truncate">{assignee.full_name?.split(' ')[0]}</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2 text-zinc-400">
+                                                        <User className="w-4 h-4" />
+                                                        <span className="text-xs">Unassigned</span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {task.due_date && (
+                                                <div className={`flex items-center gap-1.5 text-xs font-medium ${new Date(task.due_date) < new Date(new Date().setHours(0, 0, 0, 0)) && task.status !== 'completed'
+                                                        ? 'text-rose-500'
+                                                        : 'text-zinc-500'
+                                                    }`}>
+                                                    <Calendar className="w-3.5 h-3.5" />
+                                                    {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
             </div>
 
-            <div className="pb-20">
+            {/* Desktop Table View */}
+            <div className="hidden md:block pb-20">
+                {/* Table Header */}
+                <div className="flex items-center px-6 py-2 border-b border-zinc-200/50 dark:border-white/5 text-[11px] font-bold text-zinc-500 uppercase sticky top-0 bg-background/50 dark:bg-black/50 backdrop-blur-md z-10 min-w-[900px]">
+                    <div className="flex-[4] px-4">Name</div>
+                    <div className="flex-1 px-4">Assignee</div>
+                    <div className="flex-1 px-4 pl-8">Start date</div>
+                    <div className="flex-1 px-4 pl-8">Due date</div>
+                    <div className="flex-1 px-4">Priority</div>
+                    <div className="flex-1 px-4">Status</div>
+                    <div className="w-10"></div>
+                </div>
+
                 {sections.map(section => (
                     <div key={section.id} className="pt-4">
                         <div className="px-6 py-2 flex items-center gap-2 group cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/20 transition-colors">
@@ -208,6 +335,16 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                     </div>
                 ))}
             </div>
+
+            <ProofSubmissionModal
+                isOpen={isProofModalOpen}
+                onClose={() => setIsProofModalOpen(false)}
+                task={taskForProof}
+                currentUserId={currentUserId}
+                onSubmitted={() => {
+                    toast.info("Proof submitted. Waiting for review.");
+                }}
+            />
         </div>
     );
 };

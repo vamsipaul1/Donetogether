@@ -10,9 +10,10 @@ interface ChatSidebarProps {
     projectId?: string;
     members?: any[];
     projectAvatar?: string | null;
+    onlineUsers?: Set<string>;
 }
 
-export const ChatSidebar = ({ className, projectId, members = [], projectAvatar }: ChatSidebarProps) => {
+export const ChatSidebar = ({ className, projectId, members = [], projectAvatar, onlineUsers }: ChatSidebarProps) => {
 
     return (
         <div className={cn("flex flex-col h-full bg-transparent w-80 font-sans", className)}>
@@ -65,7 +66,7 @@ export const ChatSidebar = ({ className, projectId, members = [], projectAvatar 
                         </div>
                         <div className="space-y-0.5">
                             {members.map((member: any, i: number) => {
-                                const isOnline = i % 3 === 0;
+                                const isOnline = onlineUsers?.has(member.user_id);
                                 return (
                                     <div
                                         key={i}
@@ -88,7 +89,7 @@ export const ChatSidebar = ({ className, projectId, members = [], projectAvatar 
                                             </Avatar>
                                             {isOnline && (
                                                 <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white dark:bg-black flex items-center justify-center shadow-sm">
-                                                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                                                 </div>
                                             )}
                                         </div>
@@ -98,9 +99,11 @@ export const ChatSidebar = ({ className, projectId, members = [], projectAvatar 
                                                     {member.users?.full_name || member.users?.display_name || member.users?.email?.split('@')[0] || 'Team Member'}
                                                 </p>
                                             </div>
-                                            <p className="text-[12px] text-zinc-500 dark:text-zinc-400 truncate mt-0.5 font-medium">
-                                                {isOnline ? 'Online' : 'Offline'}
-                                            </p>
+                                            {isOnline && (
+                                                <p className="text-[12px] text-emerald-600 dark:text-emerald-400 truncate mt-0.5 font-bold">
+                                                    Online
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 );

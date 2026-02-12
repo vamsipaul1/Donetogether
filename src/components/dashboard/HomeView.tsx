@@ -8,6 +8,7 @@ import type { User, Task } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import ProofSubmissionModal from '@/components/dashboard/ProofSubmissionModal';
 
 interface HomeViewProps {
     user: User | null;
@@ -45,8 +46,26 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
         return dateA - dateB;
     });
 
+
+    const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+    const [taskForProof, setTaskForProof] = useState<Task | null>(null);
+
     const handleTaskCompletion = async (task: Task) => {
         try {
+            // PROOF OF WORK CHECK
+            // If completing a task AND not a leader, require proof
+            // Note: HomeView usually shows global tasks or user tasks. Permissions here are based on 'user.role' (LEADER/MEMBER).
+            // This is slightly less granular than ProjectMember permissions, but fits the 'Home' context.
+            // If user.role is LEADER, they can bypass.
+
+            const isLeader = user?.role === 'LEADER';
+
+            if (task.status !== 'completed' && !isLeader) {
+                setTaskForProof(task);
+                setIsProofModalOpen(true);
+                return;
+            }
+
             const newStatus = task.status === 'completed' ? 'not_started' : 'completed';
             const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', task.id);
             if (error) throw error;
@@ -296,7 +315,17 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                     </div>
                 </div>
             </div>
-        </div>
+
+            <ProofSubmissionModal
+                isOpen={isProofModalOpen}
+                onClose={() => setIsProofModalOpen(false)}
+                task={taskForProof}
+                currentUserId={user?.id || ''}
+                onSubmitted={() => {
+                    toast.info("Proof submitted. Waiting for review.");
+                }}
+            />
+        </div >
     );
 };
 

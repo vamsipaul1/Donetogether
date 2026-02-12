@@ -14,6 +14,7 @@ import Onboarding from "./pages/Onboarding";
 import SetupProfile from "./pages/SetupProfile";
 import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
+import VerifyEmail from "./pages/VerifyEmail";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -34,6 +35,7 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<PageTransition><Index /></PageTransition>} />
         <Route path="/signup" element={<PageTransition><SignUp /></PageTransition>} />
         <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/verify-email" element={<PageTransition><VerifyEmail /></PageTransition>} />
         <Route path="/premium" element={<PageTransition><Premium /></PageTransition>} />
         <Route path="/onboarding" element={<ProtectedRoute><PageTransition><Onboarding /></PageTransition></ProtectedRoute>} />
         <Route path="/setup-profile" element={<ProtectedRoute><PageTransition><SetupProfile /></PageTransition></ProtectedRoute>} />

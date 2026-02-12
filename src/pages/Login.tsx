@@ -32,7 +32,12 @@ const Login = () => {
         setIsLoading(false);
 
         if (error) {
-            toast.error(error.message);
+            if (error.message.includes("Email not confirmed")) {
+                toast.info("Please verify your email first.");
+                navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+            } else {
+                toast.error(error.message);
+            }
         } else {
             toast.success("Welcome back!");
             navigate("/dashboard");

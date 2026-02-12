@@ -212,20 +212,20 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
             <div className="p-6 max-w-[1400px] mx-auto space-y-6">
 
                 {/* Compact Header */}
-                <div className="flex items-end justify-between border-b border-zinc-200 dark:border-white/5 pb-6">
+                <div className="flex items-end mb-6 justify-between border-b border-zinc-200 dark:border-white/5 pb-6">
                     <div>
                         <motion.h2
                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                            className="text-l font-black tracking-tigher text-foreground bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 drop-shadow-sm pb-2"
+                            className="text-[16px] font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-violet-600 to-blue-500 dark:from-rose-400 dark:via-violet-400 dark:to-blue-400 drop-shadow-sm pb-1"
                         >
                             ANALYTICS-VIEW
                         </motion.h2>
-                        <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mt-1 tracking-wide">
-                            Real-time collaboration metrics & insights
+                        <p className="text-[14px] font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 tracking-[0.2em] opacity-80">
+                            Real-time Collaboration Intelligence
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                    <div className="flex items-center gap-3 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
                         <div className="relative flex h-2 w-2">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>

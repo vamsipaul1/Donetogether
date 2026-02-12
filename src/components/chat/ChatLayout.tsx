@@ -20,9 +20,10 @@ interface ChatLayoutProps {
     members?: any[];
     projectTitle?: string;
     canPostMessages?: boolean;
+    onlineUsers?: Set<string>;
 }
 
-export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Team", canPostMessages = true }: ChatLayoutProps) => {
+export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Team", canPostMessages = true, onlineUsers = new Set() }: ChatLayoutProps) => {
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
     const [projectAvatar, setProjectAvatar] = useState<string | null>(null);
@@ -56,6 +57,8 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
         };
         getUser();
     }, []);
+
+    // Presence Tracking moved to Dashboard.tsx
 
     const {
         messages,
@@ -125,7 +128,12 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
         <div className="flex h-full bg-transparent w-full overflow-hidden relative">
             {/* Left Sidebar - Glassmorphism */}
             <div className="hidden md:block h-full border-r-2 border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-black/40 backdrop-blur-md w-80 shrink-0">
-                <ChatSidebar projectId={projectId} members={members} projectAvatar={projectAvatar} />
+                <ChatSidebar
+                    projectId={projectId}
+                    members={members}
+                    projectAvatar={projectAvatar}
+                    onlineUsers={onlineUsers}
+                />
             </div>
 
             {/* Main Chat Area - Ultra Clean Minimalist */}
@@ -150,7 +158,12 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                             Team Space
                                         </SheetTitle>
                                     </SheetHeader>
-                                    <ChatSidebar projectId={projectId} members={members} projectAvatar={projectAvatar} />
+                                    <ChatSidebar
+                                        projectId={projectId}
+                                        members={members}
+                                        projectAvatar={projectAvatar}
+                                        onlineUsers={onlineUsers}
+                                    />
                                 </SheetContent>
                             </Sheet>
                         </div>
@@ -195,7 +208,7 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                             </div>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="text-[12px] text-zinc-400 dark:text-zinc-500 font-medium lowercase">
-                                    {members.length} online
+                                    {onlineUsers.size} online
                                 </span>
                             </div>
                         </div>

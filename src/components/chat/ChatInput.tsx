@@ -136,10 +136,17 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setRep
         const textBeforeCursor = message.substring(0, cursorPosition);
         const textAfterCursor = message.substring(cursorPosition);
 
-        // Remove the partial # query and insert task mention using task_number
+        // Remove the partial # query and insert task mention using task title for visibility
+        // User requested "task text can be visible, not id"
         const beforeWithoutHash = textBeforeCursor.replace(/#(\w*)$/, '');
-        const taskNum = task.task_number || task.id;
-        const newMessage = `${beforeWithoutHash}#${taskNum} ${textAfterCursor}`;
+
+        // Use title formatted as hashtag (spaces to dashes)
+        const taskLabel = task.title.trim().replace(/\s+/g, '-');
+
+        // If title is empty/missing, fall back to number/id
+        const finalLabel = taskLabel || task.task_number || task.id;
+
+        const newMessage = `${beforeWithoutHash}#${finalLabel} ${textAfterCursor}`;
 
         setMessage(newMessage);
         setShowTaskSuggestions(false);
@@ -241,7 +248,7 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setRep
                                         #{task.task_number || '?'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate mb-0.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                        <div className="text-xs font-bold text-blue-600 dark:text-blue-400 truncate mb-0.5 transition-colors">
                                             {task.title}
                                         </div>
                                         <div className="flex items-center gap-2">

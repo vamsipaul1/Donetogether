@@ -14,6 +14,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ProofSubmissionModal from '@/components/dashboard/ProofSubmissionModal';
 import type { Task, ProjectMember, User as UserType, TaskStatus } from '@/types/database';
 
 interface BoardViewProps {
@@ -34,6 +35,8 @@ const COLUMNS: { id: TaskStatus; label: string }[] = [
 
 const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAddTask, onEditTask }: BoardViewProps) => {
     const [optimisticTasks, setOptimisticTasks] = useState(tasks);
+    const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+    const [taskForProof, setTaskForProof] = useState<Task | null>(null);
 
     // Sync optimistic state when props change (revalidation)
     useEffect(() => {
@@ -85,13 +88,27 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
         const task = optimisticTasks.find(t => t.id === draggableId);
 
         // Check if user has permission to move this task
+        const currentUserMember = members.find(m => m.user_id === currentUserId);
         const hasPermission = isOwner || (task && task.assigned_to === currentUserId);
+
         if (!hasPermission) {
             toast.error('You can only move tasks assigned to you');
             return;
         }
 
         const newStatus = destination.droppableId as TaskStatus;
+
+        // PROOF OF WORK CHECK
+        const canVerify = isOwner || currentUserMember?.can_verify_tasks;
+
+        // If moving to completed AND not authorized to verify, require proof
+        if (newStatus === 'completed' && !canVerify) {
+            if (task) {
+                setTaskForProof(task);
+                setIsProofModalOpen(true);
+            }
+            return;
+        }
 
         // 1. Optimistic Update
         const updatedTasks = optimisticTasks.map(t =>
@@ -289,6 +306,17 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                     </div>
                 </DragDropContext >
             </div >
+
+            <ProofSubmissionModal
+                isOpen={isProofModalOpen}
+                onClose={() => setIsProofModalOpen(false)}
+                task={taskForProof}
+                currentUserId={currentUserId}
+                onSubmitted={() => {
+                    // Status stays as is, but notification is sent (via DB record)
+                    toast.info("Task completion under review by project lead");
+                }}
+            />
         </div >
     );
 };

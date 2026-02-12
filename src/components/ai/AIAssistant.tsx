@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Sparkles, Copy, Check, ExternalLink, Layers, Zap, Calendar, Search, Music, Image as ImageIcon, History, Clock, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { X, Send, Sparkles, Copy, Check, ExternalLink, Layers, Zap, Calendar, Search, Music, Image as ImageIcon, History, Clock, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 interface Message {
     id: string;
@@ -30,6 +31,7 @@ const AIAssistant = ({
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const dragControls = useDragControls();
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -187,6 +189,19 @@ const AIAssistant = ({
         setShowHistory(false);
     };
 
+    const deleteHistoryItem = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        try {
+            const { error } = await supabase.from('ai_logs').delete().eq('id', id);
+            if (error) throw error;
+            setHistoryLogs(prev => prev.filter(item => item.id !== id));
+            toast.success("History item deleted");
+        } catch (error) {
+            console.error("Failed to delete history:", error);
+            toast.error("Failed to delete history item");
+        }
+    };
+
     useEffect(() => {
         if (showHistory) {
             fetchHistory();
@@ -227,6 +242,19 @@ const AIAssistant = ({
         }
     ];
 
+    const startNewChat = () => {
+        setMessages([
+            {
+                id: '1',
+                role: 'bot',
+                content: `Hi! 👋\nHow can I help you today?`,
+                timestamp: new Date()
+            }
+        ]);
+        setShowHistory(false);
+        toast.info("New chat started");
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -239,6 +267,10 @@ const AIAssistant = ({
                 onClick={onClose}
             >
                 <motion.div
+                    drag
+                    dragListener={false}
+                    dragControls={dragControls}
+                    dragMomentum={false}
                     initial={{ scale: 0.95, opacity: 0, y: 20 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.95, opacity: 0, y: 20 }}
@@ -247,17 +279,30 @@ const AIAssistant = ({
                     onClick={e => e.stopPropagation()}
                 >
                     {/* Header */}
-                    <div className="px-4 md:px-8 py-6 flex items-center justify-between z-10">
-                        <div className="flex items-center gap-2">
+                    <div
+                        className="px-4 md:px-8 py-6 flex items-center justify-between z-10 cursor-grab active:cursor-grabbing select-none"
+                        onPointerDown={(e) => dragControls.start(e)}
+                    >
+                        <div className="flex items-center gap-2 pointer-events-none">
                             <Sparkles className="w-5 h-5 text-zinc-900 dark:text-white" />
                             <span className="text-sm font-semibold text-zinc-900 dark:text-white">ThinkSense AI</span>
                         </div>
 
-                        <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 absolute left-1/2 -translate-x-1/2 hidden md:block">
+                        <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 absolute left-1/2 -translate-x-1/2 hidden md:block pointer-events-none">
                             {user?.full_name || 'Daily Assistant'}
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2" onPointerDown={(e) => e.stopPropagation()}>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={startNewChat}
+                                className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors rounded-full px-3 h-8 text-xs font-medium gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span className="hidden sm:inline">New Chat</span>
+                            </Button>
+
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -310,7 +355,16 @@ const AIAssistant = ({
                                                 onClick={() => loadHistoryItem(log)}
                                                 className="w-full text-left p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800/50 hover:border-violet-500/50 hover:scale-[1.02] dark:hover:border-violet-500/50 hover:shadow-lg transition-all group flex flex-col justify-between h-32 relative overflow-hidden"
                                             >
-                                                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-violet-500/5 to-transparent rounded-bl-3xl" />
+                                                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-violet-500/5 to-transparent rounded-bl-3xl pointer-events-none" />
+
+                                                {/* Delete Button */}
+                                                <div
+                                                    onClick={(e) => deleteHistoryItem(e, log.id)}
+                                                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-black/50 hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 z-20 shadow-sm backdrop-blur-sm cursor-pointer"
+                                                    title="Delete from history"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </div>
 
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-2">
@@ -399,10 +453,10 @@ const AIAssistant = ({
                                 <div ref={messagesEndRef} />
                             </div>
                         )}
-                    </div>
+                    </div >
 
                     {/* Footer Input Area */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-[#0A0A0A] dark:via-[#0A0A0A] dark:to-transparent pt-20">
+                    < div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-[#0A0A0A] dark:via-[#0A0A0A] dark:to-transparent pt-20" >
                         <div className="max-w-3xl mx-auto space-y-4">
 
                             {/* Input Container */}
@@ -430,10 +484,10 @@ const AIAssistant = ({
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
+                    </div >
+                </motion.div >
+            </motion.div >
+        </AnimatePresence >
     );
 };
 
@@ -464,7 +518,7 @@ const MessageBubble = ({ message, isLast }: { message: Message; isLast: boolean 
                 {message.role === 'user' ? (
                     <p className="text-[15px] font-medium leading-relaxed whitespace-pre-wrap">{message.content}</p>
                 ) : (
-                    isLast ? <TypewriterText text={message.content} /> : <AdvancedMarkdown text={message.content} />
+                    isLast ? <TypewriterText text={message.content} /> : <RichTextRenderer text={message.content} />
                 )}
             </div>
 
@@ -477,14 +531,126 @@ const MessageBubble = ({ message, isLast }: { message: Message; isLast: boolean 
     );
 };
 
-// Advanced Markdown Parser
-const AdvancedMarkdown = ({ text }: { text: string }) => {
-    const parseMarkdown = (content: string) => {
-        // Strip leading # from headings just in case standard parser doesn't catch them all
-        const cleanContent = content; // We'll handle per line
+// Syntax Highlighting Helper
+const highlightSyntax = (code: string) => {
+    const escapeHtml = (str: string) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+    // Regex for tokens
+    const tokenRegex = /(".*?"|'.*?'|`[\s\S]*?`)|(\/\/.*$|\/\*[\s\S]*?\*\/)|(\b(const|let|var|function|return|if|else|for|while|import|from|export|default|class|interface|type|async|await|new|try|catch|switch|case|break|continue|extends|implements|public|private|protected|true|false|null|undefined|void|number|string|boolean|any)\b)|(\b\d+\b)|(\b[A-Z][a-zA-Z0-9_]*\b)/gm;
+
+    let lastIndex = 0;
+    let result = "";
+    let match;
+
+    while ((match = tokenRegex.exec(code)) !== null) {
+        if (match.index > lastIndex) {
+            result += escapeHtml(code.substring(lastIndex, match.index));
+        }
+
+        const [fullMatch, string, comment, keyword, _, number, typeName] = match;
+
+        if (string) {
+            result += `<span class="text-emerald-300">${escapeHtml(string)}</span>`;
+        } else if (comment) {
+            result += `<span class="text-zinc-500 italic">${escapeHtml(comment)}</span>`;
+        } else if (keyword) {
+            result += `<span class="text-violet-400 font-bold">${escapeHtml(keyword)}</span>`;
+        } else if (number) {
+            result += `<span class="text-blue-400">${escapeHtml(number)}</span>`;
+        } else if (typeName) {
+            result += `<span class="text-yellow-100">${escapeHtml(typeName)}</span>`;
+        } else {
+            result += escapeHtml(fullMatch);
+        }
+
+        lastIndex = tokenRegex.lastIndex;
+    }
+
+    if (lastIndex < code.length) {
+        result += escapeHtml(code.substring(lastIndex));
+    }
+
+    return result;
+};
+
+// Code Block Component
+const CodeBlock = ({ language, code }: { language: string, code: string }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        toast.success("Code copied to clipboard");
+    };
+
+    return (
+        <div className="my-4 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl bg-[#0F0F0F] group/code">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-[#18181b] border-b border-zinc-800">
+                <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5 opacity-50 group-hover/code:opacity-100 transition-opacity">
+                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500/20 border border-rose-500/50" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/50" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
+                    </div>
+                    <span className="ml-2 text-[10px] font-bold text-zinc-400 uppercase tracking-widest font-mono">{language || 'CODE'}</span>
+                </div>
+                <button
+                    onClick={handleCopy}
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-white/10 transition-all text-[10px] font-bold text-zinc-400 hover:text-white uppercase tracking-wider"
+                >
+                    {copied ? (
+                        <>
+                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            <span className="text-emerald-500">Copied</span>
+                        </>
+                    ) : (
+                        <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy</span>
+                        </>
+                    )}
+                </button>
+            </div>
+            <div className="p-5 overflow-x-auto [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-zinc-800 hover:[&::-webkit-scrollbar-thumb]:bg-zinc-700">
+                <pre className="font-mono text-[13px] leading-relaxed text-zinc-300">
+                    <code dangerouslySetInnerHTML={{ __html: highlightSyntax(code) }} />
+                </pre>
+            </div>
+        </div>
+    );
+};
+
+// Rich Text Renderer (Markdown + Code)
+const RichTextRenderer = ({ text }: { text: string }) => {
+    // Split by code blocks
+    // Matches ```lang ... ``` OR ```lang ... (end of string)
+    const parts = text.split(/(```[\w-]*\s[\s\S]*?(?:```|$))/g);
+
+    return (
+        <div className="space-y-1">
+            {parts.map((part, index) => {
+                if (part.trim().startsWith('```')) {
+                    // Extract language and code
+                    const match = part.match(/```([\w-]*)\s([\s\S]*?)(?:```|$)/);
+                    if (match) {
+                        return <CodeBlock key={index} language={match[1]} code={match[2]} />;
+                    }
+                }
+                // Don't render empty parts from split
+                if (!part.trim()) return null;
+
+                return <SimpleMarkdown key={index} text={part} />;
+            })}
+        </div>
+    );
+};
+
+// Simple Markdown Parser (Text Only)
+const SimpleMarkdown = ({ text }: { text: string }) => {
+    const parseMarkdown = (content: string) => {
         const elements: JSX.Element[] = [];
-        const lines = cleanContent.split('\n');
+        const lines = content.split('\n');
 
         lines.forEach((line, idx) => {
             const key = idx;
@@ -493,8 +659,8 @@ const AdvancedMarkdown = ({ text }: { text: string }) => {
             if (line.match(/^#{1,3}\s/)) {
                 const headingText = line.replace(/^#{1,3}\s+/, '');
                 elements.push(
-                    <h3 key={key} className="text-lg font-bold text-zinc-900 dark:text-white mt-6 mb-3 first:mt-0 tracking-tight">
-                        {formatInline(headingText)}
+                    <h3 key={key} className="text-lg font-bold text-zinc-900 dark:text-white mt-6 mb-3 first:mt-0 tracking-tight flex items-center gap-2">
+                        <span className="text-violet-500 text-sm">★</span> {formatInline(headingText)}
                     </h3>
                 );
             }
@@ -576,11 +742,11 @@ const TypewriterText = ({ text }: { text: string }) => {
             } else {
                 clearInterval(timer);
             }
-        }, 10); // Faster speed
+        }, 8); // Slightly Faster speed
         return () => clearInterval(timer);
     }, [text]);
 
-    return <AdvancedMarkdown text={displayedText} />;
+    return <RichTextRenderer text={displayedText} />;
 };
 
 // Typing Indicator

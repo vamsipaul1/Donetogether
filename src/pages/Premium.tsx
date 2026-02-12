@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Premium = () => {
     const { theme, toggleTheme } = useTheme();
@@ -16,8 +17,8 @@ const Premium = () => {
 
             <main className="relative pt-24 pb-20 px-4 sm:px-6">
                 {/* Background Gradients (Scaled Down) */}
-                <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-violet-500/10 rounded-full blur-[100px] animate-pulse" />
-                <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[100px] animate-pulse delay-1000" />
+                <div className="absolute top-0 left-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] bg-violet-500/10 rounded-full blur-[80px] md:blur-[100px] animate-pulse" />
+                <div className="absolute bottom-0 right-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] bg-amber-500/10 rounded-full blur-[80px] md:blur-[100px] animate-pulse delay-1000" />
 
                 <div className="max-w-7xl mx-auto relative z-10 text-center">
                     {/* Header */}
@@ -35,7 +36,7 @@ const Premium = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white"
+                            className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white leading-tight"
                         >
                             Supercharge your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-amber-500 to-amber-600 animate-gradient-x">Project.</span>
                         </motion.h1>
@@ -51,7 +52,7 @@ const Premium = () => {
                     </div>
 
                     {/* Cards Container */}
-                    <div className="flex overflow-x-auto md:grid md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto pb-10 pt-8 snap-x snap-mandatory scrollbar-hide px-4 -mx-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto pb-10 pt-8 px-2 md:px-0">
 
                         {/* Student Pro (RECOMMENDED) */}
                         <motion.div
@@ -74,8 +75,12 @@ const Premium = () => {
                                     <div className="p-3.5 rounded-2xl bg-violet-50 dark:bg-violet-900/10 text-violet-600 dark:text-violet-400">
                                         <Gem className="w-7 h-7" />
                                     </div>
-                                    <div className="px-3.5 py-1.5 rounded-full bg-violet-100/50 dark:bg-violet-900/20 text-[11px] font-black uppercase text-violet-600 dark:text-violet-400 border border-violet-200 dark:border-violet-800">
-                                        Team Essentials
+                                    <div className="p-[1px] rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 shadow-sm">
+                                        <div className="px-3.5 py-1 rounded-full bg-white dark:bg-zinc-900">
+                                            <span className="text-[11px] font-black uppercase bg-gradient-to-r from-violet-500 via-fuchsia-500 to-amber-500 bg-clip-text text-transparent">
+                                                Free Plan
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -105,10 +110,11 @@ const Premium = () => {
                                         ))}
                                     </ul>
                                 </div>
-
-                                <Button className="w-full h-14 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm shadow-lg shadow-violet-500/25 transition-all hover:scale-[1.02]">
-                                    Opening Soon
-                                </Button>
+                                <Link to="/signup">
+                                    <Button className="w-full h-14 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm shadow-lg shadow-violet-500/25 transition-all hover:scale-[1.02]">
+                                        Opening Now...
+                                    </Button>
+                                </Link>
                             </div>
                         </motion.div>
 

@@ -46,12 +46,12 @@ const Navbar = ({ isDark, toggleTheme }: { isDark: boolean; toggleTheme: () => v
     >
       <div className="container mx-auto px-6 max-w-7xl flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
+        <a href="/" className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
           <div className="w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center shadow-lg">
             <img src="/favicon.ico" alt="Logo" className="w-5 h-5 object-contain" />
           </div>
-          <span className="font-s bold text-lg">DoneTogether</span>
-        </Link>
+          <span className="font-bold text-lg">DoneTogether</span>
+        </a>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-8">

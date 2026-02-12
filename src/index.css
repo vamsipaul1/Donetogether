@@ -221,15 +221,17 @@
   .moving-gradient-border {
     position: relative;
     background: linear-gradient(60deg,
+        #78350f,
+        #d97706,
         #f59e0b,
-        #ef4444,
-        #d946ef,
-        #8b5cf6,
-        #3b82f6,
-        #10b981,
-        #f59e0b);
+        #fcd34d,
+        #ffffff,
+        #fcd34d,
+        #f59e0b,
+        #d97706,
+        #78350f);
     background-size: 300% 300%;
-    animation: move-gradient 8s linear infinite;
+    animation: move-gradient 3s linear infinite;
     padding: 1.5px;
   }
 
