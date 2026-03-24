@@ -263,19 +263,20 @@ const AIAssistant = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 bg-black/40 md:bg-black/20 backdrop-blur-[4px] md:backdrop-blur-[2px] z-50 flex items-end md:items-center justify-center p-0 md:p-4 pb-0"
                 onClick={onClose}
             >
+                <div className="w-full flex justify-center pb-2 md:pb-0 pt-16 md:pt-0">
                 <motion.div
                     drag
                     dragListener={false}
                     dragControls={dragControls}
                     dragMomentum={false}
-                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                    initial={{ scale: 1, opacity: 0, y: 100 }}
                     animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                    exit={{ scale: 1, opacity: 0, y: 200 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="w-full max-w-[900px] h-[85vh] max-h-[800px] bg-white dark:bg-[#0A0A0A] rounded-[32px] shadow-2xl flex flex-col overflow-hidden border border-white/50 dark:border-white/5 relative"
+                    className="w-full max-w-[900px] h-[90vh] md:h-[85vh] max-h-[850px] md:max-h-[800px] bg-white dark:bg-[#0A0A0A] rounded-t-[32px] md:rounded-[32px] shadow-2xl flex flex-col overflow-hidden border border-white/50 dark:border-white/5 relative"
                     onClick={e => e.stopPropagation()}
                 >
                     {/* Header */}
@@ -416,26 +417,26 @@ const AIAssistant = ({
                                         <button
                                             key={idx}
                                             onClick={() => sendMessage(idea.prompt)}
-                                            className="group relative p-6 rounded-[24px] overflow-hidden transition-all duration-300 hover:scale-[1.02] text-left h-full flex flex-col justify-between"
+                                            className="group relative p-5 md:p-6 rounded-[20px] md:rounded-[24px] overflow-hidden transition-all duration-300 hover:scale-[1.02] text-left h-full flex flex-row items-center md:items-start md:flex-col justify-between gap-4 md:gap-0"
                                         >
                                             <div className={`absolute inset-0 bg-gradient-to-br ${idea.bg} opacity-50 dark:opacity-20 group-hover:opacity-100 transition-opacity`} />
                                             <div className="absolute inset-0 backdrop-blur-3xl" />
                                             <div className="absolute inset-0 bg-white/40 dark:bg-black/20" />
 
-                                            <div className="relative z-10 w-12 h-12 rounded-2xl bg-white/80 dark:bg-black/50 backdrop-blur-md flex items-center justify-center mb-4 shadow-lg ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-300">
+                                            <div className="relative z-10 w-12 h-12 rounded-2xl bg-white/80 dark:bg-black/50 backdrop-blur-md flex items-center justify-center md:mb-4 shadow-lg ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-300 shrink-0">
                                                 <idea.icon className={`w-6 h-6 ${idea.color}`} />
                                             </div>
 
-                                            <div className="relative z-10">
-                                                <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-2 leading-tight tracking-tight">
+                                            <div className="relative z-10 flex-1">
+                                                <h3 className="text-base md:text-xl font-bold text-zinc-900 dark:text-white mb-0.5 md:mb-2 leading-tight tracking-tight">
                                                     {idea.label}
                                                 </h3>
-                                                <p className="text-[13px] text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
+                                                <p className="text-[11px] md:text-[13px] text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
                                                     {idea.sub}
                                                 </p>
                                             </div>
 
-                                            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                                            <div className="relative md:absolute md:bottom-4 md:right-4 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 md:translate-x-2 group-hover:translate-x-0 shrink-0">
                                                 <div className="w-8 h-8 rounded-full bg-white/90 dark:bg-black/90 flex items-center justify-center shadow-sm">
                                                     <ExternalLink className="w-4 h-4 text-zinc-900 dark:text-white" />
                                                 </div>
@@ -486,6 +487,7 @@ const AIAssistant = ({
                         </div>
                     </div >
                 </motion.div >
+                </div>
             </motion.div >
         </AnimatePresence >
     );

@@ -252,15 +252,15 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
     return (
         <div className="h-full flex flex-col bg-[#f8f9fa] dark:bg-black font-sans text-zinc-900 dark:text-zinc-100 overflow-hidden dotted-pattern">
             {/* Toolbar */}
-            <header className="px-6 h-16 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-black/80 backdrop-blur-md sticky top-0 z-30">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
-                            <CalendarIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
+            <header className="px-4 md:px-6 h-14 md:h-16 flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-black/80 backdrop-blur-md sticky top-0 z-30 overflow-x-auto scrollbar-hide shrink-0">
+                <div className="flex items-center gap-3 md:gap-6 min-w-max">
+                    <div className="flex items-center gap-2 md:gap-3">
+                        <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
+                            <CalendarIcon className="w-3.5 h-3.5 md:w-5 md:h-5 text-emerald-600 dark:text-emerald-500" />
                         </div>
                         <div>
-                            <h2 className="text-sm font-black text-zinc-900 dark:text-white uppercase ">Timeline</h2>
-                            <p className="text-[12px] font-bold text-zinc-600">Gantt View</p>
+                            <h2 className="text-xs md:text-sm font-black text-zinc-900 dark:text-white uppercase leading-none md:leading-normal">Timeline</h2>
+                            <p className="text-[10px] md:text-[12px] font-bold text-zinc-600 hidden sm:block">Gantt View</p>
                         </div>
                     </div>
 
@@ -279,10 +279,10 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3 ml-4 shrink-0">
                     {isOwner && (
-                        <button onClick={onAddTask} className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-500/20">
-                            <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 invert brightness-0 dark:brightness-200" /> Add Task
+                        <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-500/20">
+                            <img src="/image copy 4.png" alt="" className="w-3 h-3 md:w-3.5 md:h-3.5 invert brightness-0 dark:brightness-200" /> <span className="hidden sm:inline">Add Task</span><span className="sm:hidden">Add</span>
                         </button>
                     )}
                 </div>

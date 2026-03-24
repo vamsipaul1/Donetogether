@@ -103,15 +103,23 @@ const MyProofsList = ({ projectId, userId }: { projectId: string; userId: string
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                if (error) {
+                    // Graceful fallback if table doesn't exist yet
+                    if (error.code === 'PGRST204' || error.code === '42P01' || error.message?.includes('not find the table')) {
+                        console.warn("Proof of work feature disabled: Table missing.");
+                        setProofs([]);
+                        return;
+                    }
+                    throw error;
+                }
 
-                // Client-side filter for project if needed (though user_id might span projects)
-                // Ideally we filter by project too.
-                // Since tasks table is joined, we can check task.project_id
                 const projectProofs = data?.filter((p: any) => p.task?.project_id === projectId) || [];
                 setProofs(projectProofs);
-            } catch (err) {
-                console.error("Error fetching my proofs:", err);
+            } catch (err: any) {
+                // Suppress loud errors for missing table
+                if (err.code !== 'PGRST204' && err.code !== '42P01' && !err.message?.includes('not find the table')) {
+                    console.error("Error fetching my proofs:", err);
+                }
             } finally {
                 setLoading(false);
             }

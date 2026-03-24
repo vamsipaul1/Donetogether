@@ -184,9 +184,9 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
             {/* Board Content */}
             <div className="flex-1 overflow-x-auto overflow-y-auto scrollbar-hide p-4 md:p-6 snap-x snap-mandatory">
                 <DragDropContext onDragEnd={onDragEnd}>
-                    <div className="flex gap-3 md:gap-6 h-full min-w-max pb-2 md:pb-4">
+                    <div className="flex gap-4 md:gap-6 h-full min-w-max pb-2 md:pb-4">
                         {COLUMNS.map((col) => (
-                            <div key={col.id} className="w-[80vw] sm:w-80 flex flex-col h-full bg-white/40 dark:bg-zinc-900/40 rounded-[32px] p-4 md:p-5 border border-white dark:border-white/5 snap-center shadow-sm">
+                            <div key={col.id} className="w-[85vw] md:w-80 flex flex-col h-full bg-white/40 dark:bg-zinc-900/40 rounded-[24px] md:rounded-[32px] p-4 md:p-5 border border-white dark:border-white/5 snap-center shadow-sm">
                                 {/* Column Header */}
                                 <div className="flex items-center justify-between mb-6 px-2">
                                     <div className="flex items-center gap-3">
@@ -222,7 +222,7 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
-                                                                className={`p-5 rounded-[22px] shadow-sm border group hover:shadow-md transition-all ${snapshot.isDragging ? 'rotate-2 shadow-xl scale-105 z-50' : ''} ${getTaskColor(task.id)}`}
+                                                                className={`p-4 md:p-5 rounded-[20px] md:rounded-[22px] shadow-sm border group hover:shadow-md transition-all ${snapshot.isDragging ? 'rotate-2 shadow-xl scale-105 z-50' : ''} ${getTaskColor(task.id)}`}
                                                                 style={provided.draggableProps.style}
                                                             >
                                                                 <div className="flex justify-between items-start mb-3">

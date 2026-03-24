@@ -197,16 +197,16 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                     {projectTitle}
                                 </h3>
                                 <div className={cn(
-                                    "hidden sm:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase transition-all duration-500",
+                                    "flex items-center gap-1.5 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase transition-all duration-500",
                                     isConnected
-                                        ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-700"
-                                        : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 animate-pulse border border-amber-200/50"
+                                        ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 sm:border border-zinc-200 dark:border-zinc-700 bg-transparent sm:bg-zinc-100"
+                                        : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 animate-pulse sm:border border-amber-200/50 bg-transparent sm:bg-amber-50"
                                 )}>
                                     <span className={cn("h-1.5 w-1.5 rounded-full", isConnected ? "bg-green-500" : "bg-amber-500")} />
-                                    {isConnected ? 'Active' : 'Syncing'}
+                                    <span className="hidden sm:inline">{isConnected ? 'Active' : 'Syncing'}</span>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex items-center gap-2 sm:mt-1 mt-0">
                                 <span className="text-[12px] text-zinc-400 dark:text-zinc-500 font-medium lowercase">
                                     {onlineUsers.size} online
                                 </span>
@@ -259,11 +259,11 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                     </div>
                                 </div>
                                 <div className="space-y-2 relative z-10 max-w-md">
-                                    <h3 className="font-bold text-2xl text-zinc-900 dark:text-zinc-50 tracking-tight">
+                                    <h3 className="font-bold text-xl md:text-2xl text-zinc-900 dark:text-zinc-50 tracking-tight">
                                         Welcome to {projectTitle}
                                     </h3>
-                                    <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed">
-                                        This is the beginning of your team's conversation.<br />
+                                    <p className="text-zinc-500 dark:text-zinc-400 text-xs md:text-sm leading-relaxed px-4 md:px-0">
+                                        This is the beginning of your team's conversation.<br className="hidden md:block" />
                                         Coordinate tasks, share updates, and move work forward together.
                                     </p>
                                 </div>

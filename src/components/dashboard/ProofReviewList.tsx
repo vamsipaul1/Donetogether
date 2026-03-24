@@ -23,7 +23,6 @@ const ProofReviewList = ({ projectId, onProofUpdated }: ProofReviewListProps) =>
         setLoading(true);
         try {
             // Fetch proof submissions for tasks in this project
-            // We need to join with tasks and users
             const { data, error } = await supabase
                 .from('task_proofs')
                 .select(`
@@ -31,22 +30,27 @@ const ProofReviewList = ({ projectId, onProofUpdated }: ProofReviewListProps) =>
                     task:tasks(*),
                     user:users(*)
                 `)
-                .eq('status', 'pending')
-                .eq('task.project_id', projectId); // This approach might fail if nested filter isn't supported directly easily, 
-            // but standard Supabase allows filtering on joined tables usually? 
-            // Actually, filtering on joined table column 'project_id' usually requires inner join logic or two steps.
-            // Let's try simpler: fetch all pending proofs, then filter in JS or fetch tasks first.
+                .eq('status', 'pending');
 
-            // Simpler approach compatible with unknown RLS/Schema details:
-            if (error) throw error; // If error, maybe table doesn't even exist yet.
+            if (error) {
+                // Graceful fallback if table doesn't exist yet
+                if (error.code === 'PGRST204' || error.code === '42P01' || error.message?.includes('not find the table')) {
+                    console.warn("Proof of work table missing, feature unavailable.");
+                    setProofs([]);
+                    return;
+                }
+                throw error;
+            }
 
-            // If the join works:
+            // Client-side filter: only proofs associated with tasks in this project
             const filteredProofs = data?.filter((p: any) => p.task?.project_id === projectId) || [];
             setProofs(filteredProofs);
 
-        } catch (err) {
-            console.error("Error fetching proofs:", err);
-            // toast.error("Could not load pending proofs");
+        } catch (err: any) {
+            // Suppress loud errors for missing table
+            if (err.code !== 'PGRST204' && err.code !== '42P01' && !err.message?.includes('not find the table')) {
+                console.error("Error fetching proofs:", err);
+            }
         } finally {
             setLoading(false);
         }

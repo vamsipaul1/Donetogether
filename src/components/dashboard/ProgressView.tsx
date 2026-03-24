@@ -209,10 +209,10 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
             {/* Ambient Background - Dark Mode Only */}
             <div className="fixed inset-0 pointer-events-none -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0f172a] to-[#0f172a] opacity-0 dark:opacity-100 transition-opacity duration-300" />
 
-            <div className="p-6 max-w-[1400px] mx-auto space-y-6">
+            <div className="p-4 md:p-6 max-w-[1400px] mx-auto space-y-4 md:space-y-6">
 
                 {/* Compact Header */}
-                <div className="flex items-end mb-6 justify-between border-b border-zinc-200 dark:border-white/5 pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-end mb-4 md:mb-6 justify-between border-b border-zinc-200 dark:border-white/5 pb-4 md:pb-6 gap-4 sm:gap-0">
                     <div>
                         <motion.h2
                             initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -290,10 +290,10 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                         {/* Area Chart */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                            className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl relative overflow-hidden"
+                            className="p-5 md:p-6 rounded-[24px] md:rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl relative overflow-hidden"
                         >
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-base font-bold text-zinc-700 dark:text-zinc-200 flex items-center gap-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                                <h3 className="text-sm md:text-base font-bold text-zinc-700 dark:text-zinc-200 flex items-center gap-2">
                                     <TrendingUp className="w-4 h-4 text-violet-500" />
                                     Activity Trend
                                 </h3>
@@ -329,7 +329,7 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                         {/* Scatter Chart (Stagnation) */}
                         <motion.div
                             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                            className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl relative overflow-hidden"
+                            className="p-5 md:p-6 rounded-[24px] md:rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl relative overflow-hidden"
                         >
                             {/* Decoration */}
                             <div className="absolute top-0 right-0 p-8 opacity-[0.03] dark:opacity-[0.05] -rotate-12 transform scale-150 pointer-events-none">
@@ -398,7 +398,7 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                         {/* 🏆 Champions Leaderboard (New Feature) */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}
-                            className="p-6 rounded-[2rem] bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 shadow-2xl overflow-hidden relative group"
+                            className="p-5 md:p-6 rounded-[24px] md:rounded-[2rem] bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 shadow-2xl overflow-hidden relative group"
                         >
                             {/* Glow Effects */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
@@ -479,17 +479,17 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                         {/* Status Donut - Compact */}
                         <motion.div
                             initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}
-                            className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl flex flex-col items-center justify-center relative min-h-[260px]"
+                            className="p-5 md:p-6 rounded-[24px] md:rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl flex flex-col items-center justify-center relative min-h-[260px]"
                         >
-                            <h3 className="absolute top-6 left-6 text-base font-bold text-zinc-700 dark:text-zinc-200">Status</h3>
-                            <div className="w-[180px] h-[180px] mt-4 relative">
+                            <h3 className="absolute top-5 left-5 md:top-6 md:left-6 text-sm md:text-base font-bold text-zinc-700 dark:text-zinc-200">Status</h3>
+                            <div className="w-[140px] h-[140px] md:w-[180px] md:h-[180px] mt-6 md:mt-4 relative">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={statusData}
                                             cx="50%" cy="50%"
-                                            innerRadius={65}
-                                            outerRadius={75}
+                                            innerRadius="75%"
+                                            outerRadius="90%"
                                             paddingAngle={8}
                                             dataKey="value"
                                             cornerRadius={10}
@@ -520,9 +520,9 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                         {/* Team Workload - Rich List */}
                         <motion.div
                             initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
-                            className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl min-h-[200px]"
+                            className="p-5 md:p-6 rounded-[24px] md:rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl min-h-[200px]"
                         >
-                            <h3 className="text-base font-bold text-zinc-700 dark:text-zinc-200 mb-6 flex items-center gap-2">
+                            <h3 className="text-sm md:text-base font-bold text-zinc-700 dark:text-zinc-200 mb-6 flex items-center gap-2">
                                 <Activity className="w-4 h-4 text-violet-500" />
                                 Team Pulse
                             </h3>
@@ -597,7 +597,7 @@ function MetaCard({ label, value, unit, trend, trendUp, icon: Icon, color, bg, d
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: delay || 0 }}
             whileHover={{ y: -5, scale: 1.02 }}
-            className={`relative p-5 rounded-[2rem] ${bg} shadow-xl shadow-black/5 overflow-hidden group`}
+            className={`relative p-4 md:p-5 rounded-2xl md:rounded-[2rem] ${bg} shadow-xl shadow-black/5 overflow-hidden group`}
         >
             {/* Watermark */}
             <div className={`absolute -right-4 -bottom-4 opacity-20 transition-transform group-hover:scale-110 duration-500 rotate-12`}>
@@ -613,12 +613,12 @@ function MetaCard({ label, value, unit, trend, trendUp, icon: Icon, color, bg, d
                 </div>
 
                 <div className="mt-3">
-                    <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl font-black tracking-tight">{value}</span>
-                        <span className="text-[10px] font-bold text-white/70 uppercase">{unit}</span>
+                    <div className="flex items-baseline gap-1.5 truncate">
+                        <span className="text-2xl md:text-3xl font-black tracking-tight">{value}</span>
+                        <span className="text-[9px] md:text-[10px] font-bold text-white/70 uppercase truncate">{unit}</span>
                     </div>
 
-                    <div className="flex items-center gap-1 mt-1 text-[10px] font-bold text-white/90">
+                    <div className="flex items-center gap-1 mt-1 text-[9px] md:text-[10px] font-bold text-white/90 truncate">
                         <div className="bg-white/20 rounded-full p-0.5">
                             {trendUp ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingUp className="w-2.5 h-2.5 rotate-180" />}
                         </div>
