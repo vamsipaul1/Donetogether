@@ -181,7 +181,7 @@ function formatResponse(mode: string, aiMessage: string, context: any): any {
         actions: extractActions(aiMessage),
       };
 
-    case 'progress_analyst':
+    case 'progress_analyst': {
       const completedTasks = context.tasks?.filter((t: any) => t.status === 'completed').length || 0;
       const totalTasks = context.tasks?.length || 1;
       const score = Math.round((completedTasks / totalTasks) * 100);
@@ -194,6 +194,7 @@ function formatResponse(mode: string, aiMessage: string, context: any): any {
         insights: extractInsights(aiMessage),
         recommendations: extractRecommendations(aiMessage),
       };
+    }
 
     case 'team_mentor':
       return {
