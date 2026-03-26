@@ -84,8 +84,9 @@ const JoinProject = () => {
 
             const currentCount = members?.length || 0;
 
-            if (currentCount >= (project.expected_team_size || 6)) {
-                throw new Error(`This team is already full (${currentCount}/${project.expected_team_size} members)`);
+            const expectedSize = project.expected_team_size || 6;
+            if (currentCount >= expectedSize) {
+                throw new Error(`This team is already full (${currentCount}/${expectedSize} members)`);
             }
 
             // Show project details

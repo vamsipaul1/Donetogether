@@ -38,7 +38,7 @@ const Premium = () => {
                             transition={{ delay: 0.1 }}
                             className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white leading-tight"
                         >
-                            Supercharge your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-amber-500 to-amber-600 animate-gradient-x">Project.</span>
+                            Supercharge your <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-amber-500 to-amber-600 animate-gradient-x">work.</span>
                         </motion.h1>
 
                         <motion.p
@@ -47,7 +47,7 @@ const Premium = () => {
                             transition={{ delay: 0.2 }}
                             className="text-lg text-zinc-500 dark:text-zinc-500 max-w-xl mx-auto font-medium leading-relaxed"
                         >
-                            Whether you're a standard project team or running a complex capstone, we have the toolkit to ensure you finish first.
+                            Whether you're shipping a student project or building an early-stage product, DoneTogether keeps your team aligned, accountable, and fast.
                         </motion.p>
                     </div>
 
@@ -84,8 +84,8 @@ const Premium = () => {
                                     </div>
                                 </div>
 
-                                <h3 className="text-3xl font-black text-zinc-900 dark:text-white mb-2">Student Pro</h3>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-500 font-medium mb-8">Everything for a semester project.</p>
+                                <h3 className="text-3xl font-black text-zinc-900 dark:text-white mb-2">Pro</h3>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-500 font-medium mb-8">Everything you need for focused teams.</p>
 
                                 <div className="space-y-6 flex-1 mb-8">
                                     <h4 className="text-[12px] font-black uppercase text-zinc-500 dark:text-zinc-600">Necessary Features</h4>
@@ -141,8 +141,8 @@ const Premium = () => {
                                     </div>
                                 </div>
 
-                                <h3 className="text-3xl font-black text-zinc-900 dark:text-white mb-2">Student Ultimate</h3>
-                                <p className="text-sm text-zinc-500 dark:text-zinc-500 font-medium mb-8">For Capstone projects & leaders.</p>
+                                <h3 className="text-3xl font-black text-zinc-900 dark:text-white mb-2">Ultimate</h3>
+                                <p className="text-sm text-zinc-500 dark:text-zinc-500 font-medium mb-8">For capstones, orgs, and product teams.</p>
 
                                 <div className="space-y-6 flex-1 mb-8">
                                     <h4 className="text-[12px] font-black uppercase text-zinc-500 dark:text-zinc-600">Advanced Control</h4>
@@ -190,7 +190,7 @@ const Premium = () => {
                                 <span className="text-lime-500">I</span>
                                 <span className="text-yellow-500">T</span>
                                 <span className="text-blue-500">S</span>
-                                <span className="bg-gradient-to-r from-violet-600 to-amber-500 bg-clip-text text-transparent ml-2">VIZAG  </span> <span className="px-1"> Students</span>
+                                <span className="bg-gradient-to-r from-violet-600 to-amber-500 bg-clip-text text-transparent ml-2">VIZAG</span> <span className="px-1"> Builders</span>
                             </span>
 
                             {/* SVG with Gradient Definition */}

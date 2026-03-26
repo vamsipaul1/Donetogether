@@ -450,16 +450,14 @@ const Dashboard = () => {
                         <NavItem icon={CheckCircle2} label="My tasks" active={activeView === 'list' && !selectedProject} onClick={() => { setActiveView('list'); setSelectedProject(null); }} />
                         {/* <NavItem icon={Inbox} label="Inbox" active={activeView === 'messages'} onClick={() => setActiveView('messages')} /> */}
 
-                        {selectedProject && (
-                            <button
-                                onClick={() => setIsAIOpen(true)}
-                                className="flex items-center justify-start gap-2 px-4 py-3 w-full rounded-xl transition-all group active:scale-95 hover:bg-zinc-100 dark:hover:bg-[#3d3e40]"
-                            >
-                                <span className="text-[16px] font-semibold tracking-wide text-zinc-900 dark:text-white transition-all duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-violet-600 group-hover:to-pink-600">
-                                    ThinkSense <span className="text-[10px]">AI</span>
-                                </span>
-                            </button>
-                        )}
+                        <button
+                            onClick={() => setIsAIOpen(true)}
+                            className="flex items-center justify-start gap-2 px-4 py-3 w-full rounded-xl transition-all group active:scale-95 hover:bg-zinc-100 dark:hover:bg-[#3d3e40]"
+                        >
+                            <span className="text-[16px] font-semibold tracking-wide text-zinc-900 dark:text-white transition-all duration-300 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-violet-600 group-hover:to-pink-600">
+                                ThinkSense <span className="text-[10px]">AI</span>
+                            </span>
+                        </button>
                     </div>
 
                     <div className="space-y-1">
@@ -918,17 +916,15 @@ const Dashboard = () => {
 
 
 
-            {selectedProject && (
-                <AIAssistant
-                    isOpen={isAIOpen}
-                    onClose={() => setIsAIOpen(false)}
-                    project={selectedProject}
-                    tasks={projectTasks}
-                    members={members}
-                    user={currentUser}
-                    currentUserId={currentUser?.id || ''}
-                />
-            )}
+            <AIAssistant
+                isOpen={isAIOpen}
+                onClose={() => setIsAIOpen(false)}
+                project={selectedProject ?? { id: '', title: 'No project selected', description: '' }}
+                tasks={selectedProject ? projectTasks : userTasks}
+                members={members}
+                user={currentUser}
+                currentUserId={currentUser?.id || ''}
+            />
         </div>
     );
 

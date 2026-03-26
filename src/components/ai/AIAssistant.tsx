@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X, Send, Sparkles, Copy, Check, ExternalLink, Layers, Zap, Calendar, Search, Music, Image as ImageIcon, History, Clock, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ShiningText } from '@/components/ui/shining-text';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
@@ -18,8 +19,10 @@ const AIAssistant = ({
     project,
     tasks,
     members,
-    user
+    user,
+    userdeio
 }: any) => {
+    const effectiveUser = user ?? userdeio;
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
@@ -44,19 +47,19 @@ const AIAssistant = ({
     const buildContext = () => {
         return {
             project: {
-                id: project.id,
-                name: project.title,
-                goal: project.description,
-                team_size: members.length
+                id: project?.id ?? '',
+                name: project?.title ?? '',
+                goal: project?.description ?? '',
+                team_size: Array.isArray(members) ? members.length : 0
             },
             tasks: {
-                total: tasks.length,
-                done: tasks.filter((t: any) => t.status === 'completed').length,
-                in_progress: tasks.filter((t: any) => t.status === 'in_progress').length
+                total: Array.isArray(tasks) ? tasks.length : 0,
+                done: Array.isArray(tasks) ? tasks.filter((t: any) => t.status === 'completed').length : 0,
+                in_progress: Array.isArray(tasks) ? tasks.filter((t: any) => t.status === 'in_progress').length : 0
             },
-            detailed_tasks: tasks.slice(0, 20).map((t: any) =>
-                `- [${t.status.toUpperCase()}] ${t.title} (Priority: ${t.priority})`
-            ).join('\n')
+            detailed_tasks: Array.isArray(tasks)
+                ? tasks.slice(0, 20).map((t: any) => `- [${String(t.status || '').toUpperCase()}] ${t.title} (Priority: ${t.priority})`).join('\n')
+                : ''
         };
     };
 
@@ -85,59 +88,86 @@ const AIAssistant = ({
 
         try {
             const context = buildContext();
-            const { data: { session } } = await supabase.auth.getSession();
-            const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 
-            const response = await fetch(`${supabaseUrl}/functions/v1/quick-api`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session?.access_token}`
-                },
-                body: JSON.stringify({
+            const { data, error } = await supabase.functions.invoke('ai-assistant', {
+                body: {
                     mode: 'task_assistant',
                     context,
                     prompt: `${SYSTEM_INSTRUCTION}\n\nUSER REQUEST: ${contentToSend}`
-                })
+                }
             });
 
-            const data = await response.json();
-
             setIsTyping(false);
+
+            if (error) {
+                console.error("AI Assistant Error:", error);
+
+                // Check if it's a JWT error
+                const errorMsg = error.message || (typeof error === 'string' ? error : '');
+                if (errorMsg.toLowerCase().includes('jwt')) {
+                    const errorMessage: Message = {
+                        id: (Date.now() + 1).toString(),
+                        role: 'bot',
+                        content: 'Your session has expired or the token is invalid. Please refresh the page or sign in again.',
+                        timestamp: new Date()
+                    };
+                    setMessages(prev => [...prev, errorMessage]);
+                    return;
+                }
+
+                throw error;
+            }
+
+            // Handle both structured and raw response formats 
+            const responseText = data.rawResponse || data.response;
+            const errorMessage = data.message || data.error;
 
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'bot',
-                content: data.response || 'Sorry, I couldn\'t process that.',
+                content: responseText || errorMessage || 'Sorry, I couldn\'t process that.',
                 timestamp: new Date()
             };
 
             setMessages(prev => [...prev, botMessage]);
 
             // Save to History (Non-blocking)
-            if (user?.id) {
+            if (effectiveUser?.id) {
                 try {
                     await supabase.from('ai_logs').insert({
-                        user_id: user.id,
-                        project_id: project.id,
+                        user_id: effectiveUser.id,
+                        project_id: project?.id,
                         prompt: contentToSend,
-                        response: data.response,
+                        response: responseText || data.response,
                         mode: 'task_assistant',
-                        tokens_used: 0
+                        tokens_used: data.usage?.total_tokens || 0
                     });
                 } catch (logError) {
                     console.error("Failed to save history:", logError);
-                    // Do not show error to user if just logging fails
                 }
             }
-
-        } catch (error) {
-            console.error("AI Error:", error);
+        } catch (error: any) {
+            console.error("DEBUG - ThinkSense AI Error Details:", error);
             setIsTyping(false);
+
+            let displayError = "Connection failed";
+
+            // Try to extract more detail from Supabase Functions error
+            if (error.context && typeof error.context.json === 'function') {
+                try {
+                    const errorData = await error.context.json();
+                    displayError = errorData.message || errorData.error || error.message;
+                } catch {
+                    displayError = error.message;
+                }
+            } else {
+                displayError = error.message || (typeof error === 'string' ? error : 'Connection failed');
+            }
+
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'bot',
-                content: 'Sorry, there was an error processing your request.',
+                content: `Sorry, I encountered an error connecting to the AI service:\n\n**${displayError}**\n\nPlease ensure your Supabase function is deployed and reachable.`,
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -150,12 +180,12 @@ const AIAssistant = ({
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
     const fetchHistory = async () => {
-        if (!user?.id) return;
+        if (!effectiveUser?.id) return;
         setIsLoadingHistory(true);
         const { data, error } = await supabase
             .from('ai_logs')
             .select('*')
-            .eq('user_id', user.id)
+            .eq('user_id', effectiveUser.id)
             .order('created_at', { ascending: false })
             .limit(20);
 
@@ -267,229 +297,229 @@ const AIAssistant = ({
                 onClick={onClose}
             >
                 <div className="w-full flex justify-center pb-2 md:pb-0 pt-16 md:pt-0">
-                <motion.div
-                    drag
-                    dragListener={false}
-                    dragControls={dragControls}
-                    dragMomentum={false}
-                    initial={{ scale: 1, opacity: 0, y: 100 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 1, opacity: 0, y: 200 }}
-                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="w-full max-w-[900px] h-[90vh] md:h-[85vh] max-h-[850px] md:max-h-[800px] bg-white dark:bg-[#0A0A0A] rounded-t-[32px] md:rounded-[32px] shadow-2xl flex flex-col overflow-hidden border border-white/50 dark:border-white/5 relative"
-                    onClick={e => e.stopPropagation()}
-                >
-                    {/* Header */}
-                    <div
-                        className="px-4 md:px-8 py-6 flex items-center justify-between z-10 cursor-grab active:cursor-grabbing select-none"
-                        onPointerDown={(e) => dragControls.start(e)}
+                    <motion.div
+                        drag
+                        dragListener={false}
+                        dragControls={dragControls}
+                        dragMomentum={false}
+                        initial={{ scale: 1, opacity: 0, y: 100 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 1, opacity: 0, y: 200 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                        className="w-full max-w-[900px] h-[90vh] md:h-[85vh] max-h-[850px] md:max-h-[800px] bg-white dark:bg-[#0A0A0A] rounded-t-[32px] md:rounded-[32px] shadow-2xl flex flex-col overflow-hidden border border-white/50 dark:border-white/5 relative"
+                        onClick={e => e.stopPropagation()}
                     >
-                        <div className="flex items-center gap-2 pointer-events-none">
-                            <Sparkles className="w-5 h-5 text-zinc-900 dark:text-white" />
-                            <span className="text-sm font-semibold text-zinc-900 dark:text-white">ThinkSense AI</span>
+                        {/* Header */}
+                        <div
+                            className="px-4 md:px-8 py-6 flex items-center justify-between z-10 cursor-grab active:cursor-grabbing select-none"
+                            onPointerDown={(e) => dragControls.start(e)}
+                        >
+                            <div className="flex items-center gap-2 pointer-events-none">
+                                <Sparkles className="w-5 h-5 text-zinc-900 dark:text-white" />
+                                <span className="text-sm font-semibold text-zinc-900 dark:text-white">ThinkSense AI</span>
+                            </div>
+
+                            <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 absolute left-1/2 -translate-x-1/2 hidden md:block pointer-events-none">
+                                {effectiveUser?.full_name || 'Daily Assistant'}
+                            </div>
+
+                            <div className="flex items-center gap-2" onPointerDown={(e) => e.stopPropagation()}>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={startNewChat}
+                                    className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors rounded-full px-3 h-8 text-xs font-medium gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    <span className="hidden sm:inline">New Chat</span>
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowHistory(!showHistory)}
+                                    className={`text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors rounded-full px-3 h-8 text-xs font-medium gap-2 ${showHistory ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white' : ''}`}
+                                >
+                                    <History className="w-4 h-4" />
+                                    <span className="hidden sm:inline">History</span>
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={onClose}
+                                    className="bg-black text-white hover:bg-zinc-800 rounded-full px-4 h-8 text-xs font-medium"
+                                >
+                                    Close
+                                </Button>
+                            </div>
                         </div>
 
-                        <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 absolute left-1/2 -translate-x-1/2 hidden md:block pointer-events-none">
-                            {user?.full_name || 'Daily Assistant'}
-                        </div>
-
-                        <div className="flex items-center gap-2" onPointerDown={(e) => e.stopPropagation()}>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={startNewChat}
-                                className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors rounded-full px-3 h-8 text-xs font-medium gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                            >
-                                <Plus className="w-4 h-4" />
-                                <span className="hidden sm:inline">New Chat</span>
-                            </Button>
-
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setShowHistory(!showHistory)}
-                                className={`text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors rounded-full px-3 h-8 text-xs font-medium gap-2 ${showHistory ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white' : ''}`}
-                            >
-                                <History className="w-4 h-4" />
-                                <span className="hidden sm:inline">History</span>
-                            </Button>
-
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={onClose}
-                                className="bg-black text-white hover:bg-zinc-800 rounded-full px-4 h-8 text-xs font-medium"
-                            >
-                                Close
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-32 scrollbar-hide relative">
-                        {showHistory ? (
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="max-w-3xl mx-auto pt-4 space-y-4"
-                            >
-                                <div className="flex items-center gap-2 mb-6">
-                                    <button onClick={() => setShowHistory(false)} className="hover:bg-zinc-100 dark:hover:bg-zinc-800 p-2 rounded-full transition-colors">
-                                        <ArrowLeft className="w-5 h-5 text-zinc-500" />
-                                    </button>
-                                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Chat History</h2>
-                                </div>
-
-                                {isLoadingHistory ? (
-                                    <div className="flex justify-center py-10">
-                                        <Sparkles className="w-6 h-6 animate-spin text-zinc-300" />
+                        {/* Content Area */}
+                        <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-32 scrollbar-hide relative">
+                            {showHistory ? (
+                                <motion.div
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="max-w-3xl mx-auto pt-4 space-y-4"
+                                >
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <button onClick={() => setShowHistory(false)} className="hover:bg-zinc-100 dark:hover:bg-zinc-800 p-2 rounded-full transition-colors">
+                                            <ArrowLeft className="w-5 h-5 text-zinc-500" />
+                                        </button>
+                                        <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Chat History</h2>
                                     </div>
-                                ) : historyLogs.length === 0 ? (
-                                    <div className="text-center py-10 text-zinc-500">
-                                        No history found.
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {historyLogs.map((log) => (
-                                            <button
-                                                key={log.id}
-                                                onClick={() => loadHistoryItem(log)}
-                                                className="w-full text-left p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800/50 hover:border-violet-500/50 hover:scale-[1.02] dark:hover:border-violet-500/50 hover:shadow-lg transition-all group flex flex-col justify-between h-32 relative overflow-hidden"
-                                            >
-                                                <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-violet-500/5 to-transparent rounded-bl-3xl pointer-events-none" />
 
-                                                {/* Delete Button */}
-                                                <div
-                                                    onClick={(e) => deleteHistoryItem(e, log.id)}
-                                                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-black/50 hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 z-20 shadow-sm backdrop-blur-sm cursor-pointer"
-                                                    title="Delete from history"
+                                    {isLoadingHistory ? (
+                                        <div className="flex justify-center py-10">
+                                            <Sparkles className="w-6 h-6 animate-spin text-zinc-300" />
+                                        </div>
+                                    ) : historyLogs.length === 0 ? (
+                                        <div className="text-center py-10 text-zinc-500">
+                                            No history found.
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {historyLogs.map((log) => (
+                                                <button
+                                                    key={log.id}
+                                                    onClick={() => loadHistoryItem(log)}
+                                                    className="w-full text-left p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800/50 hover:border-violet-500/50 hover:scale-[1.02] dark:hover:border-violet-500/50 hover:shadow-lg transition-all group flex flex-col justify-between h-32 relative overflow-hidden"
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </div>
+                                                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-violet-500/5 to-transparent rounded-bl-3xl pointer-events-none" />
 
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <Clock className="w-3 h-3 text-violet-500" />
-                                                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
-                                                            {new Date(log.created_at).toLocaleDateString()}
+                                                    {/* Delete Button */}
+                                                    <div
+                                                        onClick={(e) => deleteHistoryItem(e, log.id)}
+                                                        className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-black/50 hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 z-20 shadow-sm backdrop-blur-sm cursor-pointer"
+                                                        title="Delete from history"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </div>
+
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <Clock className="w-3 h-3 text-violet-500" />
+                                                            <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                                                {new Date(log.created_at).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        <h3 className="font-bold text-sm text-zinc-900 dark:text-white line-clamp-1 mb-1 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
+                                                            {log.prompt}
+                                                        </h3>
+                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                                                            {typeof log.response === 'string' ? log.response.replace(/[#*]/g, '') : 'Tap to view response'}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <span className="text-[10px] font-bold text-violet-600 flex items-center gap-1">
+                                                            Resume <ArrowLeft className="w-3 h-3 rotate-180" />
                                                         </span>
                                                     </div>
-                                                    <h3 className="font-bold text-sm text-zinc-900 dark:text-white line-clamp-1 mb-1 group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors">
-                                                        {log.prompt}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ) : messages.length <= 1 ? (
+                                <div className="flex flex-col h-full justify-center max-w-4xl mx-auto pb-2">
+                                    {/* Hero Greeting */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.1 }}
+                                        className="text-center space-y-2 mb-16"
+                                    >
+                                        <h1 className="text-4xl md:text-[40px] font-bold text-zinc-900 dark:text-white tracking-tight leading-[1.1]">
+                                            Hi {effectiveUser?.full_name?.split(' ')[0] || 'There'},<br></br> Ready to Achieve<span className="text-blue-500 gradient-to-br from-blue-500/5 to-transparent"> Great Things?</span>
+                                        </h1>
+                                    </motion.div>
+
+                                    {/* Popular Ideas Cards */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.2 }}
+                                        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+                                    >
+                                        {popularIdeas.map((idea, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => sendMessage(idea.prompt)}
+                                                className="group relative p-5 md:p-6 rounded-[20px] md:rounded-[24px] overflow-hidden transition-all duration-300 hover:scale-[1.02] text-left h-full flex flex-row items-center md:items-start md:flex-col justify-between gap-4 md:gap-0"
+                                            >
+                                                <div className={`absolute inset-0 bg-gradient-to-br ${idea.bg} opacity-50 dark:opacity-20 group-hover:opacity-100 transition-opacity`} />
+                                                <div className="absolute inset-0 backdrop-blur-3xl" />
+                                                <div className="absolute inset-0 bg-white/40 dark:bg-black/20" />
+
+                                                <div className="relative z-10 w-12 h-12 rounded-2xl bg-white/80 dark:bg-black/50 backdrop-blur-md flex items-center justify-center md:mb-4 shadow-lg ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                                                    <idea.icon className={`w-6 h-6 ${idea.color}`} />
+                                                </div>
+
+                                                <div className="relative z-10 flex-1">
+                                                    <h3 className="text-base md:text-xl font-bold text-zinc-900 dark:text-white mb-0.5 md:mb-2 leading-tight tracking-tight">
+                                                        {idea.label}
                                                     </h3>
-                                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
-                                                        {typeof log.response === 'string' ? log.response.replace(/[#*]/g, '') : 'Tap to view response'}
+                                                    <p className="text-[11px] md:text-[13px] text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
+                                                        {idea.sub}
                                                     </p>
                                                 </div>
 
-                                                <div className="flex justify-end mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <span className="text-[10px] font-bold text-violet-600 flex items-center gap-1">
-                                                        Resume <ArrowLeft className="w-3 h-3 rotate-180" />
-                                                    </span>
+                                                <div className="relative md:absolute md:bottom-4 md:right-4 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 md:translate-x-2 group-hover:translate-x-0 shrink-0">
+                                                    <div className="w-8 h-8 rounded-full bg-white/90 dark:bg-black/90 flex items-center justify-center shadow-sm">
+                                                        <ExternalLink className="w-4 h-4 text-zinc-900 dark:text-white" />
+                                                    </div>
                                                 </div>
                                             </button>
                                         ))}
-                                    </div>
-                                )}
-                            </motion.div>
-                        ) : messages.length <= 1 ? (
-                            <div className="flex flex-col h-full justify-center max-w-4xl mx-auto pb-2">
-                                {/* Hero Greeting */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.1 }}
-                                    className="text-center space-y-2 mb-16"
-                                >
-                                    <h1 className="text-4xl md:text-[40px] font-bold text-zinc-900 dark:text-white tracking-tight leading-[1.1]">
-                                        Hi {user?.full_name?.split(' ')[0] || 'There'},<br></br> Ready to Achieve<span className="text-blue-500 gradient-to-br from-blue-500/5 to-transparent"> Great Things?</span>
-                                    </h1>
-                                </motion.div>
-
-                                {/* Popular Ideas Cards */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
-                                    className="grid grid-cols-1 md:grid-cols-3 gap-4"
-                                >
-                                    {popularIdeas.map((idea, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => sendMessage(idea.prompt)}
-                                            className="group relative p-5 md:p-6 rounded-[20px] md:rounded-[24px] overflow-hidden transition-all duration-300 hover:scale-[1.02] text-left h-full flex flex-row items-center md:items-start md:flex-col justify-between gap-4 md:gap-0"
-                                        >
-                                            <div className={`absolute inset-0 bg-gradient-to-br ${idea.bg} opacity-50 dark:opacity-20 group-hover:opacity-100 transition-opacity`} />
-                                            <div className="absolute inset-0 backdrop-blur-3xl" />
-                                            <div className="absolute inset-0 bg-white/40 dark:bg-black/20" />
-
-                                            <div className="relative z-10 w-12 h-12 rounded-2xl bg-white/80 dark:bg-black/50 backdrop-blur-md flex items-center justify-center md:mb-4 shadow-lg ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-300 shrink-0">
-                                                <idea.icon className={`w-6 h-6 ${idea.color}`} />
-                                            </div>
-
-                                            <div className="relative z-10 flex-1">
-                                                <h3 className="text-base md:text-xl font-bold text-zinc-900 dark:text-white mb-0.5 md:mb-2 leading-tight tracking-tight">
-                                                    {idea.label}
-                                                </h3>
-                                                <p className="text-[11px] md:text-[13px] text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
-                                                    {idea.sub}
-                                                </p>
-                                            </div>
-
-                                            <div className="relative md:absolute md:bottom-4 md:right-4 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 md:translate-x-2 group-hover:translate-x-0 shrink-0">
-                                                <div className="w-8 h-8 rounded-full bg-white/90 dark:bg-black/90 flex items-center justify-center shadow-sm">
-                                                    <ExternalLink className="w-4 h-4 text-zinc-900 dark:text-white" />
-                                                </div>
-                                            </div>
-                                        </button>
+                                    </motion.div>
+                                </div>
+                            ) : (
+                                <div className="space-y-6 pt-4 max-w-3xl mx-auto">
+                                    {messages.slice(1).map((message, idx) => (
+                                        <MessageBubble key={message.id} message={message} isLast={idx === messages.length - 2} />
                                     ))}
-                                </motion.div>
-                            </div>
-                        ) : (
-                            <div className="space-y-6 pt-4 max-w-3xl mx-auto">
-                                {messages.slice(1).map((message, idx) => (
-                                    <MessageBubble key={message.id} message={message} isLast={idx === messages.length - 2} />
-                                ))}
-                                {isTyping && <TypingIndicator />}
-                                <div ref={messagesEndRef} />
-                            </div>
-                        )}
-                    </div >
+                                    {isTyping && <TypingIndicator />}
+                                    <div ref={messagesEndRef} />
+                                </div>
+                            )}
+                        </div>
 
-                    {/* Footer Input Area */}
-                    < div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-[#0A0A0A] dark:via-[#0A0A0A] dark:to-transparent pt-20" >
-                        <div className="max-w-3xl mx-auto space-y-4">
+                        {/* Footer Input Area */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-[#0A0A0A] dark:via-[#0A0A0A] dark:to-transparent pt-20">
+                            <div className="max-w-3xl mx-auto space-y-4">
 
-                            {/* Input Container */}
-                            <div className="bg-white dark:bg-zinc-900 p-2 pl-4 rounded-[24px] shadow-[0_8px_40px_rgb(0,0,0,0.08)] border border-zinc-200 dark:border-zinc-800 flex items-center gap-3 w-full relative z-20">
-                                <span className="text-zinc-400 text-lg">+</span>
-                                <input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyPress={handleKeyPress}
-                                    placeholder="Ask your Thinksense ..........."
-                                    className="flex-1 bg-transparent border-none outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400 text-[15px] font-medium min-w-0"
-                                />
-                                <div className="flex gap-2">
-                                    <button className="w-10 h-10 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-500 transition-colors">
-                                        <ImageIcon className="w-5 h-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => sendMessage()}
-                                        disabled={!input.trim() || isTyping}
-                                        className="w-10 h-10 rounded-full bg-black dark:bg-white flex items-center justify-center hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all text-white dark:text-black"
-                                    >
-                                        <Send className="w-4 h-4 ml-0.5" />
-                                    </button>
+                                {/* Input Container */}
+                                <div className="bg-white dark:bg-zinc-900 p-2 pl-4 rounded-[24px] shadow-[0_8px_40px_rgb(0,0,0,0.08)] border border-zinc-200 dark:border-zinc-800 flex items-center gap-3 w-full relative z-20">
+                                    <span className="text-zinc-400 text-lg">+</span>
+                                    <input
+                                        type="text"
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                        placeholder="Ask your Thinksense ..........."
+                                        className="flex-1 bg-transparent border-none outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400 text-[15px] font-medium min-w-0"
+                                    />
+                                    <div className="flex gap-2">
+                                        <button className="w-10 h-10 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-500 transition-colors">
+                                            <ImageIcon className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={() => sendMessage()}
+                                            disabled={!input.trim() || isTyping}
+                                            className="w-10 h-10 rounded-full bg-black dark:bg-white flex items-center justify-center hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all text-white dark:text-black"
+                                        >
+                                            <Send className="w-4 h-4 ml-0.5" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div >
-                </motion.div >
+                    </motion.div>
                 </div>
-            </motion.div >
-        </AnimatePresence >
+            </motion.div>
+        </AnimatePresence>
     );
 };
 
@@ -754,10 +784,9 @@ const TypewriterText = ({ text }: { text: string }) => {
 // Typing Indicator
 const TypingIndicator = () => {
     return (
-        <div className="flex gap-2 items-center text-zinc-400 text-sm pl-4 animate-pulse">
-
-            <span className="font-medium">Thinking...</span>
-        </div>
+        <h1 className="text-sm font-semibold text-zinc-900 dark:text-white pl-4">
+            <ShiningText text="Thinking ....." />
+        </h1>
     );
 };
 

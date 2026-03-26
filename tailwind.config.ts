@@ -60,7 +60,19 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ["Satoshi", "sans-serif"],
+      },
+      fontSize: {
+        hero: ["64px", { lineHeight: "72px", letterSpacing: "-0.02em" }],
+        h1: ["48px", { lineHeight: "56px" }],
+        h2: ["36px", { lineHeight: "44px" }],
+        h3: ["28px", { lineHeight: "36px" }],
+        body: ["16px", { lineHeight: "26px" }],
+        small: ["14px", { lineHeight: "22px" }],
+      },
+      maxWidth: {
+        hero: "900px",
+        section: "1200px",
       },
       borderRadius: {
         lg: "var(--radius)",

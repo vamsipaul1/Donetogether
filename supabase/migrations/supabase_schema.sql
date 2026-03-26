@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   email TEXT UNIQUE NOT NULL,
   full_name TEXT,
   avatar_url TEXT,
+  onboarding_completed BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -20,6 +21,12 @@ CREATE TABLE IF NOT EXISTS public.projects (
   duration TEXT,
   join_code TEXT UNIQUE NOT NULL,
   created_by UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  team_name TEXT,
+  expected_team_size INTEGER DEFAULT 4,
+  project_type TEXT CHECK (project_type IN ('student', 'founder')) DEFAULT 'student',
+  is_team_complete BOOLEAN DEFAULT false,
+  start_date TIMESTAMPTZ,
+  end_date TIMESTAMPTZ,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -75,3 +82,36 @@ CREATE POLICY "m_delete_own" ON public.project_members FOR DELETE TO authenticat
 
 CREATE POLICY "u_read_all" ON public.users FOR SELECT TO authenticated USING (true);
 CREATE POLICY "u_all_own" ON public.users FOR ALL TO authenticated USING (auth.uid() = id);
+
+-- 7. Task Proofs (For verification)
+CREATE TABLE IF NOT EXISTS public.task_proofs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  task_id UUID REFERENCES public.tasks(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. AI Logs
+CREATE TABLE IF NOT EXISTS public.ai_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+  project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
+  mode TEXT NOT NULL,
+  prompt TEXT NOT NULL,
+  response JSONB NOT NULL,
+  tokens_used INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS for new tables
+ALTER TABLE public.task_proofs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ai_logs ENABLE ROW LEVEL SECURITY;
+
+-- Policies for Proofs
+CREATE POLICY "p_read_members" ON public.task_proofs FOR SELECT TO authenticated USING (true);
+CREATE POLICY "p_insert_own" ON public.task_proofs FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+
+-- Policies for AI Logs
+CREATE POLICY "l_read_own" ON public.ai_logs FOR SELECT TO authenticated USING (auth.uid() = user_id);

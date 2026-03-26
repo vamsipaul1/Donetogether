@@ -25,6 +25,12 @@ import { cn } from "@/lib/utils";
 import { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 
+type ActivityUser = {
+    id?: string;
+    full_name?: string | null;
+    email?: string | null;
+};
+
 const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: OverviewProps) => {
     const [projectGoal, setProjectGoal] = useState(project.goal || '');
     const [isEditingGoal, setIsEditingGoal] = useState(false);
@@ -108,6 +114,16 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
         }))
     ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 10);
 
+    const [selectedActivityUserId, setSelectedActivityUserId] = useState<string>('all');
+
+    const filteredActivities = selectedActivityUserId === 'all'
+        ? activities
+        : activities.filter((a: any) => (a.user as ActivityUser | undefined)?.id === selectedActivityUserId);
+
+    const selectedActivityUser = selectedActivityUserId === 'all'
+        ? null
+        : members.find(m => m.user_id === selectedActivityUserId)?.users;
+
     const handleAIAction = (action: string) => {
         toast.promise(new Promise(resolve => setTimeout(resolve, 1500)), {
             loading: `AI Agent processing: ${action}...`,
@@ -117,8 +133,9 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
     };
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-full bg-[#F9F8F6] dark:bg-black font-sans text-zinc-900 dark:text-zinc-100 transition-colors duration-500">
-            <div className="flex-1 p-4 md:p-8 h-auto lg:h-full overflow-visible lg:overflow-y-auto space-y-8 md:space-y-12 scrollbar-hide">
+        <div className="relative flex flex-col lg:flex-row min-h-full bg-transparent font-sans text-zinc-900 dark:text-zinc-100 transition-colors duration-500 overflow-hidden">
+
+            <div className="flex-1 p-4 md:p-8 h-auto lg:h-full overflow-visible lg:overflow-y-auto space-y-6 md:space-y-10 scrollbar-hide">
                 {/* Team Workload Section */}
                 <section className="relative group">
                     <div className="moving-gradient-border rounded-[24px] md:rounded-[32px] overflow-hidden shadow-sm transition-all duration-500 hover:shadow-xl hover:scale-[1.002]">
@@ -137,7 +154,7 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20 shrink-0">
+                                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 dark:bg-amber-500/10 border border-amber-200/60 dark:border-amber-500/20 shrink-0 backdrop-blur-sm">
                                     <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
                                     <span className="text-[10px] md:text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase leading-none mt-0.5">Live Sync</span>
                                 </div>
@@ -154,7 +171,7 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                                             key={member.user_id}
                                             initial={{ opacity: 0, scale: 0.95 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className="relative group/member p-4 rounded-2xl md:rounded-3xl border-zinc-200/50 dark:border-white/5 bg-white/40 dark:bg-zinc-900/20 border shadow-sm hover:shadow-md transition-all duration-300"
+                                            className="relative group/member p-4 rounded-2xl md:rounded-3xl border-zinc-200/60 dark:border-white/5 bg-white/70 dark:bg-zinc-900/20 border shadow-sm hover:shadow-md transition-all duration-300 backdrop-blur-sm"
                                         >
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-center gap-3">
@@ -265,7 +282,7 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                                 </div>
                             ) : (
                                 <div className="relative">
-                                    <div className="bg-white/40 dark:bg-zinc-900/30 border border-white dark:border-white/5 rounded-[24px] md:rounded-[32px] p-5 md:p-8 text-zinc-600 dark:text-zinc-400 min-h-[100px] md:min-h-[160px] cursor-text transition-all text-sm leading-relaxed text-left hover:border-zinc-950/10 dark:hover:border-zinc-800 backdrop-blur-sm shadow-sm whitespace-pre-wrap font-medium">
+                                    <div className="bg-white/70 dark:bg-zinc-900/30 border border-zinc-200/60 dark:border-white/5 rounded-[24px] md:rounded-[32px] p-5 md:p-8 text-zinc-700 dark:text-zinc-400 min-h-[100px] md:min-h-[160px] cursor-text transition-all text-sm leading-relaxed text-left hover:border-zinc-950/10 dark:hover:border-zinc-800 backdrop-blur-sm shadow-sm whitespace-pre-wrap font-medium">
                                         {projectGoal || (isOwner ? "What's this project about? Click the edit icon to add a description." : "No project description set.")}
                                     </div>
                                     {isOwner && (
@@ -273,7 +290,7 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                                             variant="ghost"
                                             size="icon"
                                             onClick={() => setIsEditingGoal(true)}
-                                            className="absolute -right-2 -top-2 opacity-100 md:opacity-0 group-hover:opacity-100 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-emerald-500 transition-all rounded-xl shadow-sm"
+                                            className="absolute -right-2 -top-2 opacity-100 md:opacity-0 group-hover:opacity-100 bg-white/90 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-emerald-500 transition-all rounded-xl shadow-sm backdrop-blur-sm"
                                         >
                                             <Edit3 className="w-4 h-4" />
                                         </Button>
@@ -290,7 +307,7 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                         </div>
                         <div className="grid grid-cols-1 gap-3">
                             {members.map(m => (
-                                <div key={m.id} className="flex items-center justify-between p-4 bg-stone-50/50 dark:bg-stone-900/30 border border-stone-200 dark:border-stone-800/50 rounded-2xl hover:border-stone-300 dark:hover:border-stone-700 transition-all cursor-pointer group/card active:scale-[0.99] shadow-sm">
+                                <div key={m.id} className="flex items-center justify-between p-4 bg-white/70 dark:bg-stone-900/30 border border-stone-200/60 dark:border-stone-800/50 rounded-2xl hover:border-stone-300 dark:hover:border-stone-700 transition-all cursor-pointer group/card active:scale-[0.99] shadow-sm backdrop-blur-sm">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 rounded-xl bg-violet-600 flex items-center justify-center text-[11px] font-bold text-white shadow-lg shadow-violet-500/10">
                                             {m.users?.email?.[0]?.toUpperCase() || '?'}
@@ -311,9 +328,9 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
             </div >
 
             {/* Right Sidebar - Status & Timeline */}
-            <div className="w-full lg:w-80 p-4 md:p-8 lg:p-8 space-y-8 md:space-y-10 bg-stone-50 dark:bg-black border-t lg:border-t-0 lg:border-l border-stone-200 dark:border-stone-800 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-hide mb-[85px] lg:mb-0">
+            <div className="w-full lg:w-80 p-4 md:p-8 lg:p-8 space-y-8 md:space-y-10 bg-white/60 dark:bg-black border-t lg:border-t-0 lg:border-l border-stone-200/70 dark:border-stone-800 h-auto lg:h-full overflow-visible lg:overflow-y-auto scrollbar-hide mb-[85px] lg:mb-0 backdrop-blur-sm">
                 <section>
-                    <h2 className="text-[13px] font-bold uppercase mb-4 md:mb-6 text-zinc-900 dark:text-white px-1">What's the status of project?</h2>
+                    <h2 className="text-[12px] font-bold uppercase mb-4 md:mb-6 text-zinc-900 dark:text-white px-1 tracking-wide">Project Status</h2>
                     <div className={`space-y-3 ${!isOwner ? 'pointer-events-none opacity-80' : ''}`}>
                         <div onClick={() => isOwner && setProjectStatus('on_track')}>
                             <StatusCard label="On track" color="emerald" active={projectStatus === 'on_track'} />
@@ -328,28 +345,134 @@ const Overview = ({ project, members, tasks, onProjectUpdated, isOwner }: Overvi
                 </section>
 
                 <section className="pt-8 border-t border-zinc-100 dark:border-zinc-900 space-y-4 md:space-y-6">
-                    <h2 className="text-[12px] font-bold uppercase mb-4 md:mb-6 text-zinc-900 dark:text-white px-1 flex items-center gap-2">
+                    <h2 className="text-[12px] font-bold uppercase mb-4 md:mb-6 text-zinc-900 dark:text-white px-1 flex items-center gap-2 tracking-wide">
                         <Activity className="w-3 h-3 text-amber-500" />
                         Activity Feed
                     </h2>
+
+                    {/* Member filter dropdown */}
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <button
+                                className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-white/70 dark:bg-zinc-900/40 border border-zinc-200/60 dark:border-white/10 shadow-sm hover:shadow-md transition-all"
+                            >
+                                <div className="min-w-0 text-left">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Viewing</p>
+                                    <p className="text-sm font-bold text-zinc-900 dark:text-white truncate">
+                                        {selectedActivityUserId === 'all'
+                                            ? 'All members'
+                                            : (selectedActivityUser?.full_name || selectedActivityUser?.email || 'Member')}
+                                    </p>
+                                </div>
+                                <motion.div
+                                    initial={false}
+                                    animate={{ rotate: 90 }}
+                                    className="shrink-0"
+                                >
+                                    <ChevronRight className="w-4 h-4 text-zinc-400" />
+                                </motion.div>
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent align="start" className="w-[320px] p-2 rounded-2xl border border-zinc-200/60 dark:border-white/10 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-xl shadow-xl">
+                            <div className="space-y-1">
+                                <button
+                                    onClick={() => setSelectedActivityUserId('all')}
+                                    className={cn(
+                                        'w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all',
+                                        selectedActivityUserId === 'all'
+                                            ? 'bg-zinc-900 text-white dark:bg-white dark:text-black'
+                                            : 'hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-white'
+                                    )}
+                                >
+                                    <div className={cn(
+                                        'w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0',
+                                        selectedActivityUserId === 'all'
+                                            ? 'bg-white/10 dark:bg-black/10'
+                                            : 'bg-zinc-100 dark:bg-white/5'
+                                    )}>
+                                        <Users className={cn('w-4 h-4', selectedActivityUserId === 'all' ? 'text-white dark:text-black' : 'text-zinc-600 dark:text-zinc-300')} />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-bold truncate">All members</p>
+                                        <p className={cn('text-[10px] font-bold uppercase tracking-widest truncate', selectedActivityUserId === 'all' ? 'text-white/70 dark:text-black/60' : 'text-zinc-400')}>
+                                            Team activity
+                                        </p>
+                                    </div>
+                                </button>
+
+                                <div className="h-px bg-zinc-200/70 dark:bg-white/10 my-1" />
+
+                                <div className="max-h-64 overflow-auto pr-1">
+                                    {members.map((m) => (
+                                        <button
+                                            key={m.user_id}
+                                            onClick={() => setSelectedActivityUserId(m.user_id)}
+                                            className={cn(
+                                                'w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-all',
+                                                selectedActivityUserId === m.user_id
+                                                    ? 'bg-zinc-900 text-white dark:bg-white dark:text-black'
+                                                    : 'hover:bg-zinc-100 dark:hover:bg-white/5 text-zinc-900 dark:text-white'
+                                            )}
+                                        >
+                                            <div className={cn(
+                                                'w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs shrink-0',
+                                                selectedActivityUserId === m.user_id
+                                                    ? 'bg-white/10 dark:bg-black/10'
+                                                    : 'bg-zinc-100 dark:bg-white/5'
+                                            )}>
+                                                {(m.users?.email?.[0] || '?').toUpperCase()}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-bold truncate">{m.users?.full_name || m.users?.email || 'Member'}</p>
+                                                <p className={cn('text-[10px] font-bold uppercase tracking-widest truncate', selectedActivityUserId === m.user_id ? 'text-white/70 dark:text-black/60' : 'text-zinc-400')}>
+                                                    {m.role === 'owner' ? 'Team Leader' : 'Team Member'}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    ))}
+
+                                    {members.length === 0 && (
+                                        <div className="px-3 py-8 text-center text-zinc-400 text-xs font-bold">
+                                            No members yet
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ staggerChildren: 0.05 }}
                         className="relative space-y-0"
                     >
-                        {activities.map((activity: any, i) => (
-                            <ActivityItem
-                                key={activity.id}
-                                user={activity.user}
-                                action={activity.action}
-                                time={formatDistanceToNow(new Date(activity.time), { addSuffix: true })}
-                                icon={activity.icon}
-                                description={activity.description}
-                                index={i}
-                                isLast={i === activities.length - 1}
-                            />
-                        ))}
+                        {filteredActivities.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="px-3 py-10 text-center"
+                            >
+                                <div className="w-12 h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center mx-auto mb-3">
+                                    <Activity className="w-5 h-5 text-zinc-300 dark:text-zinc-700" />
+                                </div>
+                                <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400">No activity yet</p>
+                                <p className="text-[10px] font-semibold text-zinc-400 mt-1">Try selecting a different member</p>
+                            </motion.div>
+                        ) : (
+                            filteredActivities.map((activity: any, i) => (
+                                <ActivityItem
+                                    key={activity.id}
+                                    user={activity.user}
+                                    action={activity.action}
+                                    time={formatDistanceToNow(new Date(activity.time), { addSuffix: true })}
+                                    icon={activity.icon}
+                                    description={activity.description}
+                                    index={i}
+                                    isLast={i === filteredActivities.length - 1}
+                                />
+                            ))
+                        )}
                     </motion.div>
                 </section>
             </div >

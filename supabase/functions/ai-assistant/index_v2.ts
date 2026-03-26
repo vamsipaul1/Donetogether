@@ -20,17 +20,31 @@ serve(async (req) => {
 
     try {
         const authHeader = req.headers.get('Authorization');
-        if (!authHeader) throw new Error('Missing authorization header');
+        if (!authHeader) {
+            console.error('Missing Authorization header');
+            return new Response(JSON.stringify({ error: 'Missing authorization header' }), { status: 401, headers: corsHeaders });
+        }
 
-        const supabaseClient = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            { global: { headers: { Authorization: authHeader } } }
-        );
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
 
+        if (!supabaseUrl || !supabaseAnonKey) {
+            console.error('Supabase configuration missing in environment variables');
+            return new Response(JSON.stringify({ error: 'Server configuration error' }), { status: 500, headers: corsHeaders });
+        }
+
+        const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, { 
+            global: { headers: { Authorization: authHeader } } 
+        });
+
+        // Verify user - this validates the JWT
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
         if (userError || !user) {
-            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
+            console.error('JWT Verification failed:', userError?.message || 'No user found');
+            return new Response(
+                JSON.stringify({ error: 'Invalid or expired session. Please sign in again.', details: userError?.message }), 
+                { status: 401, headers: corsHeaders }
+            );
         }
 
         const { mode, context, prompt }: AIRequest = await req.json();
@@ -38,7 +52,10 @@ serve(async (req) => {
         const systemPrompt = getSystemPrompt(mode, context);
 
         const groqKey = Deno.env.get('GROQ_API_KEY');
-        if (!groqKey) throw new Error('Groq API key not configured');
+        if (!groqKey) {
+            console.error('GROQ_API_KEY is not set');
+            return new Response(JSON.stringify({ error: 'AI service configuration error' }), { status: 500, headers: corsHeaders });
+        }
 
         const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -57,7 +74,11 @@ serve(async (req) => {
             }),
         });
 
-        if (!groqResponse.ok) throw new Error(await groqResponse.text());
+        if (!groqResponse.ok) {
+            const errorText = await groqResponse.text();
+            console.error('Groq API Error:', errorText);
+            throw new Error(`AI model error: ${errorText}`);
+        }
 
         const aiResult = await groqResponse.json();
         const aiMessage = aiResult.choices[0]?.message?.content;
@@ -65,26 +86,28 @@ serve(async (req) => {
         // Return raw text wrapped in object
         const formattedResponse = {
             mode,
-            response: aiMessage
+            response: aiMessage,
+            usage: aiResult.usage
         };
 
-        // Log interaction
-        const supabaseAdmin = createClient(
-            Deno.env.get('SUPABASE_URL') ?? '',
-            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        );
-        await supabaseAdmin.from('ai_logs').insert({
-            user_id: user.id,
-            project_id: context.project?.id,
-            mode,
-            prompt: prompt || 'Auto-Analysis',
-            response: aiMessage,
-            tokens_used: aiResult.usage?.total_tokens || 0,
-        });
+        // Log interaction (using service role for bypass RLS if needed, or if ai_logs has strict RLS)
+        const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+        if (supabaseServiceKey) {
+            const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+            await supabaseAdmin.from('ai_logs').insert({
+                user_id: user.id,
+                project_id: context.project?.id,
+                mode,
+                prompt: prompt || 'Auto-Analysis',
+                response: aiMessage,
+                tokens_used: aiResult.usage?.total_tokens || 0,
+            });
+        }
 
         return new Response(JSON.stringify(formattedResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
     } catch (error) {
+        console.error('Edge Function Catch:', error.message);
         return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 });

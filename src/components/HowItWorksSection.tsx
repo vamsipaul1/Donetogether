@@ -7,117 +7,113 @@ const steps = [
     number: '01',
     icon: GitGraph,
     title: 'Create Your Project',
-    tag: 'Setup',
-    description: 'Set up your project workspace, invite team members, and define your goals to get started quickly.',
-    color: 'bg-blue-50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/20'
+    description: 'Set up your workspace, invite teammates, and define your goal—whether it’s a project or an MVP.',
+    color: 'text-blue-600'
   },
   {
     number: '02',
     icon: CopyMinus,
     title: 'Collaborate & Work',
-    tag: 'Execution',
     description: 'Chat with your team, complete assigned tasks, and update progress as work moves forward efficiently.',
-    color: 'bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/20'
+    color: 'text-emerald-600'
   },
   {
     number: '03',
     icon: Bot,
     title: 'Plan with AI',
-    tag: 'Intelligence',
-    description: 'Just enter your idea, and AI will plan the work, set milestones, and guide your project from start to finish.',
-    color: 'bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-400 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/20'
+    description: 'Enter your idea and let AI outline milestones, weekly goals, and next steps from start to launch.',
+    color: 'text-amber-600'
   },
   {
     number: '04',
     icon: Loader,
     title: 'Track & Finish',
-    tag: 'Completion',
     description: 'Track progress, receive alerts, and finish your project on time. Celebrate your team\'s success together!',
-    color: 'bg-purple-50 dark:bg-purple-900/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-100 dark:group-hover:bg-purple-900/20'
+    color: 'text-purple-600'
   },
 ];
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' } },
+};
+
 const HowItWorksSection = () => {
   return (
-    <section id="how-it-works" className="py-24 bg-white dark:bg-black border-t border-black/5 dark:border-white/5 scroll-mt-28">
-      <div className="container max-w-7xl mx-auto px-6">
+    <section
+      id="how-it-works"
+      className="relative isolate py-24 bg-white border-t border-[#eceef2] scroll-mt-28"
+    >
+      <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-16 px-6 sm:px-10">
 
-        {/* Section Headline */}
-        <div className="text-center mb-20">
-          <h2 className="font-serif text-4xl md:text-5xl text-zinc-900 dark:text-white mb-6">
-            How it works
-          </h2>
-        </div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.35 }}
+          variants={fadeUp}
+          className="mx-auto w-full max-w-[980px] text-center"
+        >
+          <div className="flex flex-col items-center gap-4">
+            <span className="inline-flex items-center justify-center rounded-full border border-[#d6d8df] bg-white/80 px-4 py-1.5 text-[11px] uppercase tracking-[0.24em] text-[#373a46]/70 shadow-[0px_10px_30px_-16px_rgba(194,194,194,0.25)] font-semibold">
+              How it works
+            </span>
+            <h2 className="font-semibold tracking-[-0.04em] text-[#0b0c10] text-[40px] sm:text-[60px] leading-[1.04]">
+              How it works
+            </h2>
+            <p className="mx-auto max-w-[760px] text-[15px] sm:text-[16px] text-[#6b7280] leading-[1.65]">
+              For students and startup founders: create a workspace, collaborate, let AI plan, and ship on time.
+            </p>
+          </div>
+        </motion.div>
 
-        {/* Horizontal Flow Steps */}
-        <div className="relative grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-6">
+        <div className="relative grid grid-cols-1 gap-10 md:grid-cols-4 md:gap-8">
+          {/* dashed connectors (desktop only) */}
+          <div className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-[38px] hidden md:block border-t-2 border-dashed border-[#cfd3dc]" />
+
           {steps.map((step, index) => {
             const Icon = step.icon;
-            const isLast = index === steps.length - 1;
-
             return (
-              <div key={step.number} className="relative flex flex-col items-center">
+              <motion.div
+                key={step.number}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.25 }}
+                variants={{ ...fadeUp, visible: { ...fadeUp.visible, transition: { duration: 0.55, delay: index * 0.08 } } }}
+                className="relative flex flex-col items-center text-center"
+              >
+                <div className="flex h-[82px] w-[82px] items-center justify-center rounded-[18px] border border-[#eceef2] bg-white shadow-[0px_12px_40px_-28px_rgba(15,15,20,0.35)]">
+                  <Icon className={`h-7 w-7 ${step.color}`} />
+                </div>
 
-                {/* Connector Arrow (Desktop) */}
-                {!isLast && (
-                  <div className="hidden md:block absolute top-[2.5rem] left-[60%] w-[calc(100%-20%)] z-0 pointer-events-none">
-                    <div className="w-full h-px border-t-2 border-dashed border-zinc-400 dark:border-zinc-800 relative">
-                      <div className="absolute -right-1 -top-[5px] text-zinc-400 dark:text-zinc-800">
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M1 1L5 5L1 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                <div className="mt-7 text-[12px] font-semibold uppercase tracking-[0.16em] text-[#9aa0ab]">
+                  STEP {step.number}
+                </div>
 
-                {/* Step Card */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="w-full relative z-10 flex flex-col items-center text-center group"
-                >
+                <h3 className="mt-3 text-[20px] font-semibold text-[#0b0c10] tracking-[-0.01em]">
+                  {step.title}
+                </h3>
 
-                  {/* Icon Box - Floating Look */}
-                  <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-black/5 dark:border-white/10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${step.color} bg-white dark:bg-zinc-900`}>
-                    <Icon className="w-8 h-8" />
-                  </div>
-
-                  {/* Text Content */}
-                  <div className="px-2">
-                    <span className="block text-[10px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 mb-3">
-                      Step {step.number}
-                    </span>
-                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-3 font-sans">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed font-sans">
-                      {step.description}
-                    </p>
-                  </div>
-
-                </motion.div>
-
-                {/* Mobile Connector (Vertical) */}
-                {!isLast && (
-                  <div className="md:hidden h-12 w-px border-l-2 border-dashed border-zinc-200 dark:border-zinc-800 my-4" />
-                )}
-
-              </div>
+                <p className="mt-3 max-w-[280px] text-[15px] leading-[1.7] text-[#6b7280]">
+                  {step.description}
+                </p>
+              </motion.div>
             );
           })}
         </div>
 
-        {/* Bottom CTA */}
-        <div className="mt-24 text-center">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.35 }}
+          variants={fadeUp}
+          className="flex justify-center"
+        >
           <Link to="/signup">
-            <button className="text-[14px] font-semibold border-b border-black dark:border-white pb-0.5 hover:scale-110 transition-all font-mono">
-              Start Your Project →
+            <button className="inline-flex items-center gap-2 border-b border-[#0b0c10] pb-1 text-[15px] font-semibold text-[#0b0c10] hover:opacity-80 transition">
+              Start Your Project <ArrowRight className="h-4 w-4" />
             </button>
           </Link>
-        </div>
+        </motion.div>
 
       </div>
     </section>

@@ -9,12 +9,12 @@ export default function CTASection() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
 
         {/* Heading */}
-        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight text-black dark:text-white mb-4 sm:mb-6 leading-tight px-2">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold tracking-none text-black dark:text-white mb-4 sm:mb-6 leading-none px-2">
           Ready to build your next project together?
         </h2>
 
         <p className="text-lg sm:text-xl text-zinc-500 dark:text-zinc-400 mb-8 sm:mb-12 font-light max-w-2xl mx-auto px-4">
-          Join thousands of students turning ideas into reality.
+          Join students and startup founders turning ideas into reality.
         </p>
 
         {/* Button */}

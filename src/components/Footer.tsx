@@ -18,7 +18,14 @@ const Footer = () => {
           <Link to="/#features" className="text-xs sm:text-sm font-medium text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors">Features</Link>
           <Link to="/premium" className="text-xs sm:text-sm font-medium text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors">Pricing</Link>
           <Link to="/about" className="text-xs sm:text-sm font-medium text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors">About</Link>
-          <Link to="/contact" className="text-xs sm:text-sm font-medium text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors">Contact</Link>
+          <a
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=vamsirangumudri2023@gmail.com"
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs sm:text-sm font-medium text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-white transition-colors"
+          >
+            Contact
+          </a>
         </div>
 
       </div>

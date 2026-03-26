@@ -29,7 +29,7 @@ export async function callAI(
         }
 
         // Call Supabase Edge Function
-        const { data, error } = await supabase.functions.invoke('quick-api', {
+        const { data, error } = await supabase.functions.invoke('ai-assistant', {
             body: {
                 mode,
                 context,

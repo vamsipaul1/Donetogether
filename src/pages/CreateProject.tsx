@@ -18,6 +18,7 @@ import { ArrowLeft, Loader2, Calendar as CalendarIcon, ArrowRight, ShieldCheck, 
 
 const domains = [
     'Web Development',
+    'Java Development',
     'Mobile Apps',
     'Machine Learning',
     'UI/UX Design',
@@ -38,6 +39,8 @@ const durations = [
     '6+ months',
 ];
 
+type ProjectType = 'student' | 'founder';
+
 const CreateProject = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -50,6 +53,7 @@ const CreateProject = () => {
         domain: string;
         goal: string;
         duration: string;
+        projectType: ProjectType;
         teamSize: number;
         startDate: Date | undefined;
         endDate: Date | undefined;
@@ -59,10 +63,15 @@ const CreateProject = () => {
         domain: '',
         goal: '',
         duration: '',
+        projectType: 'student',
         teamSize: 4,
         startDate: undefined,
         endDate: undefined,
     });
+
+    const teamSizeOptions = formData.projectType === 'founder'
+        ? Array.from({ length: 15 }, (_, i) => i + 1)
+        : [4, 5, 6];
 
     const generateJoinCode = () => {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -79,6 +88,19 @@ const CreateProject = () => {
             toast.error('Please fill in all required fields');
             return;
         }
+
+        if (formData.projectType === 'founder') {
+            if (formData.teamSize < 1 || formData.teamSize > 15) {
+                toast.error('Founder team size must be between 1 and 15');
+                return;
+            }
+        } else {
+            if (![4, 5, 6].includes(formData.teamSize)) {
+                toast.error('Student team size must be 4, 5, or 6');
+                return;
+            }
+        }
+
         setLoading(true);
 
         try {
@@ -112,6 +134,7 @@ const CreateProject = () => {
                     created_by: user?.id,
                     is_active: false,
                     expected_team_size: formData.teamSize,
+                    project_type: formData.projectType,
                     is_team_complete: false,
                     start_date: startIso,
                     end_date: endIso,
@@ -289,6 +312,34 @@ const CreateProject = () => {
                                     />
                                 </div>
 
+                                {/* Project Type */}
+                                <div className="space-y-2.5 md:col-span-2">
+                                    <Label className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">You are building as</Label>
+                                    <Select
+                                        value={formData.projectType}
+                                        onValueChange={(val) => {
+                                            const nextType = val as ProjectType;
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                projectType: nextType,
+                                                teamSize: nextType === 'founder' ? Math.min(Math.max(prev.teamSize, 1), 15) : ([4, 5, 6].includes(prev.teamSize) ? prev.teamSize : 4),
+                                            }));
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-sm font-semibold dark:text-white shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors">
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 shadow-xl">
+                                            <SelectItem value="student" className="text-xs font-bold uppercase py-3 dark:text-zinc-300 dark:focus:bg-zinc-800">
+                                                Student
+                                            </SelectItem>
+                                            <SelectItem value="founder" className="text-xs font-bold uppercase py-3 dark:text-zinc-300 dark:focus:bg-zinc-800">
+                                                Startup Founder
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
                                 {/* Team Size & Duration */}
                                 <div className="space-y-2.5">
                                     <Label className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">Team Size</Label>
@@ -300,7 +351,7 @@ const CreateProject = () => {
                                             <SelectValue placeholder="Size" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl dark:bg-zinc-900 dark:border-zinc-800 shadow-xl">
-                                            {[4, 5, 6].map(n => (
+                                            {teamSizeOptions.map(n => (
                                                 <SelectItem key={n} value={n.toString()} className="text-xs font-bold uppercase py-3 dark:text-zinc-300 dark:focus:bg-zinc-800">
                                                     {n} Members
                                                 </SelectItem>

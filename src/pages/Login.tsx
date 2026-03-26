@@ -16,7 +16,7 @@ const Login = () => {
 
     useEffect(() => {
         if (user) {
-            navigate("/dashboard");
+            navigate("/dashboard", { replace: true });
         }
     }, [user, navigate]);
 
@@ -34,50 +34,60 @@ const Login = () => {
         if (error) {
             if (error.message.includes("Email not confirmed")) {
                 toast.info("Please verify your email first.");
-                navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+                navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
             } else {
                 toast.error(error.message);
             }
         } else {
             toast.success("Welcome back!");
-            navigate("/dashboard");
+            navigate("/dashboard", { replace: true });
         }
     };
 
     const socialLogin = async () => {
         try {
             await signInWithGoogle();
+            // Redirect will happen via auth state effect; keep history clean
         } catch (error) {
             toast.error("Failed to sign in with Google");
         }
     };
 
     return (
-        <div className="min-h-screen w-full flex bg-gradient-to-b from-[#b8dcfd] via-[#e0f1ff] to-[#ffffff] dark:from-zinc-950 dark:to-black font-sans selection:bg-zinc-900 selection:text-white dark:selection:bg-white dark:selection:text-black overflow-hidden relative">
-            {/* Texture Overlay (Matching Hero) */}
-            <div className="absolute inset-0 opacity-[0.4] mix-blend-multiply pointer-events-none bg-[url('/image%20copy%208.png')] bg-cover bg-center z-0" />
+        <div className="relative min-h-screen w-full overflow-hidden bg-white font-sans selection:bg-zinc-900 selection:text-white">
+            {/* Background Video (matches Hero) */}
+            <div className="absolute inset-0">
+                <video
+                    className="w-full h-full object-cover [transform:scaleY(-1)]"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                >
+                    <source
+                        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4"
+                        type="video/mp4"
+                    />
+                </video>
+                <div className="absolute inset-0 bg-gradient-to-b from-[26.416%] from-[rgba(255,255,255,0)] to-[66.943%] to-white" />
+            </div>
 
-            {/* Ambience */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/40 dark:bg-zinc-800/20 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/2 z-0" />
+            {/* Soft texture (keeps landing feel) */}
+            <div className="absolute inset-0 opacity-[0.18] mix-blend-multiply pointer-events-none bg-[url('/paper-texture.png')] bg-cover bg-center" />
 
-            <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 lg:p-12 relative z-10 gap-8 h-screen">
+            <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 lg:p-12 gap-8 min-h-screen">
 
-                {/* Left Side - Visuals (Consistent with Sign Up) */}
+                {/* Left Side - Heading */}
                 <div className="hidden lg:flex w-1/2 flex-col justify-center items-center h-full">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="relative w-full max-w-[420px] flex items-center justify-center"
+                        className="relative w-full max-w-[520px] flex flex-col items-center text-center"
                     >
-                        {/* Glassmorphism Backdrop for Image */}
-                        <div className="absolute inset-4 bg-white/30 dark:bg-black/20 backdrop-blur-2xl rounded-[3rem] transform -rotate-1 scale-105 border border-white/20 dark:border-white/5" />
-
-                        <img
-                            src="/Gemini_Generated_Image_dru0x4dru0x4dru0.png"
-                            alt="Welcome Back"
-                            className="relative w-full h-auto object-contain drop-shadow-2xl rounded-[2rem] hover:scale-[1.01] transition-transform duration-500"
-                        />
+                        <h1 className="font-medium tracking-[-0.04em] text-[#0b0c10] text-[44px] leading-[1.02]">
+                            Simple <span className="text-[#373a46]">management</span> for your remote team
+                        </h1>
                     </motion.div>
 
                     <motion.div
@@ -86,10 +96,10 @@ const Login = () => {
                         transition={{ delay: 0.3, duration: 0.8 }}
                         className="mt-12 text-center"
                     >
-                        <h2 className="text-4xl font-serif font-medium text-zinc-900 dark:text-white leading-tight tracking-tight mb-2 text-shadow-sm">
-                            Welcome back, <span className="italic text-zinc-600 dark:text-zinc-400">Builder</span>.
+                        <h2 className="text-4xl font-serif font-medium text-zinc-900 leading-tight tracking-tight mb-2 text-shadow-sm">
+                            Welcome back, <span className="italic text-zinc-600">Builder</span>.
                         </h2>
-                        <p className="text-lg text-zinc-600 dark:text-zinc-500 font-medium">
+                        <p className="text-lg text-zinc-600 font-medium">
                             Your next project awaits.
                         </p>
                     </motion.div>
@@ -101,30 +111,30 @@ const Login = () => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="w-full max-w-[420px] bg-white/60 dark:bg-black/40 backdrop-blur-xl p-8 rounded-3xl border border-white/50 dark:border-white/10 shadow-xl"
+                        className="w-full max-w-[420px] bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/60 shadow-xl"
                     >
                         {/* Brand Mobile */}
                         <div className="flex justify-center mb-8">
                             <Link to="/" className="flex items-center gap-3 group w-fit">
-                                <div className="w-10 h-10 bg-black dark:bg-white rounded-xl flex items-center justify-center text-white dark:text-black shadow-lg group-hover:scale-105 transition-transform duration-300">
+                                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform duration-300">
                                     <img src="/favicon.ico" alt="Logo" className="w-5 h-5 object-contain" />
                                 </div>
-                                <span className="font-serif font-bold text-2xl tracking-tighter text-zinc-900 dark:text-white group-hover:opacity-80 transition-opacity">
+                                <span className="font-serif font-bold text-2xl tracking-tighter text-zinc-900 group-hover:opacity-80 transition-opacity">
                                     DoneTogether
                                 </span>
                             </Link>
                         </div>
 
                         <div className="space-y-2 mb-8 text-center">
-                            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">Log In</h1>
-                            <p className="text-zinc-500 dark:text-zinc-400 text-sm">Access your dashboard.</p>
+                            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Log In</h1>
+                            <p className="text-zinc-500 text-sm">Access your dashboard.</p>
                         </div>
 
                         <div className="space-y-5">
                             <Button
                                 variant="outline"
                                 onClick={socialLogin}
-                                className="w-full h-12 rounded-full border-zinc-200 dark:border-zinc-700 hover:text-black hover:bg-white dark:hover:bg-zinc-800 transition-all font-medium text-sm gap-3 bg-white/50 dark:bg-black/50 text-zinc-900 dark:text-white group shadow-sm"
+                                className="w-full h-12 rounded-full border-zinc-200 bg-white/60 text-zinc-900 transition-all font-medium text-sm gap-3 group shadow-sm hover:text-black hover:bg-white focus-visible:ring-0 focus-visible:ring-offset-0"
                             >
                                 <svg className="w-5 h-5 shrink-0 transition-transform group-hover:scale-110 duration-300" viewBox="0 0 24 24">
                                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -136,9 +146,9 @@ const Login = () => {
                             </Button>
 
                             <div className="relative flex py-1 items-center">
-                                <div className="flex-grow border-t border-zinc-200 dark:border-zinc-700"></div>
+                                <div className="flex-grow border-t border-zinc-200"></div>
                                 <span className="flex-shrink-0 mx-3 text-zinc-400 text-[10px] uppercase font-bold tracking-widest">Or</span>
-                                <div className="flex-grow border-t border-zinc-200 dark:border-zinc-700"></div>
+                                <div className="flex-grow border-t border-zinc-200"></div>
                             </div>
 
                             <form onSubmit={handleLogin} className="space-y-4">
@@ -148,7 +158,7 @@ const Login = () => {
                                         placeholder="Email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="h-12 bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus:border-black dark:focus:border-white rounded-xl transition-all pl-4 text-sm font-medium shadow-sm"
+                                        className="h-12 bg-white/70 border-zinc-200 focus:border-black rounded-xl transition-all pl-4 text-sm font-medium shadow-sm"
                                         required
                                     />
                                     <Input
@@ -156,7 +166,7 @@ const Login = () => {
                                         placeholder="Password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="h-12 bg-white/50 dark:bg-black/50 border-zinc-200 dark:border-zinc-800 focus:border-black dark:focus:border-white rounded-xl transition-all pl-4 text-sm font-medium shadow-sm"
+                                        className="h-12 bg-white/70 border-zinc-200 focus:border-black rounded-xl transition-all pl-4 text-sm font-medium shadow-sm"
                                         required
                                     />
                                 </div>
@@ -164,7 +174,7 @@ const Login = () => {
                                 <Button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-full h-12 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-black/10 dark:shadow-white/5 active:scale-[0.98] mt-2"
+                                    className="w-full h-12 rounded-full bg-black text-white font-bold text-sm hover:opacity-90 transition-all shadow-lg shadow-black/10 active:scale-[0.98] mt-2 focus-visible:ring-0 focus-visible:ring-offset-0"
                                 >
                                     {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (
                                         <>
@@ -178,7 +188,7 @@ const Login = () => {
                         <div className="text-center mt-6">
                             <p className="text-zinc-500 text-sm">
                                 Don't have an account?{' '}
-                                <Link to="/signup" className="text-black dark:text-white font-bold hover:underline underline-offset-4">
+                                <Link to="/signup" className="text-black font-bold hover:underline underline-offset-4">
                                     Sign up here
                                 </Link>
                             </p>

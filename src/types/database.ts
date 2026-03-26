@@ -27,6 +27,7 @@ export interface Project {
     created_by?: string;
     is_active: boolean;
     expected_team_size?: number;
+    project_type?: 'student' | 'founder';
     is_team_complete: boolean;
     avatar_url?: string;
     created_at: string;

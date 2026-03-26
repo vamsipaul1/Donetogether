@@ -96,6 +96,12 @@ const ProofSubmissionModal = ({ isOpen, onClose, task, currentUserId, onSubmitte
             if (dbError) throw dbError;
 
             toast.success("Proof submitted successfully!");
+            
+            // Redirect to the uploaded PDF/File so the user can see it
+            if (publicUrl && !publicUrl.includes('mock-url')) {
+                window.open(publicUrl, '_blank');
+            }
+
             if (onSubmitted) onSubmitted();
             onClose();
             setFile(null);

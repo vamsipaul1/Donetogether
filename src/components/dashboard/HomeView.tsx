@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import {
     CheckCircle2, Flame, Zap, Trophy,
-    ArrowRight, Sparkles, Target, AlertCircle
+    ArrowRight, Sparkles, Target, AlertCircle, Home
 } from 'lucide-react';
 import type { User, Task } from '@/types/database';
 import { Button } from '@/components/ui/button';
@@ -87,14 +87,17 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                         <p className="text-zinc-400 dark:text-zinc-500 font-bold text-[10px] tracking-widest uppercase">{dateStr}</p>
                     </div>
                     <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight leading-none capitalize">
-                        {greeting.toLowerCase()}, <span className="text-[#0066FF] dark:text-blue-400">{user?.full_name?.split(' ')[0] || 'Vamsi'}</span>
+                        {greeting.toLowerCase()}, <span className="text-[#0066FF] dark:text-blue-400">{user?.full_name?.split(' ')[0] || 'Student'}</span>
                     </h1>
+                    <p className="text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500">
+                        Built for Students &amp; Startup Founders
+                    </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <div className="px-4 py-2 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200/50 dark:border-white/5 shadow-sm flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[9px] uppercase text-zinc-400 font-bold tracking-wider">Completed</span>
@@ -103,8 +106,8 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                     </div>
 
                     <div className="px-4 py-2 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200/50 dark:border-white/5 shadow-sm flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center">
-                            <AlertCircle className="w-4 h-4 text-rose-500" />
+                        <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-rose-500/10 flex items-center justify-center">
+                            <AlertCircle className="w-4 h-4 text-red-600" />
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[9px] uppercase text-zinc-400 font-bold tracking-wider">Overdue</span>

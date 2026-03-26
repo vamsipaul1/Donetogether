@@ -1,6 +1,10 @@
-import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Circle, Globe, ArrowUpRight, Check } from 'lucide-react';
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' } },
+};
 
 export default function FeaturesSection() {
   const features = [
@@ -27,54 +31,73 @@ export default function FeaturesSection() {
   ];
 
   return (
-    <section id="features" className="relative w-full py-24 overflow-hidden bg-[#f6f2ea] dark:bg-zinc-900 border-t border-black/5 dark:border-white/5 scroll-mt-28">
+    <section
+      id="features"
+      className="relative isolate w-full py-24 border-t border-[#ece7d9] scroll-mt-28"
+      style={{
+        backgroundImage: 'url(/paper-texture.png)',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+      }}
+    >
+      <div className="absolute inset-0 bg-[#f3eee2]/72" />
 
-      {/* Papery Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.4] bg-[url('/paper-texture.png')] pointer-events-none mix-blend-multiply dark:mix-blend-overlay" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(15,23,42,0.14)_1px,transparent_1px)] [background-size:18px_18px]" />
 
-      {/* Spot Highlight */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-white/40 dark:bg-white/5 blur-[140px] rounded-full pointer-events-none" />
-
-      <div className="relative max-w-7xl mx-auto px-6">
-
-        {/* Heading */}
-        <div className="text-center mb-10 sm:mb-16">
-          <h2 className="leading-tight tracking-tight mb-4 text-zinc-900 dark:text-white">
-            <span className="block font-serif text-3xl sm:text-4xl md:text-6xl mb-2">
+      <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-5 sm:px-8 lg:px-10">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={fadeUp}
+          className="mx-auto w-full max-w-[980px] text-center"
+        >
+          <div className="flex flex-col items-center gap-4">
+            <span className="font-satoshi inline-flex items-center justify-center rounded-full border border-[#d8d0c1] bg-white/70 px-4 py-1.5 text-[11px] uppercase tracking-[0.24em] text-[#4f4b43]/80 shadow-[0px_10px_30px_-16px_rgba(71,56,27,0.25)] font-semibold">
+              Features
+            </span>
+            <h2 className="font-satoshi font-black tracking-[-0.04em] text-[#16161f] text-[42px] sm:text-[64px] leading-[1.02]">
               Built for teamwork.
-            </span>
-            <span className="block font-sans font-bold text-3xl sm:text-4xl md:text-6xl">
-              Designed for execution.
-            </span>
-          </h2>
-          <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto leading-relaxed font-serif px-4">
-            DoneTogether gives student teams the clarity, structure, and momentum of professional tools.
-          </p>
-        </div>
+              <span className="block">Designed for execution.</span>
+            </h2>
+            <p className="font-satoshi mx-auto max-w-[760px] text-[15px] sm:text-[16px] text-[#4b4f5b] opacity-90 leading-[1.6] font-medium">
+              DoneTogether gives students and startup founders the clarity, structure, and momentum of professional tools.
+            </p>
+          </div>
+        </motion.div>
 
-        {/* Compact Grid with mobile optimization */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-
-          {features.map((f, i) => (
-            <div
-              key={i}
-              className="bg-white dark:bg-zinc-800 rounded-[20px] p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-black/5 dark:border-white/5 group"
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+          {features.map((feature, index) => (
+            <motion.div
+              key={feature.title}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={{
+                ...fadeUp,
+                visible: {
+                  ...fadeUp.visible,
+                  transition: { duration: 0.55, delay: index * 0.06, ease: 'easeOut' },
+                },
+              }}
+              whileHover={{ y: -6, transition: { duration: 0.25, ease: 'easeOut' } }}
+              className="group relative flex h-full min-h-[260px] flex-col rounded-[22px] border border-[#d9dce4] bg-white/55 p-6 shadow-[0px_22px_60px_-48px_rgba(15,15,20,0.55)] backdrop-blur-md transition-colors duration-300 hover:bg-white/70 hover:border-zinc-950/15"
             >
-              {/* Icon */}
-              <div className="w-10 h-10 flex items-center justify-center border border-black/10 dark:border-white/10 rounded-full mb-4 text-zinc-900 dark:text-white group-hover:bg-black group-hover:text-white dark:group-hover:bg-white dark:group-hover:text-black transition-colors duration-300">
-                {f.icon}
+              <div className="pointer-events-none absolute inset-0 rounded-[22px] bg-gradient-to-br from-white/60 via-white/20 to-transparent opacity-70" />
+
+              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cdd1db] bg-[#f3f3f6] text-[#20222a] shadow-[0px_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:scale-105 transition">
+                {feature.icon}
               </div>
 
-              {/* Title */}
-              <h3 className="text-base font-bold text-black dark:text-white mb-2 font-sans">
-                {f.title}
+              <h3 className="font-satoshi text-[18px] sm:text-[20px] font-bold text-[#0b0c10] mb-2 tracking-[-0.015em] leading-[1.15]">
+                {feature.title}
               </h3>
 
-              {/* Description */}
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-snug font-s">
-                {f.desc}
+              <p className="text-[14px] sm:text-[15px] leading-[1.55] text-[#0b0c10] opacity-95 font-medium">
+                {feature.desc}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

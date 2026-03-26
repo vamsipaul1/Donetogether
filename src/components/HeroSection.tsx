@@ -1,84 +1,160 @@
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { motion } from "framer-motion"
+import { ArrowUpRight } from "lucide-react"
+import { Link } from "react-router-dom"
+import { useAuth } from "@/contexts/AuthContext"
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: "easeOut" },
+  },
+}
+
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.15,
+    },
+  },
+}
 
 const HeroSection = () => {
-  const { user } = useAuth();
+  const { user } = useAuth()
+
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-[#b8dcfd] via-[#e0f1ff] to-[#ffffff] dark:from-zinc-950 dark:to-black pt-32 pb-20">
+    <section className="relative isolate min-h-screen flex items-start justify-center bg-white text-[#0b0c10] overflow-hidden">
 
-      {/* Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.4] mix-blend-multiply pointer-events-none bg-[url('/image%20copy%208.png')] bg-cover bg-center" />
+      {/* VIDEO */}
+      <div className="absolute inset-0">
+        <video
+          className="w-full h-full object-cover [transform:scaleY(-1)]"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260302_085640_276ea93b-d7da-4418-a09b-2aa5b490e838.mp4"
+            type="video/mp4"
+          />
+        </video>
 
-      {/* Background Ambience */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-zinc-300 dark:via-zinc-700 to-transparent opacity-50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[26.416%] from-transparent to-white" />
       </div>
 
-      <div className="container relative z-10 max-w-5xl mx-auto px-6 text-center">
+      <div className="relative w-full flex justify-center">
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8 inline-block"
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+          className="flex w-full max-w-[1200px] flex-col items-center text-center gap-6 px-6 sm:px-10 pt-[290px] pb-24"
         >
-          <span className="px-4 py-1.5 rounded-full bg-white/50 backdrop-blur-sm border border-zinc-900/10 text-zinc-900 text-[11px] font-mono tracking-widest uppercase font-bold shadow-sm">
-            only for students
-          </span>
-        </motion.div>
 
-        {/* Hero Headline - Mixed Typography like Reference */}
-        {/* Hero Headline - Mixed Typography like Reference */}
-        <h1 className="text-center mb-6 sm:mb-8 leading-tight sm:leading-[0.9] text-zinc-900 dark:text-white">
-          <span className="block font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[6.5rem] tracking-tighter mb-2">
-            A Workspace
-          </span>
-          <span className="block font-sans font-bold text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[6rem]">
-            for Student Projects
-          </span>
-        </h1>
+          {/* TITLE */}
+          <motion.div
+            variants={fadeUp}
+            className="space-y-4 -mt-12"
+          >
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-semibold tracking-tighter text-black dark:text-white mb-4 sm:mb-6 leading-tight px-2]">
+              <span className="block">Build Faster</span>
+              <span className="block">With Right Team.</span>
+            </h2>
+          </motion.div>
 
-        {/* Subtext - straight Serif like reference */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-base sm:text-xl md:text-2xl text-zinc-800 dark:text-zinc-300 max-w-2xl mx-auto mb-8 sm:mb-12 leading-relaxed px-4 sm:px-0"
-        >
-          Plan, collaborate, and execute your semester projects with professional clarity from first idea to final submission.
-        </motion.p>
+          {/* TEXT */}
+          <motion.p
+            variants={fadeUp}
+            className="
+              text-[16px]
+              sm:text-[18px]
+              leading-[1.7]
+              text-slate-600
 
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-row items-center justify-center gap-3 sm:gap-4 px-4 sm:px-0"
-        >
-          <Link to={user ? "/dashboard" : "/signup"} className="w-auto">
-            <Button
-              className="h-12 sm:h-14 px-4 sm:px-6 md:px-8 rounded-xl bg-black dark:bg-white text-white hover:bg-black/80 dark:hover:bg-white/80 dark:text-black font-sans text-xs sm:text-sm tracking-wider transition-all duration-300 whitespace-nowrap"
-            >
-              Start Your Project
-              <ArrowRight className="ml-2 sm:ml-3 h-5 w-5 sm:h-5 sm:w-5" />
-            </Button>
-          </Link>
-          <Link to="#how-it-works" className="w-auto">
-            <Button
-              className="h-12 sm:h-16 px-6 sm:px-6 md:px-8 rounded-xl bg-white dark:bg-black text-black dark:text-white border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 font-sans text-xs sm:text-sm tracking-wider transition-all duration-300 whitespace-nowrap"
-            >
-              How it works
-              <ArrowRight className="ml-2 sm:ml-3 h-5 w-5 sm:h-5 sm:w-5" />
-            </Button>
-          </Link>
+              -mt-2 sm:-mt-3
+
+              max-w-[640px]
+              mx-auto
+            "
+          >
+            Built for students and startup founders to plan, collaborate,
+            and execute with clarity from first idea to final delivery.
+          </motion.p>
+
+          {/* BUTTON WITH ICON LOGIC ADDED HERE */}
+          <motion.div variants={fadeUp} className="w-full max-w-[780px]">
+
+            <div className="flex items-center justify-center">
+
+              <Link
+                to={user ? "/dashboard" : "/signup"}
+                className="w-full sm:w-auto"
+              >
+
+               <button
+  className="
+  relative
+  text-sm
+  font-semibold
+  rounded-full
+  h-14
+  px-7
+  pr-16
+  bg-black
+  text-white
+  group
+  transition-all
+  duration-500
+  hover:pl-16
+  hover:pr-7
+  inline-flex
+  items-center
+  justify-center
+  overflow-visible
+  shadow-[0_16px_44px_-26px_rgba(0,0,0,0.65)]
+"
+>
+  <span className="relative z-10 whitespace-nowrap">
+    Create Project Room
+  </span>
+
+  <div
+    className="
+    absolute
+    right-1
+    w-12
+    h-12
+    bg-white
+    text-black
+    rounded-full
+    flex
+    items-center
+    justify-center
+    transition-all
+    duration-500
+    group-hover:right-[calc(100%-52px)]
+    group-hover:rotate-45
+"
+  >
+    <ArrowUpRight size={18} />
+  </div>
+</button>
+
+              </Link>
+
+            </div>
+
+          </motion.div>
+
         </motion.div>
 
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default HeroSection;
+export default HeroSection
