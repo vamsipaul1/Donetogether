@@ -61,7 +61,7 @@ export default function SetupProfile() {
 
                 if (inviteId) {
                     // Try to fetch invite details with flexible column names
-                    let inviteResult = await supabase
+                    const inviteResult = await supabase
                         .from('invites')
                         .select('*')
                         .eq('id', inviteId)
