@@ -50,9 +50,13 @@ const Onboarding = () => {
         }
         setCurrentUser(user);
 
-        // Check if user already has a name
-        const { data: profile } = await supabase.from('users').select('full_name').eq('id', user.id).single();
-        if (profile?.full_name && !profile.full_name.includes('@')) {
+        // Check if user already has a name and role
+        const { data: profile } = await supabase.from('users').select('full_name, role').eq('id', user.id).single();
+        
+        if (profile?.full_name && profile?.role) {
+            // Already fully onboarded
+            navigate('/dashboard', { replace: true });
+        } else if (profile?.full_name && !profile.full_name.includes('@')) {
             setFullName(profile.full_name);
             // Show a welcome screen first, then let the user choose role
             setStep('welcome');

@@ -3,7 +3,7 @@ import { MessageWithSender } from '@/types/database';
 import { format, isToday, isYesterday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { getAvatarColor, getInitials } from '@/lib/avatarUtils';
-import { Check, CheckCheck, Clock, FileText, Download, Reply, Smile, Copy, Trash2, Image as ImageIcon, ExternalLink } from 'lucide-react';
+import { Check, CheckCheck, Clock, FileText, Download, Reply, Smile, Copy, Trash2, Image as ImageIcon, ExternalLink, Play, Pause, Volume2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
@@ -125,6 +125,7 @@ export const MessageBubble = ({
 
         // Determine file type from extension
         const isImage = /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(fileName);
+        const isAudio = /\.(wav|mp3|ogg|webm|m4a)$/i.test(fileName);
         const isPdf = /\.pdf$/i.test(fileName);
         const isDoc = /\.(doc|docx)$/i.test(fileName);
         const isSpreadsheet = /\.(xls|xlsx|csv)$/i.test(fileName);
@@ -132,6 +133,7 @@ export const MessageBubble = ({
 
         let fileType = 'document';
         if (isImage) fileType = 'image';
+        else if (isAudio) fileType = 'audio';
         else if (isPdf || isDoc || isSpreadsheet || isPresentation) fileType = 'document';
 
         // Convert size string to bytes (approximate)
@@ -154,6 +156,25 @@ export const MessageBubble = ({
             isLegacy: true // Mark as legacy format
         };
     }
+
+    // Custom Audio Player State
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [audioProgress, setAudioProgress] = useState(0);
+    const [audioDuration, setAudioDuration] = useState(0);
+    const audioRef = useState<HTMLAudioElement | null>(null)[0]; // We'll use a ref ideally but need to handle multiple bubbles
+
+    // Using a simple state-based player for the bubble context
+    const togglePlay = (url: string) => {
+        const audio = document.getElementById(`audio-${message.id}`) as HTMLAudioElement;
+        if (!audio) return;
+
+        if (isPlaying) {
+            audio.pause();
+        } else {
+            audio.play();
+        }
+        setIsPlaying(!isPlaying);
+    };
 
     // Function to render text with mentions/hashes/tasks
     const renderContent = (text: string) => {
@@ -276,7 +297,7 @@ export const MessageBubble = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-                "flex w-full px-4 group relative",
+                "flex w-full px-4 group relative font-body",
                 isOwnMessage ? "justify-end" : "justify-start",
                 isSequence ? "mb-1" : "mb-4 mt-3"
             )}
@@ -305,7 +326,7 @@ export const MessageBubble = ({
                 {/* Sender Name & Time */}
                 {!isOwnMessage && !isSequence && (
                     <div className="flex items-center gap-2 mb-1 ml-1">
-                        <span className="text-[10px] font-black text-zinc-500 dark:text-zinc-500 uppercase">
+                        <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-500 lowercase">
                             {message.sender?.display_name || 'Team Member'}
                         </span>
                         <span className="text-[9px] font-bold text-zinc-400 opacity-70">
@@ -355,6 +376,72 @@ export const MessageBubble = ({
                                                         <ExternalLink className="h-4 w-4 text-zinc-900" />
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Audio Player - Modern Glass Player */}
+                                    {attachmentData.type === 'audio' && (
+                                        <div className={cn(
+                                            "flex flex-col gap-2 p-3 rounded-2xl min-w-[240px] md:min-w-[300px] border shadow-lg overflow-hidden relative",
+                                            isOwnMessage
+                                                ? "bg-white/10 border-white/20 text-white"
+                                                : "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
+                                        )}>
+                                            <div className="flex items-center gap-4 relative z-10">
+                                                <button
+                                                    onClick={() => togglePlay(attachmentData!.url)}
+                                                    className={cn(
+                                                        "h-12 w-12 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 shadow-lg",
+                                                        isOwnMessage ? "bg-white text-black" : "bg-black dark:bg-white text-white dark:text-black"
+                                                    )}
+                                                >
+                                                    {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current ml-1" />}
+                                                </button>
+
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="flex justify-between items-end">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Voice Message</span>
+                                                            <div className="flex items-center gap-1.5 h-6">
+                                                                <div className="flex gap-0.5 items-center">
+                                                                    {[...Array(20)].map((_, i) => (
+                                                                        <motion.div
+                                                                            key={i}
+                                                                            animate={isPlaying ? { height: [4, 12, 6, 16, 8] } : { height: 4 }}
+                                                                            transition={{ repeat: Infinity, duration: 0.8, delay: i * 0.05 }}
+                                                                            className={cn(
+                                                                                "w-0.5 rounded-full",
+                                                                                isOwnMessage ? "bg-white/40" : "bg-zinc-400"
+                                                                            )}
+                                                                        />
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-[10px] font-black tabular-nums">
+                                                            {isPlaying ? "0:01" : formatFileSize(attachmentData.size)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <audio
+                                                id={`audio-${message.id}`}
+                                                src={attachmentData.url}
+                                                className="hidden"
+                                                onTimeUpdate={(e) => setAudioProgress((e.currentTarget.currentTime / e.currentTarget.duration) * 100)}
+                                                onEnded={() => setIsPlaying(false)}
+                                            />
+
+                                            <div className="h-1 w-full bg-white/10 dark:bg-black/20 rounded-full mt-1 overflow-hidden">
+                                                <motion.div
+                                                    animate={{ width: `${audioProgress}%` }}
+                                                    className={cn(
+                                                        "h-full",
+                                                        isOwnMessage ? "bg-white" : "bg-zinc-900 dark:bg-white"
+                                                    )}
+                                                />
                                             </div>
                                         </div>
                                     )}
@@ -659,7 +746,7 @@ export const MessageBubble = ({
                         "flex items-center gap-1.5 justify-end mt-1 mr-1 text-[11px] transition-all duration-200",
                         isSequence ? "opacity-0 group-hover:opacity-100 h-0 group-hover:h-auto" : "opacity-60 group-hover:opacity-100"
                     )}>
-                        <span className="font-bold text-zinc-500 dark:text-zinc-400">
+                        <span className="font-bold text-zinc-500 dark:text-zinc-400 tracking-tight">
                             {formatTime(message.created_at)}
                         </span>
                         <StatusIcon />

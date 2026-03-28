@@ -1,105 +1,229 @@
-import { motion } from 'framer-motion';
-import { Circle, Globe, ArrowUpRight, Check } from 'lucide-react';
+import { motion } from "framer-motion";
+import clsx from "clsx";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: 'easeOut' } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+  },
 };
 
 export default function FeaturesSection() {
   const features = [
     {
       title: "AI-Assisted Planning",
-      desc: "Enter your idea and let AI generate a structured roadmap with milestones and weekly breakdowns.",
-      icon: <Circle className="w-5 h-5" />,
+      desc:
+        "Enter your idea and generate a structured roadmap with milestones and weekly goals.",
+      featured: true,
     },
     {
       title: "Real-Time Collaboration",
-      desc: "Contextual chat linked directly to tasks. Keep discussions relevant, traceable, and focused.",
-      icon: <Globe className="w-5 h-5" />,
+      desc:
+        "Chat directly inside tasks. Keep discussions relevant, traceable, and connected to work.",
     },
     {
-      title: "Task & Progress",
-      desc: "Visual task board with live progress indicators. Clear ownership from To-Do to Done.",
-      icon: <ArrowUpRight className="w-5 h-5" />,
+      title: "Task & Progress Tracking",
+      desc:
+        "Visual boards with clear ownership and live progress from idea to completion.",
     },
     {
       title: "Contribution Visibility",
-      desc: "Track individual participation. Prevent unequal workload distribution with reporting.",
-      icon: <Check className="w-5 h-5" />,
-    }
+      desc:
+        "See who is doing what. Avoid imbalance with transparent activity tracking.",
+    },
   ];
 
   return (
     <section
       id="features"
-      className="relative isolate w-full py-24 border-t border-[#ece7d9] scroll-mt-28"
-      style={{
-        backgroundImage: 'url(/paper-texture.png)',
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-      }}
+      className="
+        relative
+        isolate
+        w-full
+        py-28
+        pt-16
+        border-t
+        border-border
+        scroll-mt-28
+        overflow-hidden
+        bg-background
+      "
     >
-      <div className="absolute inset-0 bg-[#f3eee2]/72" />
+      {/* soft section tint (DrawKit-like) */}
+      <div className="absolute inset-0 bg-muted/35" />
 
-      <div className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(rgba(15,23,42,0.14)_1px,transparent_1px)] [background-size:18px_18px]" />
+      {/* subtle gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
 
-      <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-8 px-5 sm:px-8 lg:px-10">
+      {/* dots */}
+      <div
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          opacity-[0.08]
+          [background-image:radial-gradient(rgba(20,20,30,0.18)_1px,transparent_1px)]
+          [background-size:18px_18px]
+        "
+      />
+
+      {/* container */}
+      <div className="relative mx-auto max-w-[1280px] px-6 gap-6">
+
+        {/* HEADER */}
         <motion.div
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true }}
           variants={fadeUp}
-          className="mx-auto w-full max-w-[980px] text-center"
+          className="text-center max-w-[760px] mx-auto"
         >
-          <div className="flex flex-col items-center gap-4">
-            <span className="font-satoshi inline-flex items-center justify-center rounded-full border border-[#d8d0c1] bg-white/70 px-4 py-1.5 text-[11px] uppercase tracking-[0.24em] text-[#4f4b43]/80 shadow-[0px_10px_30px_-16px_rgba(71,56,27,0.25)] font-semibold">
-              Features
-            </span>
-            <h2 className="font-satoshi font-black tracking-[-0.04em] text-[#16161f] text-[42px] sm:text-[64px] leading-[1.02]">
-              Built for teamwork.
-              <span className="block">Designed for execution.</span>
-            </h2>
-            <p className="font-satoshi mx-auto max-w-[760px] text-[15px] sm:text-[16px] text-[#4b4f5b] opacity-90 leading-[1.6] font-medium">
-              DoneTogether gives students and startup founders the clarity, structure, and momentum of professional tools.
-            </p>
-          </div>
+
+          <h2
+            className="
+              font-sans
+              font-[500]
+
+              text-[32px]
+              sm:text-[48px]
+
+              leading-[1.05]
+
+              tracking-[-0.03em]
+
+              text-zinc-900
+
+              
+            "
+          >
+            Structure. Clarity. Execution.
+          </h2>
+
+          <p
+            className="
+              font-body
+
+              text-[16px]
+              leading-[24px]
+
+              text-zinc-800
+
+              mt-7
+
+              max-w-[560px]
+              mx-auto
+            "
+          >
+            DoneTogether gives students and founders the structure,
+            clarity, and speed of professional product teams.
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+        {/* GRID */}
+        <div
+          className="
+            grid
+            grid-cols-1
+            sm:grid-cols-2
+            lg:grid-cols-3
+            xl:grid-cols-4
+            gap-6
+            mt-16
+          "
+        >
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.3 }}
-              variants={{
-                ...fadeUp,
-                visible: {
-                  ...fadeUp.visible,
-                  transition: { duration: 0.55, delay: index * 0.06, ease: 'easeOut' },
-                },
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: "-10px" }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.08,
+                ease: [0.21, 1.11, 0.81, 0.99]
               }}
-              whileHover={{ y: -6, transition: { duration: 0.25, ease: 'easeOut' } }}
-              className="group relative flex h-full min-h-[260px] flex-col rounded-[22px] border border-[#d9dce4] bg-white/55 p-6 shadow-[0px_22px_60px_-48px_rgba(15,15,20,0.55)] backdrop-blur-md transition-colors duration-300 hover:bg-white/70 hover:border-zinc-950/15"
+              whileHover={{
+                y: -8,
+                scale: 1.02,
+                transition: { type: "spring", stiffness: 400, damping: 14 }
+              }}
+              className={clsx(
+                "group relative overflow-hidden rounded-3xl border border-border/60 bg-card/80 backdrop-blur-sm p-8",
+                "transition duration-300 hover:border-border hover:ring-2 hover:ring-border/60 hover:shadow-lg",
+                "motion-reduce:transition-none motion-reduce:hover:transform-none motion-reduce:hover:shadow-none motion-reduce:hover:ring-0",
+                feature.featured && "ring-2 ring-border/60",
+              )}
             >
-              <div className="pointer-events-none absolute inset-0 rounded-[22px] bg-gradient-to-br from-white/60 via-white/20 to-transparent opacity-70" />
 
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#cdd1db] bg-[#f3f3f6] text-[#20222a] shadow-[0px_8px_24px_-18px_rgba(0,0,0,0.35)] group-hover:scale-105 transition">
-                {feature.icon}
+              {/* hover highlight */}
+              <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-br from-muted/35 via-transparent to-muted/15" />
+
+              {/* top row (no icons) */}
+              <div className="relative z-[1] flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center rounded-full border border-border/60 bg-background/40 px-3 py-1 font-body text-[12px] leading-none tracking-[-0.01em] text-foreground/80">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    {feature.featured ? (
+                      <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/35 px-3 py-1 font-body text-[12px] leading-none tracking-[-0.01em] text-foreground/80">
+                        Core
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {/* title */}
+                  <h3
+                    className="
+                      mt-5
+                      font-body
+                      font-semibold
+                      text-[18px]
+                      sm:text-[19px]
+                      leading-tight
+                      tracking-[-0.02em]
+                    "
+                  >
+                    <span
+                      className={clsx(
+                        "bg-clip-text text-transparent",
+                        [
+                          "bg-gradient-to-r from-indigo-500 to-blue-400",
+                          "bg-gradient-to-r from-pink-500 to-fuchsia-400",
+                          "bg-gradient-to-r from-emerald-500 to-lime-400",
+                          "bg-gradient-to-r from-orange-400 to-yellow-300",
+                        ][index % 4]
+                      )}
+                    >
+                      {feature.title}
+                    </span>
+                  </h3>
+                </div>
               </div>
 
-              <h3 className="font-satoshi text-[18px] sm:text-[20px] font-bold text-[#0b0c10] mb-2 tracking-[-0.015em] leading-[1.15]">
-                {feature.title}
-              </h3>
-
-              <p className="text-[14px] sm:text-[15px] leading-[1.55] text-[#0b0c10] opacity-95 font-medium">
+              {/* desc */}
+              <p
+                className="
+                  relative
+                  z-[1]
+                  font-body
+                  text-[14.5px]
+                  leading-[22px]
+                  text-zinc-800
+                  mt-3
+                "
+              >
                 {feature.desc}
               </p>
+
+              {/* bottom accent */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-border to-transparent opacity-50 transition-opacity duration-300 group-hover:opacity-90" />
             </motion.div>
           ))}
         </div>
+
       </div>
     </section>
   );

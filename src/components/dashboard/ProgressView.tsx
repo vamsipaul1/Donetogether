@@ -520,61 +520,56 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                         {/* Team Workload - Rich List */}
                         <motion.div
                             initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}
-                            className="p-5 md:p-6 rounded-[24px] md:rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl min-h-[200px]"
+                            className="p-5 md:p-6 rounded-[24px] md:rounded-[2rem] bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-white/5 shadow-xl shadow-zinc-200/50 dark:shadow-black/50 backdrop-blur-xl"
                         >
                             <h3 className="text-sm md:text-base font-bold text-zinc-700 dark:text-zinc-200 mb-6 flex items-center gap-2">
                                 <Activity className="w-4 h-4 text-violet-500" />
                                 Team Pulse
                             </h3>
 
-                            <div className="space-y-5">
+                            <div className="flex flex-row gap-4 overflow-x-auto pb-2 no-scrollbar">
                                 {teamData.map((member: any) => {
                                     const total = member.done + member.active;
                                     const activePercent = total > 0 ? (member.active / total) * 100 : 0;
 
                                     return (
-                                        <div key={member.id} className="group">
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-8 w-8 border border-zinc-200 dark:border-zinc-800">
+                                        <div key={member.id} className="group min-w-[160px] flex-shrink-0 bg-zinc-50/50 dark:bg-zinc-800/30 p-4 rounded-3xl border border-zinc-100 dark:border-zinc-800 transition-all hover:border-violet-500/30">
+                                            <div className="flex flex-col items-center text-center gap-3">
+                                                <div className="relative">
+                                                    <Avatar className="h-12 w-12 border-2 border-white dark:border-zinc-900 shadow-xl">
                                                         <AvatarImage src={member.avatar} />
-                                                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-500 text-white font-bold text-xs">{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                                                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-500 text-white font-bold text-sm">{member.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                                     </Avatar>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200 leading-none">{member.name}</p>
-                                                        <p className="text-[10px] font-medium text-zinc-400 capitalize">{member.role || 'Member'}</p>
+                                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center border border-zinc-100 dark:border-zinc-800 shadow-sm">
+                                                        <p className="text-[10px] font-black text-violet-600">{member.active}</p>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="text-xs font-black text-zinc-900 dark:text-white">{member.active}</span>
-                                                    <span className="text-[10px] text-zinc-400 font-medium ml-1">active</span>
+                                                
+                                                <div className="min-w-0">
+                                                    <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{member.name}</p>
+                                                    <p className="text-[9px] font-medium text-zinc-500 uppercase tracking-tight mt-0.5">{member.role || 'Member'}</p>
                                                 </div>
-                                            </div>
 
-                                            {/* Custom Progress Bar */}
-                                            <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden flex relative">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${activePercent}%` }}
-                                                    transition={{ duration: 1, ease: 'easeOut' }}
-                                                    className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full relative z-10"
-                                                />
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${100 - activePercent}%` }}
-                                                    transition={{ duration: 1, delay: 0.2, ease: 'easeOut' }}
-                                                    className="h-full bg-zinc-200 dark:bg-zinc-700"
-                                                />
-                                            </div>
-                                            <div className="flex justify-between mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <span className="text-[9px] text-zinc-400 font-medium">{Math.round(activePercent)}% Load</span>
-                                                <span className="text-[9px] text-emerald-500 font-medium">{member.done} Completed</span>
+                                                <div className="w-full space-y-1.5 mt-1">
+                                                    <div className="h-1.5 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${Math.max(10, activePercent)}%` }}
+                                                            transition={{ duration: 1 }}
+                                                            className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full"
+                                                        />
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-[8px] font-bold uppercase tracking-tighter text-zinc-400">
+                                                        <span>{member.done || 0} Done</span>
+                                                        <span className="text-violet-500">{Math.round(activePercent)}% Load</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     );
                                 })}
                                 {teamData.length === 0 && (
-                                    <div className="text-center py-8 text-zinc-400 text-xs">No team activity yet</div>
+                                    <div className="w-full text-center py-8 text-zinc-400 text-xs italic">No team activity yet</div>
                                 )}
                             </div>
                         </motion.div>

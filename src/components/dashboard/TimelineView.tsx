@@ -280,11 +280,7 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
                 </div>
 
                 <div className="flex items-center gap-2 md:gap-3 ml-4 shrink-0">
-                    {isOwner && (
-                        <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:scale-105 transition-all shadow-xl shadow-zinc-500/20">
-                            <img src="/image copy 4.png" alt="" className="w-3 h-3 md:w-3.5 md:h-3.5 invert brightness-0 dark:brightness-200" /> <span className="hidden sm:inline">Add Task</span><span className="sm:hidden">Add</span>
-                        </button>
-                    )}
+
                 </div>
             </header>
 

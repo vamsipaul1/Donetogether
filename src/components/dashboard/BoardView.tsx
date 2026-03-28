@@ -161,23 +161,12 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
             <header className="px-4 md:px-6 h-14 flex items-center justify-between border-b border-zinc-200/50 dark:border-white/5 bg-background/50 dark:bg-zinc-900/50 backdrop-blur-xl sticky top-0 z-20 overflow-x-auto scrollbar-hide shrink-0">
                 <div className="flex items-center gap-3 md:gap-6 min-w-max">
                     {isOwner && (
-                        <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-lg text-[9px] md:text-[10px] font-black hover:scale-105 transition-all uppercase shadow-lg shadow-zinc-500/20">
+                        <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-lg text-[9px] md:text-[10px] font-black hover:scale-105 transition-all uppercase shadow-lg shadow-black/20">
                             <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 invert brightness-0 dark:brightness-200" /> <span className="hidden sm:inline">Add task</span><span className="sm:hidden">Add</span>
                         </button>
                     )}
                     <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-700 hidden sm:block" />
-                    <h2 className="text-xs md:text-sm font-black text-zinc-900 dark:text-white uppercase shrink-0">Operation Board</h2>
-                </div>
-                <div className="flex items-center gap-1.5 md:gap-3 ml-4">
-                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase px-2 py-1 rounded-md">
-                        <Filter className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Filter</span>
-                    </button>
-                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase px-2 py-1 rounded-md">
-                        <ArrowDownAZ className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Sort</span>
-                    </button>
-                    <button className="flex items-center gap-1 text-[10px] font-black text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors uppercase px-2 py-1 rounded-md">
-                        <Layers className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Group</span>
-                    </button>
+                    <h2 className="text-xs md:text-sm font-black pr-10 text-zinc-900 dark:text-white uppercase shrink-0">Operation Board</h2>
                 </div>
             </header>
 
@@ -292,9 +281,9 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                     onClick={() => {
                                                         onAddTask();
                                                     }}
-                                                    className="w-full py-3 md:py-4 rounded-[20px] border-2 border-dashed border-zinc-200/80 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-center gap-2 group mt-2"
+                                                    className="w-full py-3 md:py-4 rounded-[20px] border-2 border-dashed border-zinc-800 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-center gap-2 group mt-2"
                                                 >
-                                                    <img src="/image copy 4.png" alt="" className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all group-hover:invert group-hover:brightness-0 dark:group-hover:brightness-200" />
+                                                    <img src="/image copy 4.png" alt="" className="w-4 h-4 transition-all " />
                                                     <span className="text-[9px] md:text-[10px] font-black uppercase">Add Task</span>
                                                 </button>
                                             )}

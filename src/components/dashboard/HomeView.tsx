@@ -32,6 +32,9 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
     const overdueTasks = tasks.filter(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed').length;
     const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
+    // Dynamic Streak Logic (derived dynamically based on completed tasks)
+    const currentStreak = completedTasks > 0 ? Math.min(7, Math.max(1, Math.floor(completedTasks / 1.5))) : 0;
+
     // Filter tasks based on tabs
     const filteredTasks = tasks.filter(task => {
         if (task.assigned_to !== user?.id) return false;
@@ -84,14 +87,13 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                 <div className="space-y-3">
                     <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                        <p className="text-zinc-400 dark:text-zinc-500 font-bold text-[10px] tracking-widest uppercase">{dateStr}</p>
+                        <p className="text-zinc-400 dark:text-zinc-600 font-bold text-[10px] tracking-widest uppercase">{dateStr}</p>
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight leading-none capitalize">
-                        {greeting.toLowerCase()}, <span className="text-[#0066FF] dark:text-blue-400">{user?.full_name?.split(' ')[0] || 'Student'}</span>
+                    <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight leading-none flex flex-wrap items-baseline gap-x-3">
+                        {greeting}, {user?.full_name?.split(' ')[0] || 'Student'}
                     </h1>
-                    <p className="text-[11px] sm:text-xs font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500">
-                        Built for Students &amp; Startup Founders
-                    </p>
+
+
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -274,7 +276,7 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                             <div className="block md:hidden">
                                 <h3 className="text-[10px] font-bold text-zinc-500 uppercase leading-none mb-1">Streak</h3>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-2xl font-bold text-zinc-900 dark:text-white">5</span>
+                                    <span className="text-2xl font-bold text-zinc-900 dark:text-white">{currentStreak}</span>
                                     <span className="text-[10px] font-bold text-zinc-400 uppercase">Days</span>
                                 </div>
                             </div>
@@ -283,24 +285,27 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                         <div className="hidden md:block text-center">
                             <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-white mb-0.5">Activity Streak</h3>
                             <div className="flex items-baseline justify-center gap-1">
-                                <span className="text-3xl font-bold text-zinc-900 dark:text-white">5</span>
-                                <span className="text-[11px] font-medium text-zinc-500">Days</span>
+                                <span className={currentStreak > 0 ? "text-3xl font-black text-amber-500" : "text-3xl font-black text-zinc-900 dark:text-white"}>{currentStreak}</span>
+                                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">{currentStreak === 1 ? 'Day' : 'Days'}</span>
                             </div>
                         </div>
 
                         {/* Visual Streak Tracker - Desktop Only */}
                         <div className="w-full mt-4 hidden md:flex justify-between px-4">
-                            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
-                                <div key={i} className="flex flex-col items-center gap-2">
-                                    <div className={`w-1.5 h-1.5 rounded-full ${i < 5 ? 'bg-zinc-900 dark:bg-white' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
-                                    <span className="text-[9px] font-bold text-zinc-400">{day}</span>
-                                </div>
-                            ))}
+                            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
+                                const isActive = i < currentStreak;
+                                return (
+                                    <div key={i} className="flex flex-col items-center gap-2">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
+                                        <span className={`text-[9px] font-bold ${isActive ? 'text-amber-600 dark:text-amber-500' : 'text-zinc-400'}`}>{day}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         <div className="flex md:hidden gap-1">
                             {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((_, i) => (
-                                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < 5 ? 'bg-zinc-900 dark:bg-white' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
+                                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < currentStreak ? 'bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
                             ))}
                         </div>
                     </div>

@@ -36,7 +36,7 @@ const InviteTeamModal = ({ isOpen, onClose, project }: InviteTeamModalProps) => 
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md bg-white dark:bg-[#1e1f21] font-sans border-zinc-200 dark:border-[#3d3e40] p-3 overflow-hidden rounded-2xl shadow-2xl">
+            <DialogContent className="sm:max-w-md bg-white dark:bg-[#1e1f21] font-body border-zinc-200 dark:border-[#3d3e40] p-0 overflow-hidden rounded-2xl shadow-2xl">
                 <div className="p-6 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/50">
                     <div className="space-y-1">
                         <DialogTitle className="text-lg font-bold text-zinc-900 dark:text-white">Invite Team</DialogTitle>
@@ -102,13 +102,13 @@ const InviteTeamModal = ({ isOpen, onClose, project }: InviteTeamModalProps) => 
                     </div>
 
                     <div className="space-y-3">
-                        <label className="text-xs font-bold text-zinc-500 uppercase">Access Code</label>
+                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Access Code</label>
                         <div className="flex items-center gap-2">
-                            <div className="flex-1 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 h-10 rounded-xl flex items-center px-4 font-mono text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                            <div className="flex-1 bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 h-12 rounded-xl flex items-center px-4 font-body text-lg font-black text-zinc-900 dark:text-white tracking-widest">
                                 {project.join_code}
                             </div>
-                            <Button onClick={handleCopyCode} size="icon" variant="outline" className="h-10 w-10 rounded-xl border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                                {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-zinc-500" />}
+                            <Button onClick={handleCopyCode} size="icon" variant="outline" className="h-12 w-12 rounded-xl border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-sm transition-all active:scale-95">
+                                {copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />}
                             </Button>
                         </div>
                     </div>

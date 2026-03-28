@@ -16,6 +16,7 @@ import Premium from "./pages/Premium";
 import NotFound from "./pages/NotFound";
 import VerifyEmail from "./pages/VerifyEmail";
 import WhyChoose from "./pages/WhyChoose";
+import MessagesPage from "./pages/MessagesPage";
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -46,6 +47,8 @@ const AnimatedRoutes = () => {
         <Route path="/create-project" element={<ProtectedRoute><PageTransition><CreateProject /></PageTransition></ProtectedRoute>} />
         <Route path="/invite/:projectId" element={<ProtectedRoute><PageTransition><InvitePage /></PageTransition></ProtectedRoute>} />
         <Route path="/join" element={<ProtectedRoute><PageTransition><JoinProject /></PageTransition></ProtectedRoute>} />
+        <Route path="/messages" element={<ProtectedRoute><PageTransition><MessagesPage /></PageTransition></ProtectedRoute>} />
+        <Route path="/messages/:projectId" element={<ProtectedRoute><PageTransition><MessagesPage /></PageTransition></ProtectedRoute>} />
 
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>

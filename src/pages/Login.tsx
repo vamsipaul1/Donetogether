@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,13 +10,14 @@ import { toast } from "sonner";
 const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { user, signInWithEmail, signInWithGoogle } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
         if (user) {
-            navigate("/dashboard", { replace: true });
+            navigate("/onboarding", { replace: true });
         }
     }, [user, navigate]);
 
@@ -40,7 +41,7 @@ const Login = () => {
             }
         } else {
             toast.success("Welcome back!");
-            navigate("/dashboard", { replace: true });
+            navigate("/onboarding", { replace: true });
         }
     };
 
@@ -54,7 +55,7 @@ const Login = () => {
     };
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-white font-sans selection:bg-zinc-900 selection:text-white">
+        <div className="relative min-h-screen w-full overflow-hidden bg-white font-body selection:bg-zinc-900 selection:text-white">
             {/* Background Video (matches Hero) */}
             <div className="absolute inset-0">
                 <video
@@ -75,7 +76,7 @@ const Login = () => {
             {/* Soft texture (keeps landing feel) */}
             <div className="absolute inset-0 opacity-[0.18] mix-blend-multiply pointer-events-none bg-[url('/paper-texture.png')] bg-cover bg-center" />
 
-            <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 lg:p-12 gap-8 min-h-screen">
+            <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 sm:p-8 lg:p-12 gap-8 min-h-screen py-20 lg:py-12">
 
                 {/* Left Side - Heading */}
                 <div className="hidden lg:flex w-1/2 flex-col justify-center items-center h-full">
@@ -85,23 +86,15 @@ const Login = () => {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="relative w-full max-w-[520px] flex flex-col items-center text-center"
                     >
-                        <h1 className="font-medium tracking-[-0.04em] text-[#0b0c10] text-[44px] leading-[1.02]">
-                            Simple <span className="text-[#373a46]">management</span> for your remote team
-                        </h1>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3, duration: 0.8 }}
-                        className="mt-12 text-center"
-                    >
-                        <h2 className="text-4xl font-serif font-medium text-zinc-900 leading-tight tracking-tight mb-2 text-shadow-sm">
-                            Welcome back, <span className="italic text-zinc-600">Builder</span>.
-                        </h2>
-                        <p className="text-lg text-zinc-600 font-medium">
-                            Your next project awaits.
-                        </p>
+                        <motion.h1
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                            className="font-body font-black tracking-[-0.04em] text-[#0b0c10] text-[40px] md:text-[56px] leading-[0.95] antialiased uppercase"
+                        >
+                            Log in to <br />
+                            DoneTogether Work <span className="text-orange-500 inline-block translate-y-[-2px] animate-[bounce-x_2s_infinite]">→</span>
+                        </motion.h1>
                     </motion.div>
                 </div>
 
@@ -115,26 +108,26 @@ const Login = () => {
                     >
                         {/* Brand Mobile */}
                         <div className="flex justify-center mb-8">
-                            <Link to="/" className="flex items-center gap-3 group w-fit">
-                                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform duration-300">
-                                    <img src="/favicon.ico" alt="Logo" className="w-5 h-5 object-contain" />
+                            <Link to="/" className="flex items-center gap-4 group w-fit">
+                                <div className="w-12 h-12 bg-black rounded-[20px] flex items-center justify-center text-white shadow-2xl group-hover:scale-105 transition-transform duration-300">
+                                    <img src="/favicon.ico" alt="Logo" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
                                 </div>
-                                <span className="font-serif font-bold text-2xl tracking-tighter text-zinc-900 group-hover:opacity-80 transition-opacity">
+                                <span className="font-body font-black text-3xl tracking-tighter text-zinc-900">
                                     DoneTogether
                                 </span>
                             </Link>
                         </div>
 
-                        <div className="space-y-2 mb-8 text-center">
-                            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Log In</h1>
-                            <p className="text-zinc-500 text-sm">Access your dashboard.</p>
+                        <div className="space-y-1 mb-8 text-center font-body">
+                            <h2 className="text-3xl font-black text-zinc-900 tracking-tight antialiased capitalize">Welcome back</h2>
+                            <p className="text-zinc-600 text-[15px] antialiased">Access your dashboard</p>
                         </div>
 
                         <div className="space-y-5">
                             <Button
                                 variant="outline"
                                 onClick={socialLogin}
-                                className="w-full h-12 rounded-full border-zinc-200 bg-white/60 text-zinc-900 transition-all font-medium text-sm gap-3 group shadow-sm hover:text-black hover:bg-white focus-visible:ring-0 focus-visible:ring-offset-0"
+                                className="w-full h-12 rounded-full border-zinc-500 bg-white/60 text-zinc-900 transition-all font-medium text-sm gap-3 group shadow-sm hover:text-black hover:bg-white focus-visible:ring-0 focus-visible:ring-offset-0"
                             >
                                 <svg className="w-5 h-5 shrink-0 transition-transform group-hover:scale-110 duration-300" viewBox="0 0 24 24">
                                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -161,14 +154,28 @@ const Login = () => {
                                         className="h-12 bg-white/70 border-zinc-200 focus:border-black rounded-xl transition-all pl-4 text-sm font-medium shadow-sm"
                                         required
                                     />
-                                    <Input
-                                        type="password"
-                                        placeholder="Password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="h-12 bg-white/70 border-zinc-200 focus:border-black rounded-xl transition-all pl-4 text-sm font-medium shadow-sm"
-                                        required
-                                    />
+                                    <div className="relative group/pass">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="Password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="h-12 bg-white/70 border-zinc-200 focus:border-black rounded-xl transition-all pl-4 pr-12 text-sm font-medium shadow-sm"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-zinc-400 hover:text-black hover:bg-zinc-100 transition-all focus:outline-none"
+                                            tabIndex={-1}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="w-4 h-4" />
+                                            ) : (
+                                                <Eye className="w-4 h-4" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <Button
@@ -187,8 +194,8 @@ const Login = () => {
 
                         <div className="text-center mt-6">
                             <p className="text-zinc-500 text-sm">
-                                Don't have an account?{' '}
-                                <Link to="/signup" className="text-black font-bold hover:underline underline-offset-4">
+                                Don't have an account?{'  '}
+                                <Link to="/signup" className=" p-2 text-black font-bold hover:underline underline-offset-4">
                                     Sign up here
                                 </Link>
                             </p>

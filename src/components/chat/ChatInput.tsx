@@ -1,7 +1,7 @@
 import { useState, useRef, KeyboardEvent, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Send, Paperclip, Smile, Image as ImageIcon, Mic, Plus, FileText, X, CheckSquare, Loader2, Reply } from 'lucide-react';
+import { Send, Paperclip, Smile, Image as ImageIcon, Mic, MicOff, Plus, FileText, X, CheckSquare, Loader2, Reply } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { uploadFile, formatFileSize, FileUploadResult } from '@/lib/fileUpload';
@@ -29,6 +29,13 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setRep
     const [isFocused, setIsFocused] = useState(false);
     const [uploadedFile, setUploadedFile] = useState<FileUploadResult | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingDuration, setRecordingDuration] = useState(0);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
+    const timerRef = useRef<any>(null);
+    const recognitionRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
@@ -162,6 +169,109 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setRep
         setMessage(prev => prev + emoji);
     };
 
+    const toggleListening = () => {
+        if (isListening) {
+            recognitionRef.current?.stop();
+            setIsListening(false);
+            return;
+        }
+
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            toast.error("Voice recognition is not supported in this browser.");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = true;
+        recognition.continuous = false;
+
+        recognition.onstart = () => {
+            setIsListening(true);
+        };
+
+        recognition.onresult = (event: any) => {
+            const transcript = Array.from(event.results)
+                .map((result: any) => result[0])
+                .map((result: any) => result.transcript)
+                .join('');
+            setMessage(transcript);
+            
+            if (textareaRef.current) {
+                textareaRef.current.style.height = 'auto';
+                textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
+            }
+        };
+
+        recognition.onerror = (event: any) => {
+            setIsListening(false);
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+
+        recognition.start();
+        recognitionRef.current = recognition;
+    };
+
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const recorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = recorder;
+            audioChunksRef.current = [];
+
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) audioChunksRef.current.push(e.data);
+            };
+
+            recorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const fileName = `voice-${Date.now()}.webm`;
+                const file = new File([audioBlob], fileName, { type: 'audio/webm' });
+                
+                setIsUploading(true);
+                toast.loading('Sending voice message...', { id: 'voice-upload' });
+                try {
+                    const uploadResult = await uploadFile(file, 'chat-files', projectId);
+                    onSendMessage('', uploadResult, replyTo?.id); // Direct send for voice
+                    toast.success('Voice message sent', { id: 'voice-upload' });
+                } catch (err) {
+                    toast.error("Failed to send voice message", { id: 'voice-upload' });
+                } finally {
+                    setIsUploading(false);
+                }
+                
+                stream.getTracks().forEach(t => t.stop());
+            };
+
+            recorder.start();
+            setIsRecording(true);
+            setRecordingDuration(0);
+            timerRef.current = setInterval(() => {
+                setRecordingDuration(prev => prev + 1);
+            }, 1000);
+        } catch (err) {
+            toast.error("Microphone access denied");
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+        }
+        setIsRecording(false);
+        if (timerRef.current) clearInterval(timerRef.current);
+    };
+
+    const formatDuration = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -197,7 +307,7 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setRep
     };
 
     return (
-        <div className="relative px-2 sm:px-4 md:px-6 pb-2 sm:pb-4 md:pb-6 pt-2 z-40">
+        <div className="relative px-2 sm:px-4 md:px-6 pb-2 sm:pb-4 md:pb-6 pt-2 z-40 font-body">
             <div className="max-w-5xl mx-auto relative">
                 {/* Reply Context Bar */}
                 {replyTo && (
@@ -354,6 +464,39 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setRep
                                 </div>
                             </PopoverContent>
                         </Popover>
+                        
+                        <div className="flex items-center gap-1">
+                            {/* Record Button (Hold to Record, Click to STT) */}
+                            <button 
+                                onMouseDown={startRecording}
+                                onMouseUp={stopRecording}
+                                onMouseLeave={stopRecording}
+                                onTouchStart={startRecording}
+                                onTouchEnd={stopRecording}
+                                onClick={(e) => {
+                                    // If it wasn't a long press (recording duration < 0.5s), do STT
+                                    if (recordingDuration < 1) {
+                                        toggleListening();
+                                    }
+                                }}
+                                className={cn(
+                                    "h-9 w-9 rounded-full flex items-center justify-center transition-all relative group",
+                                    isRecording 
+                                        ? "bg-red-500 text-white scale-110 shadow-lg" 
+                                        : isListening
+                                            ? "bg-emerald-500 text-white animate-pulse"
+                                            : "text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                )}
+                            >
+                                <Mic className="w-5 h-5 flex-shrink-0" />
+                                {isRecording && (
+                                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-2 shadow-xl whitespace-nowrap">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                        {formatDuration(recordingDuration)}
+                                    </div>
+                                )}
+                            </button>
+                        </div>
 
                         <button
                             onClick={handleSend}

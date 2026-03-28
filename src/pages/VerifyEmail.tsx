@@ -64,7 +64,7 @@ const VerifyEmail = () => {
             {/* Ambience */}
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/40 dark:bg-zinc-800/20 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/2 z-0" />
 
-            <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 lg:p-12 relative z-10 gap-8 h-screen">
+            <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10 gap-8 min-h-screen py-20 lg:py-12">
 
                 {/* Left Side - Visuals */}
                 <div className="hidden lg:flex w-1/2 flex-col justify-center items-center h-full">

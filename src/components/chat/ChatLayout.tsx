@@ -6,7 +6,7 @@ import { ChatInput } from './ChatInput';
 import { ChatInfoSidebar } from './ChatInfoSidebar';
 import { supabase } from '@/lib/supabase';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Info, Search, Phone, Video, MoreHorizontal, Menu, ChevronLeft, Globe, Users, MessageSquare } from 'lucide-react';
+import { Loader2, Info, Search, Phone, Video, MoreHorizontal, Menu, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Globe, Users, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -124,23 +124,60 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
         );
     }
 
-    return (
-        <div className="flex h-full bg-transparent w-full overflow-hidden relative">
-            {/* Left Sidebar - Glassmorphism */}
-            <div className="hidden md:block h-full border-r-2 border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-black/40 backdrop-blur-md w-80 shrink-0">
-                <ChatSidebar
-                    projectId={projectId}
-                    members={members}
-                    projectAvatar={projectAvatar}
-                    onlineUsers={onlineUsers}
-                />
-            </div>
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-            {/* Main Chat Area - Ultra Clean Minimalist */}
-            <div className="flex-1 flex flex-col h-full min-w-0 bg-transparent relative">
+    return (
+        <div className="flex h-full bg-[#FAF9F6] dark:bg-[#0C0C0B] w-full overflow-hidden relative font-body transition-colors duration-700">
+            {/* Texture Overlay for that premium "best" feel */}
+            <div className="absolute inset-0 opacity-[0.4] dark:opacity-[0.15] pointer-events-none dotted-pattern" />
+
+            {/* Left Sidebar - Glassmorphism */}
+            <motion.div
+                initial={false}
+                animate={{
+                    width: isSidebarCollapsed ? 0 : 320,
+                    opacity: isSidebarCollapsed ? 0 : 1,
+                    x: isSidebarCollapsed ? -320 : 0
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className={cn(
+                    "hidden md:block h-full border-r-2 border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-black/40 backdrop-blur-md shrink-0 relative overflow-hidden"
+                )}
+            >
+                <div className="w-[320px] h-full"> {/* Inner fixed width container to prevent reflow while animating */}
+                    <ChatSidebar
+                        projectId={projectId}
+                        members={members}
+                        projectAvatar={projectAvatar}
+                        onlineUsers={onlineUsers}
+                        lastMessage={messages[messages.length - 1]}
+                    />
+                </div>
+            </motion.div>
+
+            {/* Main Chat Area */}
+            <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+                {/* Floating Sidebar Toggle Button (when sidebar is collapsed or for small screens) */}
+                <button
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                    className={cn(
+                        "absolute left-4 top-[72px] z-50 p-2 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-black/80 backdrop-blur-md shadow-lg transition-transform hover:scale-110 hidden md:flex",
+                        isSidebarCollapsed ? "translate-x-0" : "translate-x-[-64px] opacity-0 pointer-events-none" // Move it out of way when sidebar open
+                    )}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                </button>
                 {/* Header - Modern Glassmorphism */}
                 <div className="h-[72px] border-b border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-between px-6 bg-white/50 dark:bg-black/40 backdrop-blur-md z-40 sticky top-0 w-full">
                     <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                        {/* Desktop Sidebar Toggle */}
+                        <button
+                            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                            className="hidden md:flex p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                        >
+                            {isSidebarCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+                        </button>
+
                         {/* Mobile Side Menu Trigger */}
                         <div className="md:hidden">
                             <Sheet>
@@ -192,21 +229,21 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                         </motion.div>
 
                         <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-2">
-                                <h3 className="font-black text-sm md:text-base text-zinc-900 dark:text-zinc-50 truncate">
+                            <div className="flex items-center gap-1.5">
+                                <h3 className="font-bold text-sm md:text-base text-zinc-900 dark:text-zinc-50 truncate">
                                     {projectTitle}
                                 </h3>
                                 <div className={cn(
-                                    "flex items-center gap-1.5 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase transition-all duration-500",
+                                    "flex items-center gap-1.5 px-0 py-0 text-[10px] font-bold uppercase transition-all duration-500",
                                     isConnected
-                                        ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100 sm:border border-zinc-200 dark:border-zinc-700 bg-transparent sm:bg-zinc-100"
-                                        : "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 animate-pulse sm:border border-amber-200/50 bg-transparent sm:bg-amber-50"
+                                        ? "text-zinc-900 dark:text-zinc-100"
+                                        : "text-amber-600 dark:text-amber-400 animate-pulse"
                                 )}>
                                     <span className={cn("h-1.5 w-1.5 rounded-full", isConnected ? "bg-green-500" : "bg-amber-500")} />
-                                    <span className="hidden sm:inline">{isConnected ? 'Active' : 'Syncing'}</span>
+                                    <span className="hidden sm:inline">{isConnected ? 'Active' : 'Loading'}</span>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 sm:mt-1 mt-0">
+                            <div className="flex items-center gap-2 mt-0">
                                 <span className="text-[12px] text-zinc-400 dark:text-zinc-500 font-medium lowercase">
                                     {onlineUsers.size} online
                                 </span>
@@ -235,12 +272,11 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                 <div className="flex-1 overflow-hidden relative">
                     <ScrollArea className="h-full px-4 md:px-8 relative z-0">
                         {isLoading ? (
-                            <div className="flex items-center justify-center h-full flex-col gap-5 pt-20">
+                            <div className="flex items-center justify-center h-full pt-20 animate-in fade-in duration-700">
                                 <div className="relative">
-                                    <div className="absolute inset-0 bg-zinc-200 blur-2xl rounded-full scale-110"></div>
-                                    <Loader2 className="h-12 w-12 animate-spin text-zinc-900 relative z-10" />
+                                    <div className="absolute inset-0 bg-violet-500/10 blur-[40px] rounded-full animate-pulse" />
+                                    <Loader2 className="h-10 w-10 text-zinc-900 dark:text-white animate-spin duration-1000 relative z-10" />
                                 </div>
-                                <p className="text-[10px] font-black text-zinc-400 animate-pulse">Loading...</p>
                             </div>
                         ) : messages.length === 0 ? (
                             <motion.div

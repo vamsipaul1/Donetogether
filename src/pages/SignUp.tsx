@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState, useEffect } from 'react';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const { signInWithGoogle, signUpWithEmail, user } = useAuth();
@@ -17,7 +18,7 @@ const SignUp = () => {
 
     useEffect(() => {
         if (user) {
-            navigate('/dashboard', { replace: true });
+            navigate('/onboarding', { replace: true });
         }
     }, [user, navigate]);
 
@@ -37,8 +38,10 @@ const SignUp = () => {
             toast.error(error.message);
         } else if (data?.user) {
             toast.success('Account created successfully!');
+            // If we have a session (email confirmation off), go to onboarding
+            // If no session (email confirmation on), go to verify-email
             if (data?.session) {
-                navigate('/dashboard', { replace: true });
+                navigate('/onboarding', { replace: true });
             } else {
                 toast.info('Please check your email to verify your account.');
                 navigate(`/verify-email?email=${encodeURIComponent(email)}`, { replace: true });
@@ -55,7 +58,7 @@ const SignUp = () => {
     };
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-white font-sans selection:bg-zinc-900 selection:text-white">
+        <div className="dashboard-theme relative min-h-screen w-full overflow-hidden bg-white font-sans selection:bg-zinc-900 selection:text-white">
             {/* Background Video (matches Hero) */}
             <div className="absolute inset-0">
                 <video
@@ -76,18 +79,55 @@ const SignUp = () => {
             {/* Soft texture (keeps landing feel) */}
             <div className="absolute inset-0 opacity-[0.18] mix-blend-multiply pointer-events-none bg-[url('/paper-texture.png')] bg-cover bg-center" />
 
-            <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 lg:p-12 gap-8 min-h-screen">
+            <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 sm:p-8 lg:p-12 gap-8 min-h-screen py-20 lg:py-12">
 
-                {/* Left Side - Heading */}
-                <div className="hidden lg:flex w-1/2 flex-col justify-center items-center h-full">
+                {/* Left Side (Desktop only) - Image on top, text underneath */}
+                <div className="hidden lg:flex w-1/2 flex-col justify-center items-center h-full max-w-[580px]">
+                    <motion.div
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1, duration: 0.8 }}
+                        className="w-full"
+                    >
+                        {/* Container background set to solid white to match the illustration perfectly */}
+                        <div className="relative overflow-hidden rounded-[40px] border border-zinc-200/50 bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] p-8 flex items-center justify-center">
+                            <img
+                                src="/b.png"
+                                alt="DoneTogether signup"
+                                className="h-[420px] w-full object-contain object-center"
+                                loading="lazy"
+                            />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-50/50 via-transparent to-white/10" />
+                        </div>
+                    </motion.div>
+
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
-                        className="relative w-full max-w-[520px] flex flex-col items-center text-center"
+                        className="relative mt-12 w-full flex flex-col items-center text-center"
                     >
-                           <h1 className="font-medium tracking-[-0.04em] text-[#0b0c10] text-[44px] leading-[1.02]">
-                               Simple <span className="text-[#373a46]">management</span> for your remote team
+                        <h1 className="font-sans font-extrabold tracking-[-0.03em] text-[#0b0c10] text-2xl md:text-3xl lg:text-[56px] leading-[1.1] shadow-zinc-900/5 antialiased flex flex-wrap justify-center gap-x-3">
+                            Start Building
+                            <span className="relative inline-block pb-1">
+                                Together
+                                <motion.svg
+                                    initial={{ pathLength: 0, opacity: 0 }}
+                                    animate={{ pathLength: 1, opacity: 1 }}
+                                    transition={{ duration: 1, delay: 0.8, ease: "easeInOut" }}
+                                    className="absolute -bottom-1 left-0 w-full h-[10px] text-orange-500/90"
+                                    viewBox="0 0 240 12"
+                                    fill="none"
+                                    preserveAspectRatio="none"
+                                >
+                                    <path
+                                        d="M3 9C40 3.5 120 2.5 237 9"
+                                        stroke="currentColor"
+                                        strokeWidth="8"
+                                        strokeLinecap="round"
+                                    />
+                                </motion.svg>
+                            </span>
                         </h1>
                     </motion.div>
 
@@ -95,28 +135,11 @@ const SignUp = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3, duration: 0.8 }}
-                        className="mt-12 text-center"
+                        className="mt-8 text-center"
                     >
-                        <p className="text-lg text-zinc-600 font-medium max-w-md mx-auto">
+                        <p className="text-2xl md:text-3xl text-zinc-800 font-body font-bold max-w-xl mx-auto leading-relaxed antialiased">
                             The platform for student & startup builders.
                         </p>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 18 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.45, duration: 0.8 }}
-                        className="mt-10 w-full max-w-[560px]"
-                    >
-                        <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/40 backdrop-blur-xl shadow-xl">
-                            <img
-                                src="/b.png"
-                                alt="DoneTogether signup"
-                                className="h-[340px] w-full object-cover object-center"
-                                loading="lazy"
-                            />
-                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/60 via-white/10 to-transparent" />
-                        </div>
                     </motion.div>
                 </div>
 
@@ -126,30 +149,30 @@ const SignUp = () => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="w-full max-w-[420px] bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/60 shadow-xl"
+                        className="w-full max-w-[420px] bg-white/70 backdrop-blur-xl p-6 sm:p-10 rounded-3xl border border-white/60 shadow-xl"
                     >
                         {/* Brand Mobile */}
-                        <div className="flex justify-center mb-8">
-                            <Link to="/" className="flex items-center gap-3 group w-fit">
-                                <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform duration-300">
-                                    <img src="/favicon.ico" alt="Logo" className="w-5 h-5 object-contain" />
+                        <div className="flex justify-center mb-10">
+                            <Link to="/" className="flex items-center gap-4 group w-fit">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-[18px] sm:rounded-[20px] flex items-center justify-center text-white shadow-2xl group-hover:scale-105 transition-transform duration-300">
+                                    <img src="/favicon.ico" alt="Logo" className="w-6 h-6 sm:w-8 sm:h-8 object-contain transition-transform group-hover:scale-110" />
                                 </div>
-                                <span className="font-serif font-bold text-2xl tracking-tighter text-zinc-900 group-hover:opacity-80 transition-opacity">
+                                <h1 className="font-body font-bold text-2xl sm:text-3xl tracking-tighter text-zinc-900 antialiased">
                                     DoneTogether
-                                </span>
+                                </h1>
                             </Link>
                         </div>
 
-                        <div className="space-y-2 mb-8 text-center">
-                            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">Create Account</h1>
-                            <p className="text-zinc-500 text-sm">Join the community.</p>
+                        <div className="space-y-1 mb-8 text-center">
+                            <h2 className="text-2xl font-bold text-zinc-900 tracking-tight font-body antialiased">Create account</h2>
+                            <p className="text-zinc-500 text-[15px] font-body antialiased">Join the community</p>
                         </div>
 
                         <div className="space-y-5">
                             <Button
                                 variant="outline"
                                 onClick={socialLogin}
-                                className="w-full h-12 rounded-full border-zinc-200 bg-white/60 text-zinc-900 transition-all font-medium text-sm gap-3 group shadow-sm hover:bg-white hover:text-black focus-visible:ring-0 focus-visible:ring-offset-0"
+                                className="w-full h-12 rounded-full border-zinc-500 bg-white/80 text-zinc-900  font-medium text-sm gap-3 group shadow-sm hover:bg-white hover:text-black focus-visible:ring-0 focus-visible:ring-offset-0"
                             >
                                 <svg className="w-5 h-5 shrink-0 transition-transform group-hover:scale-110 duration-300" viewBox="0 0 24 24">
                                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -176,14 +199,28 @@ const SignUp = () => {
                                         className="h-12 bg-white/70 border-zinc-200 focus:border-black rounded-xl transition-all pl-4 text-sm font-medium shadow-sm"
                                         required
                                     />
-                                    <Input
-                                        type="password"
-                                        placeholder="Password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="h-12 bg-white/70 border-zinc-200 focus:border-black rounded-xl transition-all pl-4 text-sm font-medium shadow-sm"
-                                        required
-                                    />
+                                    <div className="relative group/pass">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="Password"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="h-12 bg-white/70 border-zinc-200 focus:border-black rounded-xl transition-all pl-4 pr-12 text-sm font-medium shadow-sm"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-zinc-400 hover:text-black hover:bg-zinc-100 transition-all focus:outline-none"
+                                            tabIndex={-1}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="w-4 h-4" />
+                                            ) : (
+                                                <Eye className="w-4 h-4" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <Button
@@ -198,14 +235,14 @@ const SignUp = () => {
                                     )}
                                 </Button>
 
-                                <p className="text-xs text-center text-zinc-500 leading-relaxed max-w-xs mx-auto pt-1">
-                                    By clicking "Create Account", you agree to our <a href="#" className="font-semibold text-black hover:underline">Terms</a> and <a href="#" className="font-semibold text-black hover:underline">Privacy Policy</a>.
+                                <p className="text-[10px] text-center text-zinc-500 leading-relaxed max-w-xs mx-auto pt-2">
+                                    By clicking "Create Account", you agree to our <button type="button" onClick={(e) => e.preventDefault()} className="font-semibold text-black hover:underline cursor-pointer">Terms</button> and <button type="button" onClick={(e) => e.preventDefault()} className="font-semibold text-black hover:underline cursor-pointer">Privacy Policy</button>.
                                 </p>
                             </form>
                         </div>
 
                         <div className="text-center mt-6">
-                            <p className="text-zinc-500 text-sm">
+                            <p className="text-zinc-500 text-[10.5px]">
                                 Already have an account?{' '}
                                 <Link to="/login" className="text-black font-bold hover:underline underline-offset-4">
                                     Log in

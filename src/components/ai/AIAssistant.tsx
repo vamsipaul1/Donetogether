@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Send, Sparkles, Copy, Check, ExternalLink, Layers, Zap, Calendar, Search, Music, Image as ImageIcon, History, Clock, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { X, Send, Sparkles, Copy, Check, ExternalLink, Layers, Zap, Calendar, Search, Music, Image as ImageIcon, History, Clock, ArrowLeft, Plus, Trash2, Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ShiningText } from '@/components/ui/shining-text';
 import { supabase } from '@/lib/supabase';
@@ -33,6 +33,10 @@ const AIAssistant = ({
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [thinkingStep, setThinkingStep] = useState<string>('');
+    const [thinkingKeywords, setThinkingKeywords] = useState<string[]>([]);
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef<any>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const dragControls = useDragControls();
 
@@ -43,6 +47,49 @@ const AIAssistant = ({
     useEffect(() => {
         scrollToBottom();
     }, [messages, isTyping]);
+
+    const toggleListening = () => {
+        if (isListening) {
+            recognitionRef.current?.stop();
+            setIsListening(false);
+            return;
+        }
+
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            toast.error("Voice recognition is not supported in this browser.");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.interimResults = true;
+        recognition.continuous = false;
+
+        recognition.onstart = () => {
+            setIsListening(true);
+        };
+
+        recognition.onresult = (event: any) => {
+            const transcript = Array.from(event.results)
+                .map((result: any) => result[0])
+                .map((result: any) => result.transcript)
+                .join('');
+            setInput(transcript);
+        };
+
+        recognition.onerror = (event: any) => {
+            console.error("Speech recognition error:", event.error);
+            setIsListening(false);
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+
+        recognition.start();
+        recognitionRef.current = recognition;
+    };
 
     const buildContext = () => {
         return {
@@ -64,11 +111,13 @@ const AIAssistant = ({
     };
 
     const SYSTEM_INSTRUCTION = `
-    You are ThinkSense AI. Your goal is to provide neat, clear, and concise answers.
-    - Keep responses small to mid-size unless explicitly asked for details.
-    - If the user asks for detailed explanation, then provide a comprehensive answer.
-    - Be advanced, context-aware, and intelligent.
-    - Do not use markdown headers (#) excessively, use bolding for emphasis.
+    You are ThinkSense AI, a "Master Level" strategist and high-performance partner.
+    - Your intelligence is elite: you translate complex project challenges into simple, high-impact human language.
+    - Master the Art of Simplification: Deliver "insane" value by distilling complexity into brilliant, neat, and actionable advice.
+    - Tone: Peer-to-peer, visionary, and deeply intuitive. You aren't just a bot; you are a partner in ${project?.title || 'this project'}.
+    - Connect the Dots: Deeply link your answers to the project's specific goals, team members, and current tasks.
+    - Professional Fallback: If data is missing, offer a master-level "strategic framework" that guides the user toward the solution.
+    - Typography: Use bold for emphasis, minimalist lists, and elegant code blocks. Keep it visually perfect.
     `;
 
     const sendMessage = async (text?: string) => {
@@ -97,12 +146,51 @@ const AIAssistant = ({
                 }
             });
 
+            // --- START THINKING SIMULATION (Optimized Speed) ---
+            const queryLength = contentToSend.length;
+            const complexity = queryLength < 30 ? 'simple' : queryLength < 100 ? 'medium' : 'hard';
+
+            const runThinkingSimulation = async () => {
+                if (complexity === 'simple') {
+                    setThinkingStep('Generating insight...');
+                    await new Promise(r => setTimeout(r, 600));
+                } else if (complexity === 'medium') {
+                    setThinkingStep('Understanding request...');
+                    await new Promise(r => setTimeout(r, 600));
+
+                    const keywords = contentToSend.split(' ').filter(w => w.length > 4).slice(0, 3);
+                    setThinkingKeywords(keywords);
+                    setThinkingStep('Analyzing keywords...');
+                    await new Promise(r => setTimeout(r, 800));
+
+                    setThinkingStep('Finalizing response...');
+                    await new Promise(r => setTimeout(r, 600));
+                } else {
+                    const steps = [
+                        'Working on it...',
+                        'Understanding the question...',
+                        'Analyzing deep context...',
+                        'Generating master insight...'
+                    ];
+
+                    const keywords = contentToSend.split(' ').filter(w => w.length > 5).slice(0, 5);
+                    setThinkingKeywords(keywords);
+
+                    for (const step of steps) {
+                        setThinkingStep(step);
+                        const delay = 600 + Math.random() * 400;
+                        await new Promise(r => setTimeout(r, delay));
+                    }
+                }
+            };
+
+            await runThinkingSimulation();
             setIsTyping(false);
+            setThinkingStep('');
+            setThinkingKeywords([]);
 
             if (error) {
                 console.error("AI Assistant Error:", error);
-
-                // Check if it's a JWT error
                 const errorMsg = error.message || (typeof error === 'string' ? error : '');
                 if (errorMsg.toLowerCase().includes('jwt')) {
                     const errorMessage: Message = {
@@ -114,24 +202,21 @@ const AIAssistant = ({
                     setMessages(prev => [...prev, errorMessage]);
                     return;
                 }
-
                 throw error;
             }
 
-            // Handle both structured and raw response formats 
             const responseText = data.rawResponse || data.response;
-            const errorMessage = data.message || data.error;
+            const errorMessageFromData = data.message || data.error;
 
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'bot',
-                content: responseText || errorMessage || 'Sorry, I couldn\'t process that.',
+                content: responseText || errorMessageFromData || 'Sorry, I couldn\'t process that.',
                 timestamp: new Date()
             };
 
             setMessages(prev => [...prev, botMessage]);
 
-            // Save to History (Non-blocking)
             if (effectiveUser?.id) {
                 try {
                     await supabase.from('ai_logs').insert({
@@ -149,10 +234,7 @@ const AIAssistant = ({
         } catch (error: any) {
             console.error("DEBUG - ThinkSense AI Error Details:", error);
             setIsTyping(false);
-
             let displayError = "Connection failed";
-
-            // Try to extract more detail from Supabase Functions error
             if (error.context && typeof error.context.json === 'function') {
                 try {
                     const errorData = await error.context.json();
@@ -174,7 +256,6 @@ const AIAssistant = ({
         }
     };
 
-    // History Feature
     const [showHistory, setShowHistory] = useState(false);
     const [historyLogs, setHistoryLogs] = useState<any[]>([]);
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -319,7 +400,7 @@ const AIAssistant = ({
                                 <span className="text-sm font-semibold text-zinc-900 dark:text-white">ThinkSense AI</span>
                             </div>
 
-                            <div className="text-sm font-medium text-zinc-500 dark:text-zinc-400 absolute left-1/2 -translate-x-1/2 hidden md:block pointer-events-none">
+                            <div className="text-base font-bold text-zinc-900 dark:text-white absolute left-1/2 -translate-x-1/2 hidden md:block pointer-events-none tracking-tight">
                                 {effectiveUser?.full_name || 'Daily Assistant'}
                             </div>
 
@@ -387,8 +468,6 @@ const AIAssistant = ({
                                                     className="w-full text-left p-4 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800/50 hover:border-violet-500/50 hover:scale-[1.02] dark:hover:border-violet-500/50 hover:shadow-lg transition-all group flex flex-col justify-between h-32 relative overflow-hidden"
                                                 >
                                                     <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-violet-500/5 to-transparent rounded-bl-3xl pointer-events-none" />
-
-                                                    {/* Delete Button */}
                                                     <div
                                                         onClick={(e) => deleteHistoryItem(e, log.id)}
                                                         className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 dark:bg-black/50 hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-400 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100 z-20 shadow-sm backdrop-blur-sm cursor-pointer"
@@ -424,7 +503,6 @@ const AIAssistant = ({
                                 </motion.div>
                             ) : messages.length <= 1 ? (
                                 <div className="flex flex-col h-full justify-center max-w-4xl mx-auto pb-2">
-                                    {/* Hero Greeting */}
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -432,11 +510,11 @@ const AIAssistant = ({
                                         className="text-center space-y-2 mb-16"
                                     >
                                         <h1 className="text-4xl md:text-[40px] font-bold text-zinc-900 dark:text-white tracking-tight leading-[1.1]">
-                                            Hi {effectiveUser?.full_name?.split(' ')[0] || 'There'},<br></br> Ready to Achieve<span className="text-blue-500 gradient-to-br from-blue-500/5 to-transparent"> Great Things?</span>
+                                            Hi {effectiveUser?.full_name?.split(' ')[0] || 'There'},<br />
+                                            Ready to Achieve <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-[#9933FF] dark:from-blue-400 dark:to-purple-500">Great Things?</span>
                                         </h1>
                                     </motion.div>
 
-                                    {/* Popular Ideas Cards */}
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -476,11 +554,11 @@ const AIAssistant = ({
                                     </motion.div>
                                 </div>
                             ) : (
-                                <div className="space-y-6 pt-4 max-w-3xl mx-auto">
+                                <div className="space-y-6 pt-6 max-w-4xl mx-auto">
                                     {messages.slice(1).map((message, idx) => (
                                         <MessageBubble key={message.id} message={message} isLast={idx === messages.length - 2} />
                                     ))}
-                                    {isTyping && <TypingIndicator />}
+                                    {isTyping && <TypingIndicator step={thinkingStep} keywords={thinkingKeywords} />}
                                     <div ref={messagesEndRef} />
                                 </div>
                             )}
@@ -489,8 +567,6 @@ const AIAssistant = ({
                         {/* Footer Input Area */}
                         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-white via-white to-transparent dark:from-[#0A0A0A] dark:via-[#0A0A0A] dark:to-transparent pt-20">
                             <div className="max-w-3xl mx-auto space-y-4">
-
-                                {/* Input Container */}
                                 <div className="bg-white dark:bg-zinc-900 p-2 pl-4 rounded-[24px] shadow-[0_8px_40px_rgb(0,0,0,0.08)] border border-zinc-200 dark:border-zinc-800 flex items-center gap-3 w-full relative z-20">
                                     <span className="text-zinc-400 text-lg">+</span>
                                     <input
@@ -502,6 +578,12 @@ const AIAssistant = ({
                                         className="flex-1 bg-transparent border-none outline-none text-zinc-900 dark:text-white placeholder:text-zinc-400 text-[15px] font-medium min-w-0"
                                     />
                                     <div className="flex gap-2">
+                                        <button
+                                            onClick={toggleListening}
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500'}`}
+                                        >
+                                            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                                        </button>
                                         <button className="w-10 h-10 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-500 transition-colors">
                                             <ImageIcon className="w-5 h-5" />
                                         </button>
@@ -523,7 +605,6 @@ const AIAssistant = ({
     );
 };
 
-// Message Bubble Component
 const MessageBubble = ({ message, isLast }: { message: Message; isLast: boolean }) => {
     return (
         <motion.div
@@ -537,9 +618,9 @@ const MessageBubble = ({ message, isLast }: { message: Message; isLast: boolean 
                 </div>
             )}
 
-            <div className={`flex-1 md:max-w-[85%] max-w-[95%] min-w-0 ${message.role === 'user'
-                ? 'bg-zinc-100 dark:bg-zinc-800 rounded-[20px] rounded-tr-sm px-5 md:px-6 py-4 text-zinc-900 dark:text-white'
-                : 'bg-white dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800 rounded-[20px] rounded-tl-sm px-4 md:px-5 py-4 md:py-5 shadow-sm'
+            <div className={`flex-1 max-w-full md:max-w-[92%] min-w-0 ${message.role === 'user'
+                ? 'bg-zinc-100 dark:bg-zinc-800 rounded-[24px] rounded-tr-sm px-6 py-4 text-zinc-900 dark:text-white shadow-sm'
+                : 'bg-white dark:bg-[#0f0f0f] border border-zinc-100 dark:border-zinc-800/60 rounded-[28px] rounded-tl-lg px-6 md:px-8 py-5 md:py-7 shadow-md'
                 }`}>
                 {message.role === 'bot' && (
                     <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-100 dark:border-zinc-800/50">
@@ -563,59 +644,46 @@ const MessageBubble = ({ message, isLast }: { message: Message; isLast: boolean 
     );
 };
 
-// Syntax Highlighting Helper
 const highlightSyntax = (code: string) => {
     const escapeHtml = (str: string) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-    // Regex for tokens
     const tokenRegex = /(".*?"|'.*?'|`[\s\S]*?`)|(\/\/.*$|\/\*[\s\S]*?\*\/)|(\b(const|let|var|function|return|if|else|for|while|import|from|export|default|class|interface|type|async|await|new|try|catch|switch|case|break|continue|extends|implements|public|private|protected|true|false|null|undefined|void|number|string|boolean|any)\b)|(\b\d+\b)|(\b[A-Z][a-zA-Z0-9_]*\b)/gm;
-
     let lastIndex = 0;
     let result = "";
     let match;
-
     while ((match = tokenRegex.exec(code)) !== null) {
         if (match.index > lastIndex) {
             result += escapeHtml(code.substring(lastIndex, match.index));
         }
-
         const [fullMatch, string, comment, keyword, _, number, typeName] = match;
-
         if (string) {
-            result += `<span class="text-emerald-300">${escapeHtml(string)}</span>`;
+            result += `<span class="text-[#50FA7B] font-medium">${escapeHtml(string)}</span>`;
         } else if (comment) {
-            result += `<span class="text-zinc-500 italic">${escapeHtml(comment)}</span>`;
+            result += `<span class="text-[#6272A4] italic">${escapeHtml(comment)}</span>`;
         } else if (keyword) {
-            result += `<span class="text-violet-400 font-bold">${escapeHtml(keyword)}</span>`;
+            result += `<span class="text-[#FF79C6] font-bold">${escapeHtml(keyword)}</span>`;
         } else if (number) {
-            result += `<span class="text-blue-400">${escapeHtml(number)}</span>`;
+            result += `<span class="text-[#BD92F9]">${escapeHtml(number)}</span>`;
         } else if (typeName) {
-            result += `<span class="text-yellow-100">${escapeHtml(typeName)}</span>`;
+            result += `<span class="text-[#8BE9FD] font-semibold">${escapeHtml(typeName)}</span>`;
         } else {
             result += escapeHtml(fullMatch);
         }
-
         lastIndex = tokenRegex.lastIndex;
     }
-
     if (lastIndex < code.length) {
         result += escapeHtml(code.substring(lastIndex));
     }
-
     return result;
 };
 
-// Code Block Component
 const CodeBlock = ({ language, code }: { language: string, code: string }) => {
     const [copied, setCopied] = useState(false);
-
     const handleCopy = () => {
         navigator.clipboard.writeText(code);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
         toast.success("Code copied to clipboard");
     };
-
     return (
         <div className="my-4 rounded-2xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl bg-[#0F0F0F] group/code">
             <div className="flex items-center justify-between px-4 py-2.5 bg-[#18181b] border-b border-zinc-800">
@@ -653,97 +721,30 @@ const CodeBlock = ({ language, code }: { language: string, code: string }) => {
     );
 };
 
-// Rich Text Renderer (Markdown + Code)
 const RichTextRenderer = ({ text }: { text: string }) => {
-    // Split by code blocks
-    // Matches ```lang ... ``` OR ```lang ... (end of string)
-    const parts = text.split(/(```[\w-]*\s[\s\S]*?(?:```|$))/g);
-
+    const parts = text.split(/(```[\s\S]*?```)/g);
     return (
         <div className="space-y-1">
             {parts.map((part, index) => {
                 if (part.trim().startsWith('```')) {
-                    // Extract language and code
-                    const match = part.match(/```([\w-]*)\s([\s\S]*?)(?:```|$)/);
+                    const match = part.match(/```([\w-]*)\s?([\s\S]*?)```/);
                     if (match) {
                         return <CodeBlock key={index} language={match[1]} code={match[2]} />;
                     }
                 }
-                // Don't render empty parts from split
                 if (!part.trim()) return null;
-
                 return <SimpleMarkdown key={index} text={part} />;
             })}
         </div>
     );
 };
 
-// Simple Markdown Parser (Text Only)
 const SimpleMarkdown = ({ text }: { text: string }) => {
-    const parseMarkdown = (content: string) => {
-        const elements: JSX.Element[] = [];
-        const lines = content.split('\n');
-
-        lines.forEach((line, idx) => {
-            const key = idx;
-
-            // Handle Headings (Replace # with styled Headers)
-            if (line.match(/^#{1,3}\s/)) {
-                const headingText = line.replace(/^#{1,3}\s+/, '');
-                elements.push(
-                    <h3 key={key} className="text-lg font-bold text-zinc-900 dark:text-white mt-6 mb-3 first:mt-0 tracking-tight flex items-center gap-2">
-                        <span className="text-violet-500 text-sm">★</span> {formatInline(headingText)}
-                    </h3>
-                );
-            }
-            // Bullet points
-            else if (line.match(/^[\s]*[-•*]\s/)) {
-                elements.push(
-                    <div key={key} className="flex gap-3 mb-2 ml-1">
-                        <span className="text-zinc-400 mt-1.5">•</span>
-                        <span className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
-                            {formatInline(line.replace(/^[\s]*[-•*]\s/, ''))}
-                        </span>
-                    </div>
-                );
-            }
-            // Numbered list
-            else if (line.match(/^\d+\.\s/)) {
-                const number = line.match(/^(\d+)\./)?.[1];
-                elements.push(
-                    <div key={key} className="flex gap-3 mb-2 ml-1">
-                        <span className="text-zinc-900 dark:text-white font-bold">{number}.</span>
-                        <span className="text-zinc-700 dark:text-zinc-300 leading-relaxed font-medium">
-                            {formatInline(line.replace(/^\d+\.\s/, ''))}
-                        </span>
-                    </div>
-                );
-            }
-            // Empty line
-            else if (line.trim() === '') {
-                elements.push(<div key={key} className="h-3" />);
-            }
-            // Regular text
-            else {
-                elements.push(
-                    <p key={key} className="text-zinc-700 dark:text-zinc-300 leading-relaxed mb-1 text-[15px] font-medium">
-                        {formatInline(line)}
-                    </p>
-                );
-            }
-        });
-
-        return elements;
-    };
-
     const formatInline = (text: string) => {
-        // Simplified inline formatter
         const parts: (string | JSX.Element)[] = [];
-        // Bold **text**
         const boldRegex = /\*\*([^*]+)\*\*/g;
         let lastIndex = 0;
         let match;
-
         while ((match = boldRegex.exec(text)) !== null) {
             if (match.index > lastIndex) {
                 parts.push(text.substring(lastIndex, match.index));
@@ -757,36 +758,147 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
         return <>{parts}</>;
     };
 
+    const parseMarkdown = (content: string) => {
+        const elements: JSX.Element[] = [];
+        const lines = content.split('\n');
+        lines.forEach((line, idx) => {
+            const key = idx;
+            if (line.match(/^#{1,3}\s/)) {
+                const headingText = line.replace(/^#{1,3}\s+/, '');
+                elements.push(
+                    <h3 key={key} className="text-[19px] font-black text-zinc-900 dark:text-white mt-8 mb-4 first:mt-0 tracking-tight leading-tight flex items-center gap-2">
+                        <span className="w-1.5 h-6 bg-[#9933FF] rounded-full" /> {formatInline(headingText)}
+                    </h3>
+                );
+            }
+            else if (line.match(/^[\s]*[-•*]\s/)) {
+                elements.push(
+                    <div key={key} className="flex gap-3 mb-3 ml-1.5">
+                        <span className="text-violet-500/60 mt-2 text-[10px]">■</span>
+                        <span className="text-zinc-700 dark:text-zinc-300 leading-[1.6] font-medium text-[15.5px]">
+                            {formatInline(line.replace(/^[\s]*[-•*]\s/, ''))}
+                        </span>
+                    </div>
+                );
+            }
+            else if (line.match(/^\d+\.\s/)) {
+                const number = line.match(/^(\d+)\./)?.[1];
+                elements.push(
+                    <div key={key} className="flex gap-4 mb-3 ml-1.5">
+                        <span className="text-[#9933FF] font-black text-[14px] mt-1">{number}.</span>
+                        <span className="text-zinc-700 dark:text-zinc-300 leading-[1.6] font-medium text-[15.5px]">
+                            {formatInline(line.replace(/^\d+\.\s/, ''))}
+                        </span>
+                    </div>
+                );
+            }
+            else if (line.trim() === '') {
+                elements.push(<div key={key} className="h-5" />);
+            }
+            else {
+                elements.push(
+                    <p key={key} className="text-zinc-700 dark:text-zinc-300 leading-[1.7] mb-4 text-[15.5px] font-medium antialiased">
+                        {formatInline(line)}
+                    </p>
+                );
+            }
+        });
+        return elements;
+    };
     return <div className="space-y-0.5">{parseMarkdown(text)}</div>;
 };
 
-// Typewriter Effect
 const TypewriterText = ({ text }: { text: string }) => {
     const [displayedText, setDisplayedText] = useState('');
+    const [isFinished, setIsFinished] = useState(false);
 
     useEffect(() => {
         let i = 0;
         setDisplayedText('');
-        const timer = setInterval(() => {
+        setIsFinished(false);
+        const getDelay = (char: string) => {
+            if (['.', '?', '!', '\n'].includes(char)) return 70;
+            if ([',', ';', ':'].includes(char)) return 30;
+            return 8;
+        };
+        const typeCharacter = () => {
             if (i < text.length) {
-                setDisplayedText(prev => prev + text.charAt(i));
+                setDisplayedText(text.substring(0, i + 1));
+                const delay = getDelay(text.charAt(i));
                 i++;
+                setTimeout(typeCharacter, delay);
             } else {
-                clearInterval(timer);
+                setIsFinished(true);
             }
-        }, 8); // Slightly Faster speed
-        return () => clearInterval(timer);
+        };
+        typeCharacter();
     }, [text]);
 
-    return <RichTextRenderer text={displayedText} />;
+    return (
+        <div className="relative">
+            <RichTextRenderer text={displayedText} />
+            {!isFinished && (
+                <motion.span
+                    animate={{ opacity: [1, 0] }}
+                    transition={{ repeat: Infinity, duration: 0.8 }}
+                    className="inline-block w-2.5 h-5 bg-[#9933FF] ml-1 align-middle"
+                />
+            )}
+        </div>
+    );
 };
 
-// Typing Indicator
-const TypingIndicator = () => {
+const TypingIndicator = ({ step, keywords }: { step: string; keywords: string[] }) => {
     return (
-        <h1 className="text-sm font-semibold text-zinc-900 dark:text-white pl-4">
-            <ShiningText text="Thinking ....." />
-        </h1>
+        <div className="flex flex-col gap-3 pl-12 py-4">
+            <div className="flex items-center gap-3">
+                <div className="flex gap-1.5">
+                    {[0, 1, 2].map((i) => (
+                        <motion.div
+                            key={i}
+                            animate={{
+                                scale: [1, 1.4, 1],
+                                opacity: [0.3, 1, 0.3],
+                                backgroundColor: ['#000000', '#555555', '#000000']
+                            }}
+                            transition={{
+                                repeat: Infinity,
+                                duration: 1,
+                                delay: i * 0.2
+                            }}
+                            className="w-1.5 h-1.5 rounded-full dark:bg-white"
+                        />
+                    ))}
+                </div>
+                <motion.span
+                    key={step}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-[13px] font-black text-black dark:text-white uppercase tracking-[0.10em] antialiased"
+                >
+                    {step || 'Generating...'}
+                </motion.span>
+            </div>
+
+            {keywords && keywords.length > 0 && (
+                <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-left-2 duration-500">
+                    {keywords.map((kw, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="px-4 py-1.5 bg-black border border-white/10 rounded-full flex items-center gap-2 shadow-2xl shadow-black"
+                        >
+                            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_8px_white]" />
+                            <span className="text-[10px] font-black text-white font-mono tracking-tighter uppercase">
+                                {kw}
+                            </span>
+                        </motion.div>
+                    ))}
+                </div>
+            )}
+        </div>
     );
 };
 

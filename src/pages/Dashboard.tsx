@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Plus, Users, LogOut, Sun, Moon, Layout, CheckCircle2, User, Crown, Loader2, ArrowLeftToLine
+    Plus, Users, LogOut, Sun, Moon, Layout, CheckCircle2, User as UserIcon, Crown, Loader2, ArrowLeftToLine
     , Home, Inbox, BarChart3, Target, Briefcase, Settings, ChevronRight, MessageSquare,
     Calendar as CalendarIcon, FileText, List as ListIcon, Columns, Timer,
     MoreHorizontal, Share2, ChevronDown, UserPlus, Settings2, Trash2, Edit2, FolderPlus, StarIcon, Star, History, LayoutDashboard,
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -50,16 +50,17 @@ import HomeView from '@/components/dashboard/HomeView';
 import InboxView from '@/components/dashboard/InboxView';
 import ProofOfWorkView from '@/components/dashboard/ProofOfWorkView';
 import ProgressView from '@/components/dashboard/ProgressView';
+import SettingsView from '@/components/dashboard/SettingsView';
 
 import { WelcomeOverlay } from '@/components/dashboard/WelcomeOverlay';
 import AIAssistant from '@/components/ai/AIAssistant';
 
 // import WorkspaceView from '@/components/dashboard/WorkspaceView';
 
-type DashboardView = 'home' | 'overview' | 'list' | 'board' | 'timeline' | 'dashboard' | 'calendar' | 'workflow' | 'messages' | 'files' | 'workspace' | 'history' | 'progress' | 'proof_of_work';
+type DashboardView = 'home' | 'overview' | 'list' | 'board' | 'timeline' | 'dashboard' | 'calendar' | 'workflow' | 'messages' | 'files' | 'workspace' | 'history' | 'progress' | 'proof_of_work' | 'settings';
 
 const Dashboard = () => {
-    const { user, signOut } = useAuth();
+    const { user, signOut, loading: authLoading } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const isDark = theme === 'dark';
@@ -139,12 +140,32 @@ const Dashboard = () => {
         } else {
             setIsSidebarOpen(true);
         }
+
+        // Clean up trailing '#' from URL fragment (common after Social Login)
+        if (window.location.hash === '#' || window.location.hash === '') {
+            const currentUrl = window.location.pathname + window.location.search;
+            window.history.replaceState(null, '', currentUrl);
+        }
     }, [isMobile]);
+
+    // Handle early loading resolution if not logged in
+    useEffect(() => {
+        if (!authLoading && !user) {
+            setLoading(false);
+        }
+    }, [authLoading, user]);
+
+    const isFirstLoad = useRef(true);
+    const fetchingProjects = useRef(false);
 
     useEffect(() => {
         let isMounted = true;
         const fetchUserData = async () => {
-            if (!currentUser) return;
+            if (!currentUser || fetchingProjects.current) {
+                if (!currentUser) setLoading(false);
+                return;
+            }
+            fetchingProjects.current = true;
             try {
                 // Check Welcome Status & Role
                 const { data: userData } = await supabase
@@ -163,26 +184,29 @@ const Dashboard = () => {
                 const { data: memberships, error: memError } = await supabase
                     .from('project_members')
                     .select('role, projects(*)')
-                    .eq('user_id', currentUser.id);
+                    .eq('user_id', currentUser.id)
+                    .order('joined_at', { ascending: true }); // Ensure stable order
 
                 if (memError) throw memError;
 
-                const userProjects = (memberships || []).map((m: { projects: any }) => m.projects);
+                const userProjects = (memberships || [])
+                    .map((m: any) => m.projects)
+                    .filter((p: any) => !!p); // Ensure no nulls
+
                 if (isMounted) {
                     setProjects(userProjects);
                     // Only auto-select if we don't have a selection and we aren't explicitly on the home view
-                    if (userProjects.length > 0 && !selectedProject && activeView !== 'home' && activeView !== 'messages') {
+                    if (userProjects.length > 0 && !selectedProject && activeView !== 'home' && isFirstLoad.current) {
                         setSelectedProject(userProjects[0]);
+                        isFirstLoad.current = false;
                     }
                 }
             } catch (error: any) {
                 console.error('Error fetching dashboard:', error instanceof Error ? error.message : String(error));
             } finally {
-                // Artificial delay for smooth transition
+                fetchingProjects.current = false;
                 if (isMounted) {
-                    setTimeout(() => {
-                        setLoading(false);
-                    }, 2500);
+                    setLoading(false);
                 }
             }
         };
@@ -220,8 +244,15 @@ const Dashboard = () => {
     const fetchProjectDetails = async () => {
         if (!selectedProject || !currentUser) return;
         try {
-            const { data: projData } = await supabase.from('projects').select('*').eq('id', selectedProject.id).single();
-            if (projData) setSelectedProject(projData);
+            // Use ID only to check if data changed meaningfully to avoid re-renders
+            const { data: projData } = await supabase.from('projects')
+                .select('*')
+                .eq('id', selectedProject.id)
+                .single();
+
+            if (projData && (projData.id !== selectedProject.id || projData.title !== selectedProject.title || projData.avatar_url !== selectedProject.avatar_url)) {
+                setSelectedProject(projData);
+            }
 
             const { data: membersData } = await supabase
                 .from('project_members')
@@ -364,7 +395,7 @@ const Dashboard = () => {
     */
 
     return (
-        <div className="flex h-screen bg-background dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden transition-colors duration-300">
+        <div className="dashboard-theme flex h-screen bg-background dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden transition-colors duration-300">
             <AnimatePresence>
                 {showWelcome && currentUser && (
                     <WelcomeOverlay
@@ -448,7 +479,12 @@ const Dashboard = () => {
                     <div className="space-y-1">
                         <NavItem icon={Home} label="Home" active={activeView === 'home'} onClick={() => { setActiveView('home'); setSelectedProject(null); }} />
                         <NavItem icon={CheckCircle2} label="My tasks" active={activeView === 'list' && !selectedProject} onClick={() => { setActiveView('list'); setSelectedProject(null); }} />
-                        {/* <NavItem icon={Inbox} label="Inbox" active={activeView === 'messages'} onClick={() => setActiveView('messages')} /> */}
+                        <NavItem
+                            icon={MessageSquare}
+                            label="Team Chat"
+                            active={activeView === 'messages'}
+                            onClick={() => navigate(selectedProject ? `/messages/${selectedProject.id}` : '/messages')}
+                        />
 
                         <button
                             onClick={() => setIsAIOpen(true)}
@@ -545,8 +581,8 @@ const Dashboard = () => {
                                     <ChevronRight className="ml-auto w-4 h-4 text-zinc-500 opacity-50 group-hover:opacity-100 transition-opacity" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent side="right" align="start" className={`${isMobile ? 'w-52' : 'w-64'} ml-2 rounded-xl p-2 font-sans bg-white dark:bg-black border-zinc-200 dark:border-[#3d3e40] shadow-xl`}>
-                                <DropdownMenuLabel className="text-[11px] text-zinc-500 font-bold uppercase tracking-widest px-2 py-1.5 mb-1">My workspace</DropdownMenuLabel>
+                            <DropdownMenuContent side="right" align="start" className={`${isMobile ? 'w-52' : 'w-64'} ml-2 rounded-xl p-2 font-body bg-white dark:bg-black border-zinc-200 dark:border-[#3d3e40] shadow-xl`}>
+                                <DropdownMenuLabel className="text-[11px] text-zinc-500 font-bold uppercase tracking-tight px-2 py-1.5 mb-1">My workspace</DropdownMenuLabel>
 
                                 {isOwner && (
                                     <>
@@ -559,7 +595,7 @@ const Dashboard = () => {
                                                 <div className="w-6 h-6 rounded-full bg-violet-600 flex items-center justify-center text-[8px] font-bold text-white">VR</div>
                                                 {[1, 2, 3].map((_, i) => (
                                                     <div key={i} className="w-6 h-6 rounded-full border border-dashed border-zinc-300 dark:border-zinc-600 bg-transparent flex items-center justify-center">
-                                                        <User className="w-3 h-3 text-zinc-300 dark:text-zinc-600" />
+                                                        <UserIcon className="w-3 h-3 text-zinc-300 dark:text-zinc-600" />
                                                     </div>
                                                 ))}
                                             </div>
@@ -632,64 +668,66 @@ const Dashboard = () => {
                                             <LayoutDashboard className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
                                         )}
                                     </div>
-                                    <h1 className="text-lg md:text-xl font-bold font-sans text-zinc-900 dark:text-white tracking-tight truncate">
+                                    <h1 className="text-lg md:text-xl font-black font-sans text-black dark:text-white tracking-tight truncate">
                                         {selectedProject ? (selectedProject.team_name || selectedProject.title) : (activeView === 'workspace' ? 'Workspace' : (activeView === 'home' ? 'Home' : activeView))}
                                     </h1>
                                     <ChevronDown className="w-4 h-4 shrink-0 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" sideOffset={8} className="w-[280px] max-w-[calc(100vw-2rem)] p-2 rounded-2xl bg-white dark:bg-[#09090b] border-zinc-200 dark:border-zinc-800 shadow-xl">
-                                <DropdownMenuLabel className="p-2 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                            <DropdownMenuContent align="start" sideOffset={8} className="w-[280px] max-w-[calc(100vw-2rem)] p-2 rounded-2xl bg-white dark:bg-[#09090b] border-zinc-200 dark:border-zinc-800 shadow-xl font-body">
+                                <DropdownMenuLabel className="px-3 pt-3 pb-2 text-[11px] font-bold font-body text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">
                                     Project Actions
                                 </DropdownMenuLabel>
 
-                                <DropdownMenuItem onClick={() => setIsCreateTaskOpen(true)} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800 mb-1">
-                                    <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-200 dark:border-zinc-700">
-                                        <img src="/image copy 4.png" alt="" className="w-4 h-4 dark:invert" />
+                                <DropdownMenuItem onClick={() => setIsCreateTaskOpen(true)} className="flex items-center gap-3.5 p-2 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-colors mb-1 outline-none">
+                                    <div className="w-11 h-11 rounded-[14px] bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm">
+                                        <div className="w-5 h-5 relative flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-zinc-900 dark:text-white"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /><path d="m15 5 3 3" /></svg>
+                                        </div>
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-zinc-900 dark:text-white">Create Task</span>
-                                        <span className="text-[10px] text-zinc-500">Add to board</span>
+                                        <span className="text-[15px] font-bold text-zinc-900 dark:text-white leading-tight">Create Task</span>
+                                        <span className="text-[12px] font-medium text-zinc-500 mt-0.5 leading-relaxed">Add to board</span>
                                     </div>
                                 </DropdownMenuItem>
 
-                                <DropdownMenuItem onClick={() => navigate('/create-project')} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800">
-                                    <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-200 dark:border-zinc-700">
-                                        <FolderPlus className="w-4 h-4 text-violet-500" />
+                                <DropdownMenuItem onClick={() => navigate('/create-project')} className="flex items-center gap-3.5 p-2 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-colors outline-none">
+                                    <div className="w-11 h-11 rounded-[14px] bg-zinc-100/80 dark:bg-zinc-800/80 flex items-center justify-center shrink-0 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm">
+                                        <FolderPlus className="w-5 h-5 text-violet-500" strokeWidth={2} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-zinc-900 dark:text-white">New Project</span>
-                                        <span className="text-[10px] text-zinc-500">Create workspace</span>
+                                        <span className="text-[15px] font-bold text-zinc-900 dark:text-white leading-tight">New Project</span>
+                                        <span className="text-[12px] font-medium text-zinc-500 mt-0.5 leading-relaxed">Create workspace</span>
                                     </div>
                                 </DropdownMenuItem>
 
                                 {isOwner && (
                                     <>
-                                        <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2 mx-2" />
-                                        <DropdownMenuLabel className="p-2 text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                                        <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-3 mx-2" />
+                                        <DropdownMenuLabel className="px-3 pb-2 text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] font-body opacity-80">
                                             Admin
                                         </DropdownMenuLabel>
 
-                                        <DropdownMenuItem onClick={() => setIsEditProjectOpen(true)} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                                            <Settings className="w-4 h-4" />
-                                            <span className="text-sm font-semibold">Edit Details</span>
+                                        <DropdownMenuItem onClick={() => setIsEditProjectOpen(true)} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 transition-colors outline-none">
+                                            <Settings className="w-[18px] h-[18px]" strokeWidth={2} />
+                                            <span className="text-[14.5px] font-bold">Edit Details</span>
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem onClick={() => setIsInviteOpen(true)} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                                            <UserPlus className="w-4 h-4" />
-                                            <span className="text-sm font-semibold">Invite Team</span>
+                                        <DropdownMenuItem onClick={() => setIsInviteOpen(true)} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 transition-colors outline-none">
+                                            <UserPlus className="w-[18px] h-[18px]" strokeWidth={2} />
+                                            <span className="text-[14.5px] font-bold">Invite Team</span>
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem onClick={() => setIsGovernanceOpen(true)} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer focus:bg-zinc-100 dark:focus:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                                            <ShieldCheck className="w-4 h-4" />
-                                            <span className="text-sm font-semibold">Permissions</span>
+                                        <DropdownMenuItem onClick={() => setIsGovernanceOpen(true)} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 transition-colors outline-none">
+                                            <ShieldCheck className="w-[18px] h-[18px]" strokeWidth={2} />
+                                            <span className="text-[14.5px] font-bold">Permissions</span>
                                         </DropdownMenuItem>
 
-                                        <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-2 mx-2" />
+                                        <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-2 mx-2" />
 
-                                        <DropdownMenuItem onClick={() => handleDeleteProject()} className="flex items-center gap-3 p-2.5 rounded-xl cursor-pointer focus:bg-red-50 dark:focus:bg-red-900/10 text-red-600 dark:text-red-400">
-                                            <Trash2 className="w-4 h-4" />
-                                            <span className="text-sm font-semibold">Delete Project</span>
+                                        <DropdownMenuItem onClick={() => handleDeleteProject()} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-red-50 focus:bg-red-50 dark:hover:bg-red-950/20 dark:focus:bg-red-950/20 text-red-600 dark:text-red-500 transition-colors outline-none">
+                                            <Trash2 className="w-[18px] h-[18px]" strokeWidth={2} />
+                                            <span className="text-[14.5px] font-bold">Delete Project</span>
                                         </DropdownMenuItem>
                                     </>
                                 )}
@@ -702,15 +740,6 @@ const Dashboard = () => {
                         {/* Team Chat Button - Always visible if a project is selected */}
                         {selectedProject && (
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="hidden md:block">
-                                <Button
-                                    onClick={() => setActiveView('messages')}
-                                    className="h-10 px-4 rounded-2xl flex items-center gap-3 
-                                     bg-zinc-200 dark:bg-white text-black dark:text-black hover:bg-black hover:text-white dark:hover:bg-zinc-300 transition-colors"
-
-                                >
-                                    <MessageSquare className="w-4 h-4" />
-                                    <span>Team Chat</span>
-                                </Button>
                             </motion.div>
                         )}
 
@@ -719,10 +748,10 @@ const Dashboard = () => {
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="hidden sm:block">
                                 <Button
                                     onClick={() => setIsCreateTaskOpen(true)}
-                                    className="bg-zinc-950 dark:bg-white text-white dark:text-black font-bold text-[13px] px-6 h-10 rounded-2xl  bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+                                    className="bg-black hover:bg-zinc-900 text-white dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-black text-[14px] px-6 h-10 rounded-full flex items-center gap-2 shadow-lg transition-colors border-none"
                                 >
-                                    <img src="/image copy 4.png" alt="" className="w-4 h-4 invert brightness-200 dark:invert-0 dark:brightness-100" />
-                                    <span>Add Task</span>
+                                    <Plus className="w-4 h-4" strokeWidth={3} />
+                                    <span>ADD TASK</span>
                                 </Button>
                             </motion.div>
                         )}
@@ -749,44 +778,70 @@ const Dashboard = () => {
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-                                <DropdownMenuLabel className="p-3 font-normal">
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative w-10 h-10 rounded-full bg-violet-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
-                                            {user?.email?.[0]?.toUpperCase() || '?'}
-                                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-black rounded-full"></span>
+                                <DropdownMenuLabel className="p-4 font-body border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative shrink-0">
+                                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-lg font-black text-white shadow-xl shadow-violet-500/20">
+                                                {currentUser?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
+                                            </div>
+                                            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full shadow-sm"></span>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-black text-zinc-900 dark:text-white truncate leading-tight">
-                                                {currentUser?.full_name || 'Vamsi Rangumudri'}
+                                            <p className="text-[15px] font-black text-zinc-900 dark:text-white truncate leading-tight tracking-tight uppercase">
+                                                {currentUser?.full_name || 'User Profile'}
                                             </p>
-                                            <p className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 truncate mt-0.5 uppercase tracking-wider">
+                                            <p className="text-[12px] font-medium text-blue-600 dark:text-blue-400 truncate mt-1">
                                                 {user?.email}
                                             </p>
                                         </div>
                                     </div>
                                 </DropdownMenuLabel>
-                                <DropdownMenuSeparator className="mx-2 opacity-50" />
-                                <div className="p-1.5 space-y-1">
-                                    <DropdownMenuItem onClick={toggleTheme} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-bold text-zinc-900 dark:text-zinc-400 focus:bg-zinc-100/80 dark:focus:bg-zinc-800/40 cursor-pointer transition-colors tracking-tight outline-none">
-                                        {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                                        {isDark ? 'Light Mode' : 'Dark Mode'}
+
+                                <div className="p-2 space-y-1 font-body">
+                                    <div className="px-3 pt-3 pb-2 text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] font-body">Personal</div>
+
+                                    <DropdownMenuItem onClick={() => setActiveView('settings')} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-all outline-none group">
+                                        <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-500/20 group-hover:scale-110 transition-transform">
+                                            <UserIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-none">Account Settings</p>
+                                            <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">Profile, security & more</p>
+                                        </div>
                                     </DropdownMenuItem>
 
-                                    {/* Mobile only menu items that are hidden from header */}
-                                    {isMobile && (
-                                        <Link to="/">
-                                            <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-bold text-zinc-900 dark:text-zinc-400 cursor-pointer transition-colors tracking-tight outline-none">
-                                                <ArrowLeftToLine className="w-4 h-4" />
-                                                Landing Page
-                                            </DropdownMenuItem>
-                                        </Link>
-                                    )}
-
-                                    <DropdownMenuItem onClick={signOut} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-bold text-rose-700 hover:text-rose-300 focus:bg-rose-50/50 dark:focus:bg-rose-950/10 cursor-pointer transition-colors tracking-tight outline-none">
-                                        <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/20 flex items-center justify-center shrink-0">
-                                            <LogOut className="w-4 h-4" />
+                                    <DropdownMenuItem onClick={() => setIsEditProjectOpen(true)} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-all outline-none group">
+                                        <div className="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center shrink-0 border border-violet-100 dark:border-violet-500/20 group-hover:scale-110 transition-transform">
+                                            <Settings className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                                         </div>
-                                        Log Out
+                                        <div>
+                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-none">Project Settings</p>
+                                            <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">Permissions & workspace</p>
+                                        </div>
+                                    </DropdownMenuItem>
+
+                                    <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-2 mx-2" />
+                                    <div className="px-3 pt-2 pb-2 text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] font-body">Preferences</div>
+
+                                    <DropdownMenuItem onClick={toggleTheme} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-all outline-none group">
+                                        <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-200 dark:border-zinc-700 group-hover:scale-110 transition-transform">
+                                            {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-blue-500" />}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-none">{isDark ? 'Light' : 'Dark'} Mode</p>
+                                        </div>
+                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${isDark ? 'bg-violet-600' : 'bg-zinc-200 shadow-inner'}`}>
+                                            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${isDark ? 'left-4' : 'left-0.5'}`} />
+                                        </div>
+                                    </DropdownMenuItem>
+
+                                    <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-2 mx-2" />
+
+                                    <DropdownMenuItem onClick={signOut} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-rose-50 focus:bg-rose-50 dark:hover:bg-rose-950/20 dark:focus:bg-rose-950/20 transition-all outline-none group">
+                                        <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/50 group-hover:scale-110 transition-transform">
+                                            <LogOut className="w-4 h-4 text-rose-600" />
+                                        </div>
+                                        <span className="text-sm font-bold text-rose-600">Log out</span>
                                     </DropdownMenuItem>
                                 </div>
                             </DropdownMenuContent>
@@ -943,6 +998,7 @@ const Dashboard = () => {
             case 'proof_of_work': return selectedProject && currentUser ? <ProofOfWorkView projectId={selectedProject.id} currentUser={currentUser} members={members} isOwner={isOwner} /> : <div />;
             case 'messages': return <InboxView projectId={selectedProject?.id} members={members} currentUserId={currentUser?.id || ''} onlineUsers={onlineUsers} />;
             case 'history': return <HistoryView tasks={selectedProject ? projectTasks : userTasks} members={members} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} />;
+            case 'settings': return <SettingsView user={user} currentUser={currentUser} onUserUpdated={fetchUserTasks} />;
             default: return <ComingSoon view={activeView} />;
         }
     }
