@@ -1,203 +1,140 @@
 import { motion } from "framer-motion";
+
 import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { useTheme } from "@/contexts/ThemeContext";
-import { ShiningText } from "@/components/ui/shining-text";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.8,
-      ease: [0.16, 1, 0.3, 1],
-    },
-  },
-};
-
-const reasons = [
-  {
-    title: "Intelligent Roadmaps",
-    description: "Generate actionable project milestones and step-by-step goals using ThinkSense AI.",
-  },
-  {
-    title: "Live Team Sync",
-    description: "Collaborate in real-time with integrated chat and instant task updates for perfect alignment.",
-  },
-  {
-    title: "Unified Dashboard",
-    description: "Manage tasks, timelines, and communication from one professional-grade interface.",
-  },
-  {
-    title: "Smart Matchmaking",
-    description: "Connect with compatible teammates based on their skills and shared project vision.",
-  },
-  {
-    title: "Voice-Enabled Chat",
-    description: "Communicate faster with high-fidelity voice messaging and automatic transcription.",
-  },
-  {
-    title: "Progress Analytics",
-    description: "Track project health with visual charts and AI-driven completion date predictions.",
-  },
-  {
-    title: "Role Clarity",
-    description: "Define clear ownership with specialized tools for team leaders and contributors.",
-  },
-  {
-    title: "Secure Asset Hub",
-    description: "Store and organize all project documents and assets in a secure, centralized workspace.",
-  },
-];
-
-const GridBackground = () => (
-  <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-    <div
-      className="absolute inset-0 opacity-[0.4] dark:opacity-[0.25]"
-      style={{
-        backgroundImage: `radial-gradient(circle at 1px 1px, #e2e8f0 1px, transparent 0)`,
-        backgroundSize: '40px 40px',
-        maskImage: 'radial-gradient(ellipse at center, black, transparent 80%)'
-      }}
-    />
-    <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-indigo-50/50 dark:from-indigo-950/20 to-transparent blur-[120px]" />
-  </div>
-);
-
-export default function WhyChoose() {
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === "dark";
-
-  return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950 font-sans selection:bg-indigo-500/30">
-      <Navbar isDark={isDark} toggleTheme={toggleTheme} />
-
-      <main className="relative pt-32 pb-24 overflow-hidden">
-        <GridBackground />
-
-        <section className="container mx-auto px-6 relative z-10">
-          <div className="text-center max-w-4xl mx-auto mb-20 space-y-5">
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="text-4xl sm:text-[50px] font-sans font-light text-zinc-900 dark:text-white leading-[1.1] tracking-[-0.025em] mb-16"
-            >
-              Why Choose DoneTogether?
-            </motion.h1>
-
-          </div>
-
-          {/* Feature Grid */}
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.1,
-                  delayChildren: 0.2,
+// ...existing code...
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-80px" }}
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.06,
+                    delayChildren: 0.05,
+                  },
                 },
-              },
-            }}
-            className="
-              grid
-              grid-cols-1
-              md:grid-cols-2
-              lg:grid-cols-3
-              xl:grid-cols-4
-              gap-6
-              w-full
-              max-w-[1280px]
-              mx-auto
-            "
-          >
-            {reasons.map((item, index) => {
-              const lineColors = [
-                '#6366f1', '#f59e42', '#10b981', '#f472b6',
-                '#818cf8', '#38bdf8', '#facc15', '#4ade80'
-              ];
-              const accentColor = lineColors[index % 8];
+              }}
+              className="
+                mt-16
+                grid
+                grid-cols-1
+                md:grid-cols-2
+                xl:grid-cols-4
+                gap-8
+                px-2
+                md:px-8
+                xl:px-16
+                w-full
+                max-w-[1440px]
+                mx-auto
+              "
+            >
+              {reasons.map((item, index) => {
+                const lineColors = [
+                  'linear-gradient(90deg,#6366f1,#60a5fa)',
+                  'linear-gradient(90deg,#f59e42,#fbbf24)',
+                  'linear-gradient(90deg,#10b981,#34d399)',
+                  'linear-gradient(90deg,#f472b6,#f87171)',
+                  'linear-gradient(90deg,#818cf8,#a5b4fc)',
+                  'linear-gradient(90deg,#38bdf8,#0ea5e9)',
+                  'linear-gradient(90deg,#facc15,#fde68a)',
+                  'linear-gradient(90deg,#4ade80,#22d3ee)',
+                ];
+                const lineColor = lineColors[index % 8];
+                return (
+                  <motion.div
+                    key={item.title}
+                    variants={fadeUp}
+                    whileHover={{
+                      y: -10,
+                      scale: 1.045,
+                      boxShadow: "0 8px 32px 0 rgba(80,80,180,0.10), 0 1.5px 8px 0 rgba(0,0,0,0.04)"
+                    }}
+                    transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                    className="
+                      group
+                      relative
+                      overflow-hidden
+                      rounded-2xl
+                      border
+                      border-border/60
+                      bg-white dark:bg-zinc-950/90
+                      shadow-[0_2px_12px_rgba(80,80,180,0.04)]
+                      backdrop-blur-md
+                      px-8
+                      py-7
+                      md:px-10
+                      md:py-8
+                      flex flex-col
+                      items-stretch
+                      justify-between
+                      min-h-[200px]
+                      transition-all
+                      duration-300
+                      hover:border-border
+                      hover:ring-2
+                      hover:ring-border/60
+                      hover:shadow-xl
+                      motion-reduce:transition-none
+                      motion-reduce:hover:transform-none
+                    "
+                  >
+                    {/* sheen */}
+                    <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-br from-muted/35 via-transparent to-muted/15" />
 
-              return (
-                <motion.div
-                  key={item.title}
-                  variants={fadeUp}
-                  whileHover={{
-                    y: -8,
-                    scale: 1.01,
-                  }}
-                  className="
-                    group
-                    relative
-                    overflow-hidden
-                    rounded-3xl
-                    border
-                    border-zinc-200 dark:border-zinc-800
-                    bg-white dark:bg-zinc-900/60
-                    backdrop-blur-md
-                    p-8
-                    flex flex-col
-                    items-start
-                    min-h-[220px]
-                    transition-all
-                    duration-500
-                    hover:border-zinc-300 dark:hover:border-zinc-700
-                    hover:shadow-[0_20px_50px_rgba(0,0,0,0.05)]
-                    dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.3)]
-                  "
-                >
-                  {/* Top meta */}
-                  <div className="relative z-[1] flex items-center gap-4 w-full mb-6">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700/50 shadow-sm transition-transform duration-300 group-hover:scale-105">
-                      <span
-                        className="text-[17px] font-black tracking-tight"
-                        style={{
-                          color: accentColor,
-                          textShadow: `0 0 20px ${accentColor}33`
-                        }}
-                      >
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
+                    {/* top meta */}
+                    <div className="relative z-[1] flex flex-col gap-2 items-start w-full">
+                      <div className="flex items-center gap-2 w-full">
+                        <span className="inline-flex items-center rounded-full border border-border/60 bg-background/40 px-3 py-1 font-body text-[12px] leading-none tracking-[-0.01em] text-foreground/80">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <h3
+                          className="
+                            relative
+                            z-[1]
+                            font-sans
+                            font-semibold
+                            text-[18px] md:text-[19px] xl:text-[20px]
+                            leading-tight
+                            tracking-[-0.02em]
+                            text-foreground
+                            text-balance
+                            line-clamp-2
+                            min-h-[2.7em]
+                            flex-1
+                            truncate
+                          "
+                        >
+                          <span className="block w-full truncate">{item.title}</span>
+                          <motion.div
+                            initial={{ scaleX: 0 }}
+                            whileInView={{ scaleX: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7, delay: 0.15 + index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                            className="origin-left mt-2 h-[4px] w-full rounded-full"
+                            style={{ background: lineColor }}
+                          />
+                        </h3>
+                      </div>
                     </div>
-                    <h3
-                      className="
-                        font-body
-                        font-bold
-                        text-[18px]
-                        sm:text-[20px]
-                        text-zinc-900 dark:text-white
-                        leading-tight
-                        tracking-tight
-                      "
-                    >
-                      {item.title}
-                    </h3>
-                  </div>
 
-                  <p className="relative z-[1] flex-1 font-body text-[14.5px] leading-[22px] text-zinc-700 dark:text-zinc-400 font-medium group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
-                    {item.description}
-                  </p>
 
-                  <div
-                    className="mt-6 w-full h-[2px] rounded-full opacity-30 group-hover:opacity-100 transition-all duration-700 origin-left scale-x-[0.3] group-hover:scale-x-100"
-                    style={{ background: accentColor }}
-                  />
-                </motion.div>
-              );
-            })}
-          </motion.div>
-
+                    <p className="relative z-[1] mt-4 font-body text-[15.5px] leading-[23px] text-muted-foreground line-clamp-2 min-h-[2.7em] text-balance">
+                      {item.description}
+                    </p>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
 
         </section>
+
       </main>
 
       <Footer />
+
     </div>
   );
 }
-
