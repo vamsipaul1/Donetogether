@@ -4,3 +4,8 @@
 *.css text eol=lf
 *.html text eol=lf
 *.json text eol=lf
+*.js text eol=lf
+*.md text eol=lf
+*.sql text eol=lf
+.gitignore text eol=lf
+.env* text eol=lf

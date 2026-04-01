@@ -31,7 +31,7 @@ const HeroSection = () => {
       {/* VIDEO */}
       <div className="absolute inset-0">
         <video
-          className="w-full h-full object-cover [transform:scaleY(-1)] brightness-90 blur-[1.5px] saturate-75"
+          className="w-full h-full object-cover [transform:scaleY(-1)]"
           autoPlay
           loop
           muted
@@ -42,8 +42,6 @@ const HeroSection = () => {
             type="video/mp4"
           />
         </video>
-
-        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-white/80 to-white" />
       </div>
 
 

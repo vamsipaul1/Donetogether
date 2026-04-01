@@ -241,10 +241,8 @@
   }
 
   .font-body {
-    font-family: "Satoshi", sans-serif;
-    font-size: 15px;
-    line-height: 24px;
-    letter-spacing: -0.03em;
+    font-family: "Inter", sans-serif;
+    letter-spacing: -0.01em;
   }
 
   .pb-safe {
@@ -425,11 +423,15 @@
     scrollbar-width: none;
     /* Firefox */
   }
+
   @keyframes bounce-x {
-    0%, 100% {
+
+    0%,
+    100% {
       transform: translateX(0);
       animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
     }
+
     50% {
       transform: translateX(25%);
       animation-timing-function: cubic-bezier(0, 0, 0.2, 1);

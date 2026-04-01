@@ -56,7 +56,7 @@ const Login = () => {
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden bg-white font-body selection:bg-zinc-900 selection:text-white">
-            {/* Background Video (matches Hero) */}
+            {/* Background Video */}
             <div className="absolute inset-0">
                 <video
                     className="w-full h-full object-cover [transform:scaleY(-1)]"
@@ -70,11 +70,10 @@ const Login = () => {
                         type="video/mp4"
                     />
                 </video>
-                <div className="absolute inset-0 bg-gradient-to-b from-[26.416%] from-[rgba(255,255,255,0)] to-[66.943%] to-white" />
+                <div className="absolute inset-0 bg-white/20" />
             </div>
 
-            {/* Soft texture (keeps landing feel) */}
-            <div className="absolute inset-0 opacity-[0.18] mix-blend-multiply pointer-events-none bg-[url('/paper-texture.png')] bg-cover bg-center" />
+
 
             <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 sm:p-8 lg:p-12 gap-8 min-h-screen py-20 lg:py-12">
 

@@ -14,7 +14,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Loader2, Calendar as CalendarIcon, ArrowRight, ShieldCheck, Search, Users, Sparkles, Target } from 'lucide-react';
+import {
+    ArrowLeft, Loader2, Calendar as CalendarIcon, ArrowRight, ShieldCheck,
+    Users, Sparkles, Target, Settings2, History, CheckCircle2
+} from 'lucide-react';
 
 const domains = [
     'Web Development',
@@ -41,11 +44,18 @@ const durations = [
 
 type ProjectType = 'student' | 'founder';
 
+const steps = [
+    { title: "Project Info", sub: "Basics & Goals" },
+    { title: "Team Setup", sub: "Capacity & Name" },
+    { title: "Timeline", sub: "Schedule & Deadlines" }
+];
+
 const CreateProject = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { isDark } = useTheme();
     const [loading, setLoading] = useState(false);
+    const [step, setStep] = useState(0);
 
     const [formData, setFormData] = useState<{
         title: string;
@@ -82,23 +92,28 @@ const CreateProject = () => {
         return code;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!formData.title || !formData.team_name || !formData.domain) {
-            toast.error('Please fill in all required fields');
-            return;
+    const next = () => {
+        if (step === 0) {
+            if (!formData.title || !formData.domain) {
+                toast.error("Please fill in the project title and domain");
+                return;
+            }
         }
+        if (step === 1) {
+            if (!formData.team_name) {
+                toast.error("Please name your team");
+                return;
+            }
+        }
+        setStep((s) => Math.min(s + 1, 2));
+    };
 
-        if (formData.projectType === 'founder') {
-            if (formData.teamSize < 1 || formData.teamSize > 15) {
-                toast.error('Founder team size must be between 1 and 15');
-                return;
-            }
-        } else {
-            if (![4, 5, 6].includes(formData.teamSize)) {
-                toast.error('Student team size must be 4, 5, or 6');
-                return;
-            }
+    const prev = () => setStep((s) => Math.max(s - 1, 0));
+
+    const handleSubmit = async () => {
+        if (!formData.startDate || !formData.endDate) {
+            toast.error("Please select a timeline");
+            return;
         }
 
         setLoading(true);
@@ -106,16 +121,14 @@ const CreateProject = () => {
         try {
             const joinCode = generateJoinCode();
 
-            // Safe date conversion (Noon Strategy)
+            // Noon Strategy for clean dates
             let startIso = null;
             let endIso = null;
-
             if (formData.startDate) {
                 const s = new Date(formData.startDate);
                 s.setHours(12, 0, 0, 0);
                 startIso = s.toISOString();
             }
-
             if (formData.endDate) {
                 const e = new Date(formData.endDate);
                 e.setHours(12, 0, 0, 0);
@@ -154,10 +167,20 @@ const CreateProject = () => {
 
             if (memberError) throw memberError;
 
-            // Mark onboarding complete
             await supabase.from('users').update({ onboarding_completed: true }).eq('id', user?.id);
 
-            toast.success('Project created successfully!');
+            toast.success('Project Created Successfully!', {
+                description: "You've successfully set the stage. Time to head ahead, start managing tasks, and build something great with your buddies! 🚀✨"
+            });
+
+            // Product-level Notification for successful initialization
+            if (Notification.permission === 'granted') {
+                new Notification('Success! Your Project is Live 🚀', {
+                    body: `"${formData.title}" is officially initialized. Let's start managing tasks and collaborating with your buddies! Ready for great results? ✨`,
+                    icon: '/favicon.ico'
+                });
+            }
+
             navigate(`/invite/${project.id}`);
         } catch (error: unknown) {
             console.error('Error creating project:', error);
@@ -168,295 +191,371 @@ const CreateProject = () => {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 dotted-pattern flex flex-col items-center justify-center p-4 md:p-8 transition-colors duration-500 font-sans">
+        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] dotted-pattern flex flex-col items-center justify-center p-4 md:p-12 transition-colors duration-500 font-body">
             <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="w-full max-w-5xl"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full max-w-6xl"
             >
-                {/* Back Link */}
-                <div className="mb-6 flex items-center justify-between">
+                {/* Top Bar */}
+                <div className="mb-8 flex items-center justify-between px-4">
                     <Button
                         variant="ghost"
                         onClick={() => navigate('/dashboard')}
-                        className="group text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-full px-0 py-2 flex items-center gap-2 transition-all hover:bg-transparent"
+                        className="group text-zinc-500 hover:text-black dark:hover:text-white flex items-center gap-2 font-bold tracking-tight bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-full px-5 py-2.5 shadow-sm active:scale-95 transition-all"
                     >
-                        <div className="w-8 h-8 rounded-full bg-white dark:bg-zinc-900 flex items-center justify-center border border-zinc-200 dark:border-zinc-800 shadow-sm group-hover:scale-105 transition-transform">
-                            <ArrowLeft className="w-4 h-4" />
-                        </div>
-                        <span className="text-xs font-bold uppercase tracking-wide">Back to Dashboard</span>
+                        <ArrowLeft className="w-4 h-4" />
+                        <span className="  font-body
+
+      text-[14px]
+      sm:text-[15px]
+      leading-[22px]
+      sm:leading-[24px]
+
+      tracking-[-0.02em]
+      sm:tracking-[-0.03em]
+
+      text-zinc-600
+      dark:text-zinc-300
+
+      max-w-[340px]
+      sm:max-w-[480px]
+
+      mx-auto
+
+      antialiased">Exit to Dashboard</span>
                     </Button>
+
+                    <div className="flex items-center gap-3">
+                        <div className="flex flex-col items-end mr-4">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Step {step + 1} of 3</span>
+                            <span className="text-[14px] font-bold text-zinc-900 dark:text-white">{steps[step].title}</span>
+                        </div>
+                        <div className="flex gap-1">
+                            {[0, 1, 2].map((i) => (
+                                <div key={i} className={cn(
+                                    "h-1.5 rounded-full transition-all duration-500",
+                                    i === step ? "w-8 bg-violet-600" : (i < step ? "w-4 bg-emerald-500" : "w-4 bg-zinc-200 dark:bg-zinc-800")
+                                )} />
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
-                <div className="bg-white dark:bg-black border border-zinc-200 dark:border-zinc-800 rounded-[32px] md:rounded-[40px] shadow-2xl shadow-zinc-200/50 dark:shadow-none overflow-hidden flex flex-col md:flex-row">
+                <div className="bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-white/5 rounded-[40px] md:rounded-[56px] shadow-[0_32px_128px_-32px_rgba(0,0,0,0.1)] dark:shadow-none overflow-hidden flex flex-col md:flex-row min-h-[640px]">
 
-                    {/* Left Info Panel */}
-                    <div className="md:w-[35%] bg-zinc-900 dark:bg-zinc-900 p-8 md:p-10 text-white flex flex-col justify-between relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 blur-[100px] -mr-32 -mt-32" />
-                        <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/10 blur-[100px] -ml-32 -mb-32" />
-
-                        {/* Decorative grid */}
-                        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150"></div>
+                    {/* Visual Sidebar */}
+                    <div className="md:w-[38%] bg-zinc-950 p-10 md:p-12 text-white flex flex-col justify-between relative overflow-hidden border-r border-white/5">
+                        <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/20 blur-[120px] -mr-40 -mt-40" />
+                        <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-600/10 blur-[120px] -ml-40 -mb-40" />
 
                         <div className="relative z-10">
-                            <div className="w-12 h-12 rounded-2xl bg-zinc-800/80 border border-white/10 flex items-center justify-center mb-8 backdrop-blur-md">
-                                <Sparkles className="w-6 h-6 text-emerald-400" />
+                            <div className="w-16 h-16 rounded-[24px] bg-white/5 border border-white/10 flex items-center justify-center mb-5 backdrop-blur-2xl shadow-inner group overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    className="w-10 h-10 text-white group-hover:scale-110 transition-transform duration-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.8"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    {/* Center Person */}
+                                    <circle cx="12" cy="10" r="2.5" />
+                                    <path d="M9 18c0-2 1.5-3 3-3s3 1 3 3" />
+
+                                    {/* Top Left */}
+                                    <circle cx="5" cy="4.5" r="2" />
+                                    <path d="M3 10c0-1.5 1-2.5 2-2.5s2 1 2 2.5" />
+
+                                    {/* Top Right */}
+                                    <circle cx="19" cy="4.5" r="2" />
+                                    <path d="M17 10c0-1.5 1-2.5 2-2.5s2 1 2 2.5" />
+
+                                    {/* Bottom Left */}
+                                    <circle cx="5" cy="19" r="2" />
+                                    <path d="M3 23c0-1.5 1-2.5 2-2.5s2 1 2 2.5" />
+
+                                    {/* Bottom Right */}
+                                    <circle cx="19" cy="19" r="2" />
+                                    <path d="M17 23c0-1.5 1-2.5 2-2.5s2 1 2 2.5" />
+
+                                    {/* Connection Lines */}
+                                    <line x1="7.5" y1="10" x2="10" y2="10" />
+                                    <line x1="14" y1="10" x2="16.5" y2="10" />
+                                </svg>
                             </div>
-                            <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight tracking-tight">
-                                Start New <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-200">
-                                    Project
-                                </span>
+                            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-violet-500 animate-pulse">Builder Mode</h2>
+                            <h1 className="text-4xl md:text-5xl font-extrabold mb-2 pb-6 leading-[1.05] tracking-tighter">
+                                {step === 0 && <> <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Project</span><br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Creation</span></>}
+                                {step === 1 && <><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-300">Assemble</span><br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-300">Unit</span></>}
+                                {step === 2 && <><span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-300">Define</span><br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-300">Launch</span></>}
                             </h1>
-                            <p className="text-zinc-400 text-sm font-medium leading-relaxed max-w-xs">
-                                Setup your project basics to invite team members and start collaborating.
+                            <p className="text-zinc-500 text-[15px] font-semibold leading-relaxed max-w-xs">
+                                {step === 0 && "Define your core objectives and market domain to set the right foundation."}
+                                {step === 1 && "Select your team role and specify capacity to find the perfect collaborators."}
+                                {step === 2 && "Set a realistic schedule and duration to keep your development on track."}
                             </p>
                         </div>
 
-                        <div className="relative z-10 pt-12 space-y-6">
-                            <div className="group flex items-center gap-4 transition-all">
-                                <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center text-sm font-bold shadow-lg shadow-black/20 group-hover:bg-emerald-500/20 group-hover:border-emerald-500/30 group-hover:text-emerald-400 transition-colors">01</div>
-                                <div className="flex flex-col">
-                                    <span className="text-[11px] font-black uppercase text-white tracking-wider">Project Info</span>
-                                    <span className="text-[10px] text-zinc-500">Basics & Goals</span>
+                        <div className="relative z-8 pt-10 space-y-10">
+                            {/* Vertical Line Connector */}
+                            <div className="absolute left-[23px] top-[108px] bottom-14 w-0.5 bg-gradient-to-b from-white/10 via-white/5 to-white/0" />
+
+                            {steps.map((s, i) => (
+                                <div key={i} className={cn(
+                                    "flex items-start gap-5 transition-all relative",
+                                    i === step ? "opacity-100 scale-105 origin-left" : "opacity-40"
+                                )}>
+                                    <div className={cn(
+                                        "w-[40px] h-[40px] rounded-full border flex items-center justify-center text-sm font-black transition-all shadow-2xl z-10",
+                                        i === step ? "bg-violet-600 border-violet-400 text-white shadow-violet-500/20" :
+                                            (i < step ? "bg-emerald-500 border-emerald-400 text-white" : "bg-white/5 border-white/10 text-zinc-500")
+                                    )}>
+                                        {i < step ? <CheckCircle2 className="w-5 h-5" /> : `0${i + 1}`}
+                                    </div>
+                                    <div className="flex flex-col pt-1.5">
+                                        <span className="text-[12px] font-black uppercase tracking-widest text-white">{s.title}</span>
+                                        <span className="text-[11px] text-zinc-500 mt-1 font-bold">{s.sub}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="group flex items-center gap-4 opacity-50 hover:opacity-100 transition-opacity">
-                                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-sm font-bold text-zinc-500">02</div>
-                                <div className="flex flex-col">
-                                    <span className="text-[11px] font-black uppercase text-zinc-400 tracking-wider">Team Setup</span>
-                                    <span className="text-[10px] text-zinc-600">Identity & Size</span>
-                                </div>
-                            </div>
-                            <div className="group flex items-center gap-4 opacity-50 hover:opacity-100 transition-opacity">
-                                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-sm font-bold text-zinc-500">03</div>
-                                <div className="flex flex-col">
-                                    <span className="text-[11px] font-black uppercase text-zinc-400 tracking-wider">Timeline</span>
-                                    <span className="text-[10px] text-zinc-600">Schedule & Deadlines</span>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Right Form Panel */}
-                    <div className="flex-1 bg-white dark:bg-black p-8 md:p-12">
-                        <form onSubmit={handleSubmit} className="space-y-8">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-7">
-                                {/* Project Title */}
-                                <div className="space-y-2.5 md:col-span-2">
-                                    <Label htmlFor="title" className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">Project Title</Label>
-                                    <div className="relative">
-                                        <Input
-                                            id="title"
-                                            placeholder="e.g. Smart Library System"
-                                            className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-base font-semibold placeholder:text-zinc-400 dark:text-white transition-all shadow-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/50"
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                                            <Target className="w-5 h-5 text-zinc-300 dark:text-zinc-700" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Team Name */}
-                                <div className="space-y-2.5">
-                                    <div className="flex items-center justify-between px-1">
-                                        <Label htmlFor="team_name" className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400">Team Name</Label>
-                                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                            <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
-                                            <span className="text-[9px] font-black uppercase text-amber-600 dark:text-amber-500">Public ID</span>
-                                        </div>
-                                    </div>
-                                    <div className="relative group">
-                                        <Input
-                                            id="team_name"
-                                            placeholder="e.g. CodeWarriors"
-                                            className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-base font-semibold placeholder:text-zinc-400 dark:text-white transition-all shadow-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/50"
-                                            value={formData.team_name}
-                                            onChange={(e) => setFormData({ ...formData, team_name: e.target.value })}
-                                        />
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                                            <Users className="w-5 h-5 text-zinc-300 dark:text-zinc-700" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Domain */}
-                                <div className="space-y-2.5">
-                                    <Label htmlFor="domain" className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">Project Domain</Label>
-                                    <Select onValueChange={(val) => setFormData({ ...formData, domain: val })}>
-                                        <SelectTrigger className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-sm font-semibold dark:text-white shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors">
-                                            <SelectValue placeholder="Select domain" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-xl border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 shadow-xl max-h-[300px]">
-                                            {domains.map(d => (
-                                                <SelectItem key={d} value={d} className="text-xs font-bold uppercase py-3 dark:text-zinc-300 dark:focus:bg-zinc-800">
-                                                    {d}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Goal */}
-                                <div className="space-y-2.5 md:col-span-2">
-                                    <Label htmlFor="goal" className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">Project Goal</Label>
-                                    <Textarea
-                                        id="goal"
-                                        placeholder="What are you trying to achieve with this project? Outline your main objectives."
-                                        className="min-h-[100px] bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 text-sm font-medium dark:text-zinc-200 resize-none transition-all shadow-sm focus:ring-2 focus:ring-zinc-500/20 dark:focus:ring-zinc-700/50"
-                                        value={formData.goal}
-                                        onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
-                                    />
-                                </div>
-
-                                {/* Project Type */}
-                                <div className="space-y-2.5 md:col-span-2">
-                                    <Label className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">You are building as</Label>
-                                    <Select
-                                        value={formData.projectType}
-                                        onValueChange={(val) => {
-                                            const nextType = val as ProjectType;
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                projectType: nextType,
-                                                teamSize: nextType === 'founder' ? Math.min(Math.max(prev.teamSize, 1), 15) : ([4, 5, 6].includes(prev.teamSize) ? prev.teamSize : 4),
-                                            }));
-                                        }}
+                    {/* Step Card Content */}
+                    <div className="flex-1 bg-white dark:bg-[#0a0a0a] p-8 md:p-14 flex flex-col justify-between">
+                        <div className="max-w-xl mx-auto w-full">
+                            <AnimatePresence mode="wait">
+                                {step === 0 && (
+                                    <motion.div
+                                        key="step0"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="space-y-8"
                                     >
-                                        <SelectTrigger className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-sm font-semibold dark:text-white shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors">
-                                            <SelectValue placeholder="Select" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-xl border-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 shadow-xl">
-                                            <SelectItem value="student" className="text-xs font-bold uppercase py-3 dark:text-zinc-300 dark:focus:bg-zinc-800">
-                                                Student
-                                            </SelectItem>
-                                            <SelectItem value="founder" className="text-xs font-bold uppercase py-3 dark:text-zinc-300 dark:focus:bg-zinc-800">
-                                                Startup Founder
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Team Size & Duration */}
-                                <div className="space-y-2.5">
-                                    <Label className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">Team Size</Label>
-                                    <Select
-                                        value={formData.teamSize.toString()}
-                                        onValueChange={(val) => setFormData({ ...formData, teamSize: parseInt(val) })}
-                                    >
-                                        <SelectTrigger className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-sm font-semibold dark:text-white shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors">
-                                            <SelectValue placeholder="Size" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-xl dark:bg-zinc-900 dark:border-zinc-800 shadow-xl">
-                                            {teamSizeOptions.map(n => (
-                                                <SelectItem key={n} value={n.toString()} className="text-xs font-bold uppercase py-3 dark:text-zinc-300 dark:focus:bg-zinc-800">
-                                                    {n} Members
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div className="space-y-2.5">
-                                    <Label className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">Expected Duration</Label>
-                                    <Select
-                                        value={formData.duration}
-                                        onValueChange={(val) => setFormData({ ...formData, duration: val })}
-                                    >
-                                        <SelectTrigger className="h-14 bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 text-sm font-semibold dark:text-white shadow-sm hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors">
-                                            <SelectValue placeholder="Duration" />
-                                        </SelectTrigger>
-                                        <SelectContent className="rounded-xl dark:bg-zinc-900 dark:border-zinc-800 shadow-xl">
-                                            {durations.map(d => (
-                                                <SelectItem key={d} value={d} className="text-xs font-bold uppercase py-3 dark:text-zinc-300 dark:focus:bg-zinc-800">
-                                                    {d}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Dates */}
-                                <div className="grid grid-cols-2 gap-4 md:col-span-2">
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">Start Date</Label>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        "w-full h-14 justify-start text-left font-semibold rounded-2xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 text-sm shadow-sm dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/50",
-                                                        !formData.startDate && "text-zinc-400 dark:text-zinc-500"
-                                                    )}
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                                                    <span className="truncate">{formData.startDate ? format(formData.startDate, "PP") : "Pick a date"}</span>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl dark:bg-zinc-900 dark:border-zinc-800" align="start">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={formData.startDate}
-                                                    onSelect={(date) => setFormData({ ...formData, startDate: date })}
-                                                    initialFocus
-                                                    className="dark:text-white"
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-1.5 h-6 rounded-full bg-violet-600" />
+                                                <Label className="text-[13px] font-bold text-zinc-600 font-body">Project Name</Label>
+                                            </div>
+                                            <div className="relative group">
+                                                <Input
+                                                    placeholder="e.g. Smart Library System"
+                                                    className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white transition-all shadow-sm focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/60"
+                                                    value={formData.title}
+                                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                                 />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                    <div className="space-y-2.5">
-                                        <Label className="text-[11px] font-black uppercase text-zinc-500 dark:text-zinc-400 ml-1">End Date</Label>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant={"outline"}
-                                                    className={cn(
-                                                        "w-full h-14 justify-start text-left font-semibold rounded-2xl border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 text-sm shadow-sm dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/50",
-                                                        !formData.endDate && "text-zinc-400 dark:text-zinc-500"
-                                                    )}
-                                                >
-                                                    <CalendarIcon className="mr-2 h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                                                    <span className="truncate">{formData.endDate ? format(formData.endDate, "PP") : "Pick a date"}</span>
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl dark:bg-zinc-900 dark:border-zinc-800" align="start">
-                                                <Calendar
-                                                    mode="single"
-                                                    selected={formData.endDate}
-                                                    onSelect={(date) => setFormData({ ...formData, endDate: date })}
-                                                    initialFocus
-                                                    className="dark:text-white"
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                    </div>
-                                </div>
-                            </div>
+                                                <Target className="absolute right-7 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 dark:text-zinc-700" />
+                                            </div>
+                                        </div>
 
-                            <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800/50 mt-8">
-                                <Button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full h-14 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-black text-sm font-black uppercase transition-all hover:scale-[1.01] active:scale-[0.99] shadow-xl hover:shadow-2xl disabled:opacity-70 disabled:pointer-events-none group overflow-hidden"
-                                >
-                                    {loading ? (
-                                        <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                                    ) : (
-                                        <span className="relative z-10 flex items-center justify-center gap-3">
-                                            Create Project <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                        </span>
-                                    )}
-                                </Button>
-                                <div className="mt-6 flex items-center justify-center gap-2 text-[11px] font-bold text-zinc-800 dark:text-zinc-500 opacity-60 transition-opacity cursor-default">
-                                    <ShieldCheck className="w-3 h-3 text-green-600" />
-                                    <span>Encrypted & Secure Environment</span>
-                                </div>
-                            </div>
-                        </form>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4">
+                                                <Label className="text-[14px] font-black text-zinc-600 font-body">Domain</Label>
+                                                <Select value={formData.domain} onValueChange={(val) => setFormData({ ...formData, domain: val })}>
+                                                    <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[14px] font-bold dark:text-white shadow-sm hover:bg-zinc-100 transition-all">
+                                                        <SelectValue placeholder="Domain" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-2xl border-zinc-200 dark:border-white/10 dark:bg-[#0d0d0d] shadow-2xl max-h-[300px]">
+                                                        {domains.map(d => (
+                                                            <SelectItem key={d} value={d} className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5">{d}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <Label className="text-[14px] font-black text-zinc-600 tracking-widest ml-1">I am a...</Label>
+                                                <Select value={formData.projectType} onValueChange={(val) => setFormData({ ...formData, projectType: val as ProjectType })}>
+                                                    <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[14px] font-bold dark:text-white shadow-sm hover:bg-zinc-100 transition-all">
+                                                        <SelectValue placeholder="I am a..." />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-2xl border-zinc-200 dark:border-white/10 dark:bg-[#0d0d0d] shadow-2xl">
+                                                        <SelectItem value="student" className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5">Active Student</SelectItem>
+                                                        <SelectItem value="founder" className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5">Startup Founder</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <Label className="text-[14px] font-black text-zinc-600">The Mission</Label>
+                                            <Textarea
+                                                placeholder="What are you trying to achieve with this project? Outline your core objectives."
+                                                className="min-h-[140px] bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[22px] p-7 text-[14px] font-semibold dark:text-zinc-200 resize-none transition-all shadow-sm focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50"
+                                                value={formData.goal}
+                                                onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
+                                            />
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {step === 1 && (
+                                    <motion.div
+                                        key="step1"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="space-y-10"
+                                    >
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-1.5 h-6 rounded-full bg-blue-500" />
+                                                    <Label className="text-[13px] font-bold text-zinc-600">Collective Identity</Label>
+                                                </div>
+                                                <div className="px-3 py-1 rounded-lg bg-blue-500/10 border border-blue-500/20 text-[10px] font-black uppercase text-zinc-600 tracking-widest">Global ID</div>
+                                            </div>
+                                            <div className="relative group">
+                                                <Input
+                                                    placeholder="e.g. CodeWarriors"
+                                                    className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white transition-all shadow-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/60"
+                                                    value={formData.team_name}
+                                                    onChange={(e) => setFormData({ ...formData, team_name: e.target.value })}
+                                                />
+                                                <Users className="absolute right-7 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500/50" />
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-zinc-50/80 dark:bg-white/[0.01] border border-zinc-100 dark:border-white/5 rounded-[32px] p-4 pt-2 space-y-2">
+                                            <div className="flex items-center gap-1 mb-2 p-0">
+                                                <Settings2 className="w-5 h-5 text-zinc-400" />
+                                                <Label className="text-[14px] font-black text-zinc-600">Workload Configuration</Label>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <Label className="text-[11px] font-bold text-zinc-400 ml-1">Proposed Team Size</Label>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {teamSizeOptions.map(n => (
+                                                        <button
+                                                            key={n}
+                                                            type="button"
+                                                            onClick={() => setFormData({ ...formData, teamSize: n })}
+                                                            className={cn(
+                                                                "px-6 py-3 rounded-xl text-[13px] font-bold transition-all border",
+                                                                formData.teamSize === n
+                                                                    ? "bg-black text-white border-black dark:bg-white dark:text-black dark:border-white shadow-xl"
+                                                                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-white/5 text-zinc-500 hover:border-zinc-300"
+                                                            )}
+                                                        >
+                                                            {n} {n === 1 ? 'Hero' : 'Members'}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {step === 2 && (
+                                    <motion.div
+                                        key="step2"
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        className="space-y-8"
+                                    >
+                                        <div className="space-y-4">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-1.5 h-6 rounded-full bg-amber-500" />
+                                                <Label className="text-[13px] font-bold text-zinc-600">Development Cycle</Label>
+                                            </div>
+                                            <Select value={formData.duration} onValueChange={(val) => setFormData({ ...formData, duration: val })}>
+                                                <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white shadow-sm hover:bg-zinc-100 transition-all">
+                                                    <SelectValue placeholder="Project Duration" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-2xl border-zinc-200 dark:border-white/10 dark:bg-[#0d0d0d] shadow-2xl">
+                                                    {durations.map(d => (
+                                                        <SelectItem key={d} value={d} className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5">{d}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="bg-zinc-50/80 dark:bg-white/[0.01] border border-zinc-100 dark:border-white/5 rounded-[32px] p-8">
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <History className="w-5 h-5 text-zinc-400" />
+                                                <Label className="text-[14px] font-black text-zinc-600">Active Roadmap</Label>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div className="space-y-3">
+                                                    <Label className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5">Start Date</Label>
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                className="w-full h-14 justify-start rounded-xl border-zinc-200 dark:border-white/10 bg-white dark:bg-black px-5 font-bold text-[13px] hover:bg-zinc-50 transition-all"
+                                                            >
+                                                                <CalendarIcon className="mr-3 h-4 w-4 text-zinc-400" />
+                                                                {formData.startDate ? format(formData.startDate, "PP") : "Start Date"}
+                                                            </Button>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className=" text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5 w-auto p-0 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95" align="start">
+                                                            <Calendar mode="single" selected={formData.startDate} onSelect={(d) => setFormData({ ...formData, startDate: d })} />
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <Label className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5">End Date</Label>
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                className="w-full h-14 justify-start rounded-xl border-zinc-200 dark:border-white/10 bg-white dark:bg-black px-5 font-bold text-[13px] hover:bg-zinc-50 transition-all"
+                                                            >
+                                                                <CalendarIcon className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5" />
+                                                                {formData.endDate ? format(formData.endDate, "PP") : "End Date"}
+                                                            </Button>
+                                                        </PopoverTrigger>
+                                                        <PopoverContent className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5 w-auto p-0 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95" align="start">
+                                                            <Calendar mode="single" selected={formData.endDate} onSelect={(d) => setFormData({ ...formData, endDate: d })} />
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Pagination Actions */}
+                        <div className="mt-auto pt-10 flex items-center justify-between max-w-xl mx-auto w-full">
+                            <button
+                                onClick={prev}
+                                disabled={step === 0}
+                                className="px-8 py-4 rounded-2xl text-[14px] font-bold text-zinc-400 hover:text-black dark:hover:text-white disabled:opacity-0 transition-all"
+                            >
+                                Previous
+                            </button>
+
+                            <Button
+                                onClick={step === 2 ? handleSubmit : next}
+                                disabled={loading}
+                                className={cn(
+                                    "h-12 px-10 rounded-[16px] text-[15px] font-bold uppercase transition-all shadow-xl group active:scale-95",
+                                    step === 2
+                                        ? "bg-violet-600 hover:bg-violet-500 text-white shadow-violet-600/30"
+                                        : "bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800"
+                                )}
+                            >
+                                {loading ? (
+                                    <Loader2 className="w-5 h-5 animate-spin mx-auto text-white" />
+                                ) : (
+                                    <span className="flex items-center capitalize gap-3">
+                                        {step === 2 ? "Finalize" : "Continue"}
+                                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
+                                    </span>
+                                )}
+                            </Button>
+                        </div>
                     </div>
+                </div>
+
+                <div className="mt-10 flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-[0.2em] opacity-80">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>Tier-1 Encrypted Project Cloud</span>
                 </div>
             </motion.div>
         </div>

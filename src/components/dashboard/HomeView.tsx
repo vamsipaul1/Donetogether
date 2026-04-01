@@ -32,8 +32,44 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
     const overdueTasks = tasks.filter(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed').length;
     const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-    // Dynamic Streak Logic (derived dynamically based on completed tasks)
-    const currentStreak = completedTasks > 0 ? Math.min(7, Math.max(1, Math.floor(completedTasks / 1.5))) : 0;
+    // Real Streak & Points Logic
+    const calculateStreakAndPoints = () => {
+        const userTasks = tasks.filter(t => t.assigned_to === user?.id && t.status === 'completed' && t.completed_at);
+        if (userTasks.length === 0) return { streak: 0, points: 0 };
+
+        // Get unique completion dates (YYYY-MM-DD)
+        const dates = [...new Set(userTasks.map(t => new Date(t.completed_at!).toISOString().split('T')[0]))]
+            .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        // If no activity today OR yesterday, streak is broken
+        if (dates[0] !== todayStr && dates[0] !== yesterdayStr) return { streak: 0, points: userTasks.length * 10 };
+
+        let streak = 0;
+        let currentDate = new Date(dates[0]);
+
+        for (let i = 0; i < dates.length; i++) {
+            const checkDate = new Date(dates[i]);
+            const diffInDays = Math.floor((currentDate.getTime() - checkDate.getTime()) / (1000 * 60 * 60 * 24));
+            
+            if (i === 0 || diffInDays === 1) {
+                streak++;
+                currentDate = checkDate;
+            } else if (diffInDays > 1) {
+                break; // Gap found
+            }
+        }
+
+        // Points: 10 per task + (Streak * 5)
+        const points = (userTasks.length * 10) + (streak * 5);
+        return { streak, points };
+    };
+
+    const { streak: currentStreak, points: userPoints } = calculateStreakAndPoints();
 
     // Filter tasks based on tabs
     const filteredTasks = tasks.filter(task => {
@@ -97,23 +133,31 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="px-4 py-2 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200/50 dark:border-white/5 shadow-sm flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center">
-                            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <div className="px-4 py-2 bg-white dark:bg-zinc-950 rounded-[18px] border border-zinc-200/60 dark:border-white/5 shadow-sm flex items-center gap-3">
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[9px] uppercase text-zinc-400 font-bold tracking-wider">Completed</span>
-                            <span className="text-sm font-black text-zinc-900 dark:text-white leading-none">{completedTasks}</span>
+                            <span className="text-[9px] uppercase text-emerald-600/70 dark:text-emerald-500/60 font-black tracking-widest leading-tight">Completed</span>
+                            <span className="text-sm font-black text-zinc-900 dark:text-white leading-none mt-0.5">{completedTasks}</span>
                         </div>
                     </div>
 
-                    <div className="px-4 py-2 bg-white dark:bg-zinc-900/50 rounded-xl border border-zinc-200/50 dark:border-white/5 shadow-sm flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-rose-500/10 flex items-center justify-center">
-                            <AlertCircle className="w-4 h-4 text-red-600" />
+                    <div className="px-4 py-2 bg-white dark:bg-zinc-950 rounded-[18px] border border-zinc-200/60 dark:border-white/5 shadow-sm flex items-center gap-3 group hover:border-amber-500/30 transition-all cursor-default">
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            <Sparkles className="w-5 h-5 text-amber-500" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[9px] uppercase text-zinc-400 font-bold tracking-wider">Overdue</span>
-                            <span className="text-sm font-black text-zinc-900 dark:text-white leading-none">{overdueTasks}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] uppercase text-zinc-400 font-black tracking-widest leading-tight">Total XP</span>
+                                <div className="h-1 w-8 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                    <div 
+                                        className="h-full bg-amber-500 transition-all duration-1000" 
+                                        style={{ width: `${(userPoints % 100)}%` }} 
+                                    />
+                                </div>
+                            </div>
+                            <span className="text-sm font-black text-zinc-900 dark:text-white leading-none mt-0.5">{userPoints} <span className="text-[10px] text-zinc-400 font-bold ml-1">to level up</span></span>
                         </div>
                     </div>
                 </div>
@@ -274,19 +318,22 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                                 <Flame className="w-6 h-6 md:w-8 md:h-8 text-zinc-900 dark:text-white" fill="currentColor" />
                             </div>
                             <div className="block md:hidden">
-                                <h3 className="text-[10px] font-bold text-zinc-500 uppercase leading-none mb-1">Streak</h3>
+                                <h3 className="text-[10px] font-bold text-zinc-500 uppercase leading-none mb-1">Status</h3>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-2xl font-bold text-zinc-900 dark:text-white">{currentStreak}</span>
-                                    <span className="text-[10px] font-bold text-zinc-400 uppercase">Days</span>
+                                    <span className="text-2xl font-bold text-zinc-900 dark:text-white">{currentStreak}x</span>
+                                    <span className="text-[10px] font-bold text-zinc-400 uppercase">Flame</span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="hidden md:block text-center">
-                            <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-white mb-0.5">Activity Streak</h3>
-                            <div className="flex items-baseline justify-center gap-1">
-                                <span className={currentStreak > 0 ? "text-3xl font-black text-amber-500" : "text-3xl font-black text-zinc-900 dark:text-white"}>{currentStreak}</span>
-                                <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">{currentStreak === 1 ? 'Day' : 'Days'}</span>
+                            <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-white mb-0.5">Focus Streak</h3>
+                            <div className="flex flex-col items-center justify-center">
+                                <div className="flex items-baseline gap-1">
+                                    <span className={currentStreak > 0 ? "text-4xl font-black text-amber-500" : "text-4xl font-black text-zinc-900 dark:text-white"}>{currentStreak}</span>
+                                    <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">{currentStreak === 1 ? 'Day' : 'Days'}</span>
+                                </div>
+                                <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-tighter mt-1">+{(currentStreak * 5)} XP Multiplier</p>
                             </div>
                         </div>
 

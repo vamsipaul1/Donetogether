@@ -4,7 +4,7 @@ import {
     , Home, Inbox, BarChart3, Target, Briefcase, Settings, ChevronRight, MessageSquare,
     Calendar as CalendarIcon, FileText, List as ListIcon, Columns, Timer,
     MoreHorizontal, Share2, ChevronDown, UserPlus, Settings2, Trash2, Edit2, FolderPlus, StarIcon, Star, History, LayoutDashboard,
-    ShieldCheck, Menu, Globe, PanelLeft, Sparkles
+    ShieldCheck, Menu, Globe, PanelLeft, Sparkles, Activity, BadgeCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,13 +54,14 @@ import SettingsView from '@/components/dashboard/SettingsView';
 
 import { WelcomeOverlay } from '@/components/dashboard/WelcomeOverlay';
 import AIAssistant from '@/components/ai/AIAssistant';
-
-// import WorkspaceView from '@/components/dashboard/WorkspaceView';
+import NotificationDropdown from '@/components/dashboard/NotificationDropdown';
+import { useNotifications } from '@/hooks/useNotifications';
 
 type DashboardView = 'home' | 'overview' | 'list' | 'board' | 'timeline' | 'dashboard' | 'calendar' | 'workflow' | 'messages' | 'files' | 'workspace' | 'history' | 'progress' | 'proof_of_work' | 'settings';
 
 const Dashboard = () => {
     const { user, signOut, loading: authLoading } = useAuth();
+    const { notifications, unreadCount, markAllAsRead } = useNotifications(user?.id);
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const isDark = theme === 'dark';
@@ -463,8 +464,8 @@ const Dashboard = () => {
                 {/* Mobile User Profile in Sidebar (optional, but good for easy access) */}
                 {isMobile && (
                     <div className="px-4 pb-4">
-                        <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-100 dark:bg-zinc-900">
-                            <div className="w-8 h-8 rounded-full bg-violet-600 flex items-center justify-center text-xs font-bold text-white">
+                        <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 shadow-sm">
+                            <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-xs font-bold text-white dark:text-black shadow-inner">
                                 {user?.email?.[0]?.toUpperCase() || '?'}
                             </div>
                             <div className="min-w-0 flex-1">
@@ -744,7 +745,7 @@ const Dashboard = () => {
                         )}
 
 
-                        {isOwner && (
+                        {isOwner && activeView !== 'home' && activeView !== 'list' && (
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="hidden sm:block">
                                 <Button
                                     onClick={() => setIsCreateTaskOpen(true)}
@@ -756,6 +757,12 @@ const Dashboard = () => {
                             </motion.div>
                         )}
 
+
+                        <NotificationDropdown
+                            notifications={notifications}
+                            unreadCount={unreadCount}
+                            onMarkAllAsRead={markAllAsRead}
+                        />
 
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="hidden sm:block">
                             <Link to="/">
@@ -770,79 +777,112 @@ const Dashboard = () => {
                             </Link>
                         </motion.div>
 
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="relative w-8 h-8 md:w-9 md:h-9 rounded-full bg-violet-600 flex items-center justify-center text-sm font-bold text-white outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-900 transition-all shrink-0">
-                                    {user?.email?.[0]?.toUpperCase() || '?'}
-                                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-black rounded-full"></span>
+                                <button className="relative w-11 h-11 rounded-2xl bg-zinc-900 dark:bg-zinc-100 border border-zinc-900 dark:border-white flex items-center justify-center text-sm font-bold text-white dark:text-black outline-none hover:bg-zinc-800 dark:hover:bg-white/90 transition-all shrink-0 group shadow-lg">
+                                    {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
+                                    <span className="absolute bottom-2 right-2 w-2.5 h-2.5 bg-emerald-500 border-2 border-zinc-900 dark:border-white rounded-full group-hover:scale-110 transition-transform shadow-sm"></span>
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-                                <DropdownMenuLabel className="p-4 font-body border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative shrink-0">
-                                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-lg font-black text-white shadow-xl shadow-violet-500/20">
-                                                {currentUser?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
+                            <DropdownMenuContent align="end" className="w-[310px] rounded-[24px] p-0 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden font-body">
+                                {/* Header Info */}
+                                <div className="p-4 border-b border-zinc-100 dark:border-zinc-900 mt-1">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex items-start gap-3 min-w-0">
+                                            <div className="relative shrink-0">
+                                                <Avatar className="w-10 h-10 border border-zinc-900 dark:border-white rounded-full shadow-lg">
+                                                    <AvatarImage src={currentUser?.avatar_url} />
+                                                    <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-bold">
+                                                        {currentUser?.full_name?.[0]?.toUpperCase() || '?'}
+                                                    </AvatarFallback>
+                                                </Avatar>
                                             </div>
-                                            <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full shadow-sm"></span>
+                                            <div className="flex flex-col min-w-0 pt-0.5 pr-2">
+                                                <div className="flex items-center gap-1.5 no-wrap">
+                                                    <span className="text-[14.5px] font-bold text-zinc-900 dark:text-white leading-tight tracking-tight truncate max-w-[160px]">
+                                                        {currentUser?.full_name || user?.user_metadata?.full_name || 'Innovator'}
+                                                    </span>
+                                                    <BadgeCheck className="w-3.5 h-3.5 text-[#3b82f6] fill-[#3b82f6]/5 shrink-0" />
+                                                </div>
+                                                <span className="text-[12px] font-medium text-zinc-600 dark:text-zinc-500 truncate mt-1 tracking-tight">
+                                                    {user?.email || 'vickyvamsi683@gmail.com'}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-[15px] font-black text-zinc-900 dark:text-white truncate leading-tight tracking-tight uppercase">
-                                                {currentUser?.full_name || 'User Profile'}
-                                            </p>
-                                            <p className="text-[12px] font-medium text-blue-600 dark:text-blue-400 truncate mt-1">
-                                                {user?.email}
-                                            </p>
+                                        <div className="shrink-0 pt-0.5">
+                                            <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-lg border border-emerald-100/50 dark:border-emerald-500/20">
+                                                PRO
+                                            </div>
                                         </div>
                                     </div>
-                                </DropdownMenuLabel>
+                                </div>
 
-                                <div className="p-2 space-y-1 font-body">
-                                    <div className="px-3 pt-3 pb-2 text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] font-body">Personal</div>
+                                {/* Menu Items */}
+                                <div className="py-2">
+                                    {/* Dark Mode Toggle */}
+                                    <div className="px-4 py-2.5 flex items-center justify-between group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-5 h-5 flex items-center justify-center">
+                                                <Moon className="w-[18px] h-[18px] text-zinc-600 dark:text-zinc-400" />
+                                            </div>
+                                            <span className="text-[14.5px] font-medium text-zinc-700 dark:text-zinc-300">Dark Mode</span>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                toggleTheme();
+                                            }}
+                                            className={cn(
+                                                "w-9 h-5 rounded-full relative transition-all duration-300",
+                                                isDark ? "bg-emerald-500" : "bg-zinc-200 dark:bg-zinc-800"
+                                            )}
+                                        >
+                                            <div className={cn(
+                                                "absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-all duration-300",
+                                                isDark ? "left-[18px]" : "left-0.5"
+                                            )} />
+                                        </button>
+                                    </div>
 
-                                    <DropdownMenuItem onClick={() => setActiveView('settings')} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-all outline-none group">
-                                        <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-500/20 group-hover:scale-110 transition-transform">
-                                            <UserIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                    <div className="h-px bg-zinc-100 dark:bg-zinc-900 my-1" />
+
+                                    <DropdownMenuItem onClick={() => setActiveView('overview')} className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors">
+                                        <div className="w-5 h-5 flex items-center justify-center">
+                                            <Activity className="w-[18px] h-[18px] text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-none">Account Settings</p>
-                                            <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">Profile, security & more</p>
-                                        </div>
+                                        <span className="text-[14.5px] font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors tracking-tight">Activity</span>
                                     </DropdownMenuItem>
 
-                                    <DropdownMenuItem onClick={() => setIsEditProjectOpen(true)} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-all outline-none group">
-                                        <div className="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center shrink-0 border border-violet-100 dark:border-violet-500/20 group-hover:scale-110 transition-transform">
-                                            <Settings className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                                    <DropdownMenuItem onClick={() => setActiveView('settings')} className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors">
+                                        <div className="w-5 h-5 flex items-center justify-center">
+                                            <Settings className="w-[18px] h-[18px] text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-none">Project Settings</p>
-                                            <p className="text-[10px] text-zinc-500 mt-1 leading-relaxed">Permissions & workspace</p>
-                                        </div>
+                                        <span className="text-[14.5px] font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors tracking-tight">Settings</span>
                                     </DropdownMenuItem>
 
-                                    <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-2 mx-2" />
-                                    <div className="px-3 pt-2 pb-2 text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] font-body">Preferences</div>
+                                    <div className="h-px bg-zinc-100 dark:bg-zinc-900 my-1" />
 
-                                    <DropdownMenuItem onClick={toggleTheme} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-all outline-none group">
-                                        <div className="w-9 h-9 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-200 dark:border-zinc-700 group-hover:scale-110 transition-transform">
-                                            {isDark ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-blue-500" />}
+                                    <DropdownMenuItem className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors">
+                                        <div className="w-5 h-5 flex items-center justify-center">
+                                            <Plus className="w-[18px] h-[18px] text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                                         </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-none">{isDark ? 'Light' : 'Dark'} Mode</p>
-                                        </div>
-                                        <div className={`w-8 h-4 rounded-full relative transition-colors ${isDark ? 'bg-violet-600' : 'bg-zinc-200 shadow-inner'}`}>
-                                            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${isDark ? 'left-4' : 'left-0.5'}`} />
-                                        </div>
+                                        <span className="text-[14.5px] font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">Add Account</span>
                                     </DropdownMenuItem>
 
-                                    <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-2 mx-2" />
-
-                                    <DropdownMenuItem onClick={signOut} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-rose-50 focus:bg-rose-50 dark:hover:bg-rose-950/20 dark:focus:bg-rose-950/20 transition-all outline-none group">
-                                        <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center shrink-0 border border-rose-100 dark:border-rose-900/50 group-hover:scale-110 transition-transform">
-                                            <LogOut className="w-4 h-4 text-rose-600" />
+                                    <DropdownMenuItem onClick={signOut} className="px-4 py-2.5 flex items-center gap-3 m-2 mx-1.5 rounded-xl cursor-all-scroll focus:bg-zinc-50 dark:focus:bg-zinc-900 group transition-all duration-300 bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 outline-none">
+                                        <div className="w-5 h-5 flex items-center justify-center">
+                                            <LogOut className="w-[18px] h-[18px] text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                                         </div>
-                                        <span className="text-sm font-bold text-rose-600">Log out</span>
+                                        <span className="text-[14.5px] font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">Logout</span>
                                     </DropdownMenuItem>
+                                </div>
+
+                                {/* Footer info */}
+                                <div className="px-4 py-4 border-t border-zinc-100 dark:border-zinc-900">
+                                    <p className="text-[12px] font-medium text-zinc-400 dark:text-zinc-500">
+                                        v.1.5.69 · Terms & Conditions
+                                    </p>
                                 </div>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -968,8 +1008,6 @@ const Dashboard = () => {
                     onPermissionsUpdated={fetchProjectDetails}
                 />
             )}
-
-
 
             <AIAssistant
                 isOpen={isAIOpen}

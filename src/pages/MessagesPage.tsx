@@ -136,7 +136,7 @@ const MessagesPage = () => {
                         <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                             <ChevronLeft className="h-5 w-5" />
                         </button>
-                        <h1 className="text-xl font-black tracking-tight dark:text-white">Messages</h1>
+                        <h1 className="text-[22px] font-black tracking-tight text-zinc-900 dark:text-white font-body">Messages</h1>
                     </div>
                     <div className="flex items-center gap-1">
                         <Button variant="ghost" size="icon" className="rounded-full text-zinc-500"><Users className="h-5 w-5" /></Button>
@@ -172,41 +172,40 @@ const MessagesPage = () => {
                                     key={proj.id}
                                     onClick={() => setSelectedProjectId(proj.id)}
                                     className={cn(
-                                        "w-full flex items-center gap-3.5 p-3 rounded-2xl transition-all duration-300 relative group",
+                                        "w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 relative group",
                                         isActive
-                                            ? "bg-[#f0f2f5] dark:bg-[#202c33] shadow-inner"
-                                            : "hover:bg-[#f5f6f6] dark:hover:bg-[#182229]"
+                                            ? "bg-white dark:bg-zinc-800/40 shadow-sm border border-zinc-200/50 dark:border-white/5"
+                                            : "hover:bg-white/60 dark:hover:bg-zinc-800/20"
                                     )}
                                 >
-                                    <div className="relative">
-                                        <Avatar className="h-12 w-12 rounded-[16px] shadow-sm border-2 border-white dark:border-zinc-800">
+                                    <div className="relative shrink-0">
+                                        <Avatar className="h-14 w-14 rounded-2xl shadow-lg border border-zinc-900 dark:border-white">
                                             <AvatarImage src={proj.avatar_url} />
-                                            <AvatarFallback className="bg-zinc-900 text-white font-black text-sm">
+                                            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-black text-lg">
                                                 {proj.title.slice(0, 1).toUpperCase()}
                                             </AvatarFallback>
                                         </Avatar>
                                         {isOnline && (
-                                            <span className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white dark:border-zinc-900 rounded-full" />
+                                            <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full" />
                                         )}
                                     </div>
                                     <div className="flex-1 text-left min-w-0">
-                                        <div className="flex justify-between items-center mb-0.5">
+                                        <div className="flex justify-between items-baseline mb-1">
                                             <h3 className={cn(
-                                                "font-black text-[15px] truncate transition-colors font-body tracking-tight",
-                                                isActive ? "text-zinc-900 dark:text-white" : "text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white"
+                                                "font-black text-[16px] truncate font-body tracking-tight leading-tight",
+                                                isActive ? "text-zinc-900 dark:text-white" : "text-zinc-900 dark:text-zinc-100"
                                             )}>
                                                 {proj.title}
                                             </h3>
-                                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest font-body">2m ago</span>
                                         </div>
-                                        <p className="text-[9px] font-black text-zinc-600 dark:text-zinc-700 uppercase tracking-[0.15em] font-body opacity-80 truncate leading-none mt-1">
-                                            {proj.team_name || 'Team Chat'}
+                                        <p className="text-[13px] font-medium text-zinc-700 dark:text-zinc-400 font-body truncate leading-tight">
+                                            {proj.team_name || 'Project Team'}
                                         </p>
                                     </div>
                                     {isActive && (
                                         <motion.div
                                             layoutId="active-indicator"
-                                            className="absolute left-0 w-1 h-8 bg-zinc-900 dark:bg-white rounded-r-full"
+                                            className="absolute left-0 w-1.5 h-10 bg-zinc-900 dark:bg-white rounded-r-full"
                                         />
                                     )}
                                 </button>
@@ -218,9 +217,9 @@ const MessagesPage = () => {
                 {/* Footer / Account */}
                 <div className="p-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between shrink-0 bg-white/80 dark:bg-black/80 backdrop-blur-xl">
                     <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border-2 border-white dark:border-zinc-800 shadow-md">
+                        <Avatar className="h-10 w-10 border-2 border-zinc-900 dark:border-white shadow-md">
                             <AvatarImage src={user?.user_metadata?.avatar_url} />
-                            <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-black text-xs uppercase">
+                            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-black text-xs uppercase">
                                 {user?.user_metadata?.full_name?.slice(0, 1) || 'U'}
                             </AvatarFallback>
                         </Avatar>
