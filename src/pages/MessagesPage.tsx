@@ -171,43 +171,42 @@ const MessagesPage = () => {
                                 <button
                                     key={proj.id}
                                     onClick={() => setSelectedProjectId(proj.id)}
-                                    className={cn(
-                                        "w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 relative group",
-                                        isActive
-                                            ? "bg-white dark:bg-zinc-800/40 shadow-sm border border-zinc-200/50 dark:border-white/5"
-                                            : "hover:bg-white/60 dark:hover:bg-zinc-800/20"
-                                    )}
+                                    className="w-full flex items-center gap-4 p-4 rounded-2xl transition-colors duration-200 relative group outline-none"
                                 >
-                                    <div className="relative shrink-0">
-                                        <Avatar className="h-14 w-14 rounded-2xl shadow-lg border border-zinc-900 dark:border-white">
-                                            <AvatarImage src={proj.avatar_url} />
-                                            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-black text-lg">
+                                    {/* WhatsApp-style sliding background highlight */}
+                                    {isActive && (
+                                        <motion.div
+                                            layoutId="active-chat-bg"
+                                            className="absolute inset-0 bg-white/80 dark:bg-zinc-800/40 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-none rounded-2xl z-0"
+                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                        />
+                                    )}
+
+                                    <div className="relative shrink-0 z-10">
+                                        <Avatar className="h-14 w-14 rounded-full border border-zinc-100 dark:border-zinc-800/50">
+                                            <AvatarImage src={proj.avatar_url} className="object-cover" />
+                                            <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold text-lg">
                                                 {proj.title.slice(0, 1).toUpperCase()}
                                             </AvatarFallback>
                                         </Avatar>
                                         {isOnline && (
-                                            <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full" />
+                                            <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-emerald-500 border-2 border-white dark:border-zinc-900 rounded-full z-20" />
                                         )}
                                     </div>
-                                    <div className="flex-1 text-left min-w-0">
+
+                                    <div className="flex-1 text-left min-w-0 z-10">
                                         <div className="flex justify-between items-baseline mb-1">
                                             <h3 className={cn(
-                                                "font-black text-[16px] truncate font-body tracking-tight leading-tight",
-                                                isActive ? "text-zinc-900 dark:text-white" : "text-zinc-900 dark:text-zinc-100"
+                                                "font-bold text-[16px] truncate font-body tracking-tight leading-tight",
+                                                isActive ? "text-zinc-950 dark:text-white" : "text-zinc-800 dark:text-zinc-200"
                                             )}>
-                                                {proj.title}
+                                                {proj.title.charAt(0).toUpperCase() + proj.title.slice(1).toLowerCase()}
                                             </h3>
                                         </div>
-                                        <p className="text-[13px] font-medium text-zinc-700 dark:text-zinc-400 font-body truncate leading-tight">
-                                            {proj.team_name || 'Project Team'}
+                                        <p className="text-[13px] font-medium text-zinc-500 dark:text-zinc-400 font-body truncate leading-tight">
+                                            {(proj.team_name || 'Project Team').charAt(0).toUpperCase() + (proj.team_name || 'Project Team').slice(1).toLowerCase()}
                                         </p>
                                     </div>
-                                    {isActive && (
-                                        <motion.div
-                                            layoutId="active-indicator"
-                                            className="absolute left-0 w-1.5 h-10 bg-zinc-900 dark:bg-white rounded-r-full"
-                                        />
-                                    )}
                                 </button>
                             );
                         })}

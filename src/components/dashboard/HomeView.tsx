@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import {
     CheckCircle2, Flame, Zap, Trophy,
-    ArrowRight, Sparkles, Target, AlertCircle, Home
+    ArrowRight, Sparkles, Target, AlertCircle, Home, Award
 } from 'lucide-react';
 import type { User, Task } from '@/types/database';
 import { Button } from '@/components/ui/button';
@@ -55,7 +55,7 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
         for (let i = 0; i < dates.length; i++) {
             const checkDate = new Date(dates[i]);
             const diffInDays = Math.floor((currentDate.getTime() - checkDate.getTime()) / (1000 * 60 * 60 * 24));
-            
+
             if (i === 0 || diffInDays === 1) {
                 streak++;
                 currentDate = checkDate;
@@ -145,15 +145,15 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
 
                     <div className="px-4 py-2 bg-white dark:bg-zinc-950 rounded-[18px] border border-zinc-200/60 dark:border-white/5 shadow-sm flex items-center gap-3 group hover:border-amber-500/30 transition-all cursor-default">
                         <div className="w-8 h-8 flex items-center justify-center">
-                            <Sparkles className="w-5 h-5 text-amber-500" />
+                            <Flame className="w-5 h-5 text-amber-700 fill-amber-700/10" />
                         </div>
                         <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] uppercase text-zinc-400 font-black tracking-widest leading-tight">Total XP</span>
+                                <span className="text-[9px] uppercase text-zinc-700 font-black tracking-widest leading-tight">Total XP</span>
                                 <div className="h-1 w-8 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-amber-500 transition-all duration-1000" 
-                                        style={{ width: `${(userPoints % 100)}%` }} 
+                                    <div
+                                        className="h-full bg-amber-500 transition-all duration-1000"
+                                        style={{ width: `${(userPoints % 100)}%` }}
                                     />
                                 </div>
                             </div>
@@ -170,12 +170,12 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                         {/* Task Card Header */}
                         <div className="flex items-center justify-between px-1 py-4 md:py-5 border-b border-zinc-200/30 dark:border-zinc-800/30 sticky top-0 bg-transparent z-10">
                             <div className="flex items-center gap-3 md:gap-4">
-                                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-black font-bold text-sm shadow-md">
+                                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-white dark:bg-zinc-100 flex items-center justify-center text-zinc-900 dark:text-black font-black text-sm shadow-sm border border-zinc-200/50">
                                     {(user?.full_name?.[0] || user?.email?.[0] || '?').toLowerCase()}
                                 </div>
                                 <div>
-                                    <h2 className="text-[15px] md:text-base font-bold text-zinc-900 dark:text-white">My Missions</h2>
-                                    <p className="text-[11px] md:text-[11px] text-zinc-500 font-medium mt-0.5">Focus List</p>
+                                    <h2 className="text-[16px] md:text-base font-black text-zinc-900 dark:text-white tracking-tight uppercase">My Missions</h2>
+                                    <p className="text-[10px] md:text-[11px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">Focus List</p>
                                 </div>
                             </div>
                         </div>
@@ -208,29 +208,33 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                                         <motion.div
                                             layout
                                             initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            viewport={{ once: true }}
+                                            transition={{ delay: index * 0.03 }}
+                                            whileHover={{ scale: 1.01 }}
+                                            whileTap={{ scale: 0.98 }}
                                             key={task.id}
-                                            className="group flex items-center gap-4 px-5 py-4 bg-white/40 dark:bg-white/[0.03] border border-white/60 dark:border-white/5 hover:border-zinc-950/20 dark:hover:border-white/10 rounded-[28px] transition-all cursor-pointer backdrop-blur-md shadow-sm hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]"
+                                            className="group flex items-center gap-4 px-5 py-4 bg-white/70 dark:bg-white/[0.03] border border-white dark:border-white/5 hover:border-violet-500/20 dark:hover:border-white/10 rounded-[28px] transition-all cursor-pointer backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
                                         >
-                                            <button
+                                            <motion.button
+                                                whileTap={{ scale: 0.8 }}
                                                 onClick={(e) => { e.stopPropagation(); handleTaskCompletion(task); }}
-                                                className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${task.status === 'completed'
-                                                    ? 'bg-zinc-900 border-zinc-900 scale-90'
-                                                    : 'border-zinc-300 dark:border-zinc-600 hover:border-zinc-900 dark:hover:border-zinc-400 scale-100'
+                                                className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${task.status === 'completed'
+                                                    ? 'bg-violet-600 border-violet-600 scale-90'
+                                                    : 'border-zinc-200 dark:border-zinc-700 hover:border-violet-500 dark:hover:border-zinc-400 scale-100'
                                                     }`}
                                             >
                                                 <CheckCircle2 className={`w-3.5 h-3.5 text-white transition-opacity ${task.status === 'completed' ? 'opacity-100' : 'opacity-0'}`} />
-                                            </button>
+                                            </motion.button>
 
                                             <div className="flex-1 min-w-0">
-                                                <h3 className={`text-[13px] font-semibold truncate ${task.status === 'completed' ? 'text-zinc-500 line-through decoration-zinc-400' : 'text-zinc-900 dark:text-zinc-100'}`}>
+                                                <h3 className={`text-[13.5px] font-bold tracking-tight truncate ${task.status === 'completed' ? 'text-zinc-400 line-through decoration-zinc-300' : 'text-zinc-900 dark:text-zinc-100'}`}>
                                                     {task.title}
                                                 </h3>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-[10px] font-bold text-zinc-500">DoneTogether</span>
-                                                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-400" />
-                                                    <span className={`text-[10px] font-bold ${task.priority === 'high' ? 'text-zinc-900 dark:text-white' : 'text-zinc-500'}`}>
+                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">DoneTogether</span>
+                                                    <div className="w-0.5 h-0.5 rounded-full bg-zinc-300" />
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${task.priority === 'high' ? 'text-red-500' : 'text-zinc-400'}`}>
                                                         {task.priority || 'Normal'}
                                                     </span>
                                                 </div>
@@ -238,10 +242,10 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
 
                                             {task.due_date && (
                                                 <div className="flex flex-col items-end gap-1">
-                                                    <div className={`text-[10px] font-medium ${new Date(task.due_date) < new Date(new Date().setHours(0, 0, 0, 0)) && task.status !== 'completed'
+                                                    <div className={`text-[9px] font-black uppercase tracking-widest ${new Date(task.due_date) < new Date(new Date().setHours(0, 0, 0, 0)) && task.status !== 'completed'
                                                         ? 'text-red-500'
                                                         : new Date(task.due_date).toDateString() === new Date().toDateString() && task.status !== 'completed'
-                                                            ? 'text-amber-600'
+                                                            ? 'text-violet-600'
                                                             : 'text-zinc-400'
                                                         }`}>
                                                         {new Date(task.due_date) < new Date(new Date().setHours(0, 0, 0, 0)) && task.status !== 'completed'
@@ -269,91 +273,112 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
 
                 {/* Right Side: Widgets */}
                 <div className="flex flex-col gap-6 md:gap-4 order-1 lg:order-2">
-                    <div className="p-4 bg-gradient-to-br from-[#0055FF] via-[#0066FF] to-[#3385FF] rounded-3xl text-white shadow-xl shadow-blue-500/10 relative overflow-hidden group border border-white/20 w-full">
-                        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-1000" />
-                        <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-7 h-7 rounded-lg bg-white/20 backdrop-blur-xl flex items-center justify-center shadow-lg border border-white/20">
-                                    <CheckCircle2 className="w-4.5 h-4.5 text-yellow-400" />
+                    <div className="relative p-6 md:p-8 rounded-[38px] overflow-hidden group border border-white/50 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 min-h-[220px] flex flex-col justify-between isolate bg-white/40 dark:bg-black/40 backdrop-blur-2xl">
+                        {/* Custom Neon Background - integrated into glass */}
+                        <div className="absolute inset-0 z-[-1] opacity-60 dark:opacity-40">
+                            <img
+                                src="/bgneon.png"
+                                alt="Background"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            />
+                        </div>
+
+                        <div className="relative z-10 flex flex-col gap-8">
+                            {/* Header Row - Aligned perfectly */}
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-white/40 dark:bg-white/10 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/60 shrink-0">
+                                    <Award className="w-6 h-6 text-indigo-600 dark:text-white" />
                                 </div>
-                                <div>
-                                    <h3 className="text-sm font-extrabold uppercase tracking-wider font-sans">My Tasks</h3>
-                                    <p className="text-[7px] font-bold text-white/70 uppercase tracking-widest mt-0.5">Performance</p>
+                                <div className="flex flex-col gap-0.5 min-w-0">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/70 dark:text-white/40 leading-none">Your Progress</span>
+                                    <h3 className="text-lg md:text-xl font-black text-black dark:text-white leading-tight tracking-tight">Personal Goals</h3>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 mb-4">
-                                <span className="text-xs font-medium text-white/90 leading-tight">
-                                    <span className="font-black text-white bg-white/20 px-1.5 py-0.5 rounded text-[10px] mr-1">{completedTasks}</span> neutralizations
-                                </span>
+                            {/* Badge Row - Aligned to one grid */}
+                            <div className="flex items-center gap-4">
+                                <div className="bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 px-4 py-2 rounded-[22px] text-xl font-black shadow-xl border border-white/10">
+                                    {completedTasks}
+                                </div>
+                                <span className="text-[13px] md:text-[15px] font-black uppercase tracking-widest text-black/100 dark:text-white/80">Tasks Finished</span>
                             </div>
+                        </div>
 
-                            <div className="mt-auto space-y-2">
-                                <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden shadow-inner border border-white/5">
+                        {/* Progress Row - Lower Section */}
+                        <div className="relative z-10 mt-6 space-y-4">
+                            <div className="h-3 w-full bg-black/5 dark:bg-white/10 rounded-full overflow-hidden border border-white/20">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${completionRate}%` }}
+                                    transition={{ duration: 1.5, ease: "circOut" }}
+                                    className="h-full bg-gradient-to-r from-indigo-400 to-[#9933FF] rounded-full relative shadow-[0_4px_15px_rgba(99,102,241,0.4)]"
+                                >
                                     <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${completionRate}%` }}
-                                        transition={{ duration: 2, ease: "circOut" }}
-                                        className="h-full bg-white rounded-full relative overflow-hidden"
-                                    >
-                                        <motion.div
-                                            animate={{ x: ['-100%', '100%'] }}
-                                            transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                                        />
-                                    </motion.div>
-                                </div>
-                                <div className="flex justify-between items-end">
-                                    <span className="text-[7px] font-bold uppercase tracking-wider text-white/60">Efficiency</span>
-                                    <div className="text-lg font-black leading-none">{completionRate}%</div>
-                                </div>
+                                        animate={{ x: ['-100%', '100%'] }}
+                                        transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                    />
+                                </motion.div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-[11px] font-black uppercase tracking-[0.25em] text-black/100 dark:text-white/40">Efficiency Rate</span>
+                                <div className="text-xl md:text-2xl font-black leading-none tracking-tighter text-black dark:text-white">{completionRate}%</div>
                             </div>
                         </div>
                     </div>
 
                     {/* STREAK WIDGET */}
-                    <div className="p-2 md:p-6 bg-white/30 dark:bg-black/40 backdrop-blur-md border border-white dark:border-white/5 rounded-[32px] shadow-sm relative overflow-hidden flex flex-row md:flex-col items-center justify-between md:justify-center gap-4">
-                        <div className="flex items-center gap-4 md:gap-0 md:justify-center relative md:mb-4">
-                            <div className="relative w-12 h-12 md:w-16 md:h-16 bg-zinc-100 dark:bg-zinc-800 rounded-2xl md:rounded-3xl flex items-center justify-center transform group-hover:scale-110 transition-transform cursor-pointer">
-                                <Flame className="w-6 h-6 md:w-8 md:h-8 text-zinc-900 dark:text-white" fill="currentColor" />
-                            </div>
-                            <div className="block md:hidden">
-                                <h3 className="text-[10px] font-bold text-zinc-500 uppercase leading-none mb-1">Status</h3>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-2xl font-bold text-zinc-900 dark:text-white">{currentStreak}x</span>
-                                    <span className="text-[10px] font-bold text-zinc-400 uppercase">Flame</span>
-                                </div>
-                            </div>
+                    <div className="p-2 md:p-6 rounded-[34px] shadow-[0_15px_40px_rgba(0,0,0,0.05)] relative overflow-hidden group border border-white dark:border-white/10 transition-all duration-500">
+                        {/* Soft Neat Background - Iridescent CSS Mesh */}
+                        <div className="absolute inset-0 z-0">
+                            <div className="absolute inset-0 bg-[#fefefe]/80 dark:bg-zinc-950/80 backdrop-blur-3xl" />
+                            <div className="absolute top-0 right-0 w-[80%] h-[80%] opacity-20 blur-[60px] bg-gradient-to-br from-[#FF9A9E] to-[#FECFEF]" />
+                            <div className="absolute bottom-0 left-0 w-[80%] h-[80%] opacity-15 blur-[60px] bg-gradient-to-tr from-[#84FAB0] to-[#8FD3F4]" />
                         </div>
 
-                        <div className="hidden md:block text-center">
-                            <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-white mb-0.5">Focus Streak</h3>
-                            <div className="flex flex-col items-center justify-center">
-                                <div className="flex items-baseline gap-1">
-                                    <span className={currentStreak > 0 ? "text-4xl font-black text-amber-500" : "text-4xl font-black text-zinc-900 dark:text-white"}>{currentStreak}</span>
-                                    <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">{currentStreak === 1 ? 'Day' : 'Days'}</span>
+                        <div className="relative z-10 flex flex-row md:flex-col items-center justify-between md:justify-center gap-4 h-full">
+                            <div className="flex items-center gap-4 md:gap-0 md:justify-center relative md:mb-4">
+                                <div className="relative w-12 h-12 md:w-16 md:h-16 bg-white/60 dark:bg-zinc-800 rounded-2xl md:rounded-3xl flex items-center justify-center transform group-hover:scale-110 transition-transform cursor-pointer border border-white/50 shadow-sm">
+                                    <Flame className="w-6 h-6 md:w-8 md:h-8 text-orange-500" fill="currentColor" />
                                 </div>
-                                <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-tighter mt-1">+{(currentStreak * 5)} XP Multiplier</p>
-                            </div>
-                        </div>
-
-                        {/* Visual Streak Tracker - Desktop Only */}
-                        <div className="w-full mt-4 hidden md:flex justify-between px-4">
-                            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
-                                const isActive = i < currentStreak;
-                                return (
-                                    <div key={i} className="flex flex-col items-center gap-2">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
-                                        <span className={`text-[9px] font-bold ${isActive ? 'text-amber-600 dark:text-amber-500' : 'text-zinc-400'}`}>{day}</span>
+                                <div className="block md:hidden">
+                                    <h3 className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase leading-none mb-1 tracking-widest">Status</h3>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-2xl font-black text-zinc-900 dark:text-white">{currentStreak}x</span>
+                                        <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Streak</span>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                </div>
+                            </div>
 
-                        <div className="flex md:hidden gap-1">
-                            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((_, i) => (
-                                <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < currentStreak ? 'bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
-                            ))}
+                            <div className="hidden md:block text-center">
+                                <h3 className="text-[13px] font-black text-zinc-900 dark:text-white mb-0.5 uppercase tracking-tighter">Focus Streak</h3>
+                                <div className="flex flex-col items-center justify-center">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className={currentStreak > 0 ? "text-4xl font-black text-orange-500" : "text-4xl font-black text-zinc-900 dark:text-white"}>{currentStreak}</span>
+                                        <span className="text-[12px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{currentStreak === 1 ? 'Day' : 'Days'}</span>
+                                    </div>
+                                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-wider mt-1">+{(currentStreak * 5)} XP Multiplier</p>
+                                </div>
+                            </div>
+
+                            {/* Visual Streak Tracker - Desktop Only */}
+                            <div className="w-full mt-4 hidden md:flex justify-between px-4">
+                                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
+                                    const isActive = i < currentStreak;
+                                    return (
+                                        <div key={i} className="flex flex-col items-center gap-2">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-orange-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
+                                            <span className={`text-[9px] font-bold ${isActive ? 'text-orange-600 dark:text-orange-500' : 'text-zinc-400'}`}>{day}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="flex md:hidden gap-1">
+                                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((_, i) => (
+                                    <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < currentStreak ? 'bg-orange-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
+                                ))}
+                            </div>
                         </div>
                     </div>
 

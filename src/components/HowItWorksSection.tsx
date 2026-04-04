@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useInView } from "framer-motion";
 import { ArrowRight, Bot, CopyMinus, GitGraph, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import clsx from "clsx";
 
 const FontLoader = () => (
   <style>{`
@@ -62,13 +63,7 @@ const STACK = [
 const CardStack = ({ active, entered }: { active: number; entered: boolean }) => {
   return (
     <div
-      style={{
-        position: "relative",
-        width: "100%",
-        maxWidth: "480px", // added to bound size
-        height: 380, // Reduced from 440
-        margin: "0 auto",
-      }}
+      className="relative w-full max-w-[280px] xs:max-w-[320px] sm:max-w-[380px] aspect-[1.35/1] mx-auto mb-16 lg:mb-0"
     >
       {STEPS.map((step, i) => {
         const offset = (i - active + STEPS.length) % STEPS.length;
@@ -79,7 +74,7 @@ const CardStack = ({ active, entered }: { active: number; entered: boolean }) =>
           <motion.div
             key={step.id}
             initial={{ opacity: 0, y: 100, rotateY: 180 }}
-            className="bg-gradient-to-br from-background via-muted/35 to-background"
+            className="bg-zinc-950"
             animate={
               entered
                 ? {
@@ -141,10 +136,6 @@ const CardStack = ({ active, entered }: { active: number; entered: boolean }) =>
               }}
             />
 
-
-
-
-
             {!isTop && (
               <div className="pointer-events-none absolute inset-0 bg-background/25" />
             )}
@@ -178,14 +169,11 @@ const StepRow = ({
           : "0 0 0 rgba(0,0,0,0)",
       }}
       transition={{ duration: 0.6 }}
-      style={{
-        position: "relative",
-        borderRadius: 20,
-        border: "1px solid transparent",
-        padding: "24px 32px",
-        cursor: "pointer",
-        overflow: "hidden",
-      }}
+      className={clsx(
+        "relative rounded-[24px] border border-transparent cursor-pointer overflow-hidden transition-all duration-500",
+        "px-5 py-6 sm:px-8 sm:py-6",
+        "flex flex-col items-center text-center lg:items-start lg:text-left"
+      )}
     >
       <div
         style={{
@@ -202,15 +190,9 @@ const StepRow = ({
 
 
           <p
+            className="text-[17px] sm:text-[18px] font-semibold tracking-tight leading-tight text-zinc-800 "
             style={{
-              fontFamily: "var(--font-body, ui-sans-serif, system-ui, sans-serif)",
-              fontSize: 17,
-              fontWeight: 500,
-              color: "#111",
-              lineHeight: 1.2,
-              letterSpacing: "-0.015em",
-              margin: 0,
-              WebkitFontSmoothing: "antialiased",
+              fontFamily: "var(--font-header, ui-sans-serif, system-ui, sans-serif)",
             }}
           >
             {step.title}
@@ -287,7 +269,7 @@ const HowItWorksSection = () => {
         ref={sectionRef}
         className="hiw-section"
         style={{
-          padding: "96px 0",
+          padding: "64px 0",
           background: "hsl(var(--background))",
           borderTop: "1px solid transparent",
         }}
@@ -304,27 +286,17 @@ const HowItWorksSection = () => {
             }}
           >
             <h2
-              className="hiw-header"
-              style={{
-                fontSize: "clamp(2rem, 4vw, 3rem)",
-                fontWeight: 700,
-                letterSpacing: "-0.025em",
-                color: "#0a0a0a",
-                lineHeight: 1.1,
-                margin: "0 0 28px",
-                whiteSpace: "nowrap",
-                overflowWrap: "normal",
-              }}
+              className="hiw-header text-[28px] xs:text-[34px] sm:text-[48px] font-black leading-[1.15] sm:leading-[1.1] tracking-tight text-[#0a0a0a] mb-6 px-4 md:px-0"
             >
-              Everything you need to&nbsp;
-              <span
-                style={{
-                  borderBottom: "2.5px solid #0a0a0a",
-                  paddingBottom: 2,
-                  fontWeight: 700,
-                }}
-              >
-                build together
+              Everything you need to{" "}
+              <span className="relative inline-block">
+                <span className="relative z-10">build together</span>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={isInView ? { width: '100%' } : { width: 0 }}
+                  transition={{ duration: 0.8, delay: 0.5, ease: "circOut" }}
+                  className="absolute bottom-[-1px] left-0 h-[3px] bg-violet-600 rounded-full"
+                />
               </span>
             </h2>
 
@@ -346,23 +318,16 @@ const HowItWorksSection = () => {
             </p>
           </motion.div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 40,
-              alignItems: "center",
-            }}
-          >
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={isInView ? { opacity: 1 } : {}}
-              transition={{ duration: 0.4, delay: 0.1 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={isInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ duration: 0.5, delay: 0.2 }}
             >
               <CardStack active={active} entered={isInView} />
             </motion.div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 16, width: "100%", maxWidth: 480 }}>
+            <div className="flex flex-col gap-4 w-full max-w-[520px] mx-auto lg:mx-0">
               {STEPS.map((step) => (
                 <StepRow
                   key={step.id}

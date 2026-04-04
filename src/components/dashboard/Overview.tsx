@@ -89,27 +89,10 @@ const Overview = ({
     /* ===================================================== */
 
     return (
-        <div className="font-inter flex flex-col lg:flex-row min-h-full text-zinc-900 dark:text-zinc-100 relative overflow-hidden">
-            {/* Background Video/Gradient Element */}
-            <div className="absolute inset-0 z-0 pointer-events-none opacity-30 dark:opacity-20 mix-blend-overlay">
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                >
-                    <source src="/gradients/bg-1.mp4" type="video/mp4" />
-                </video>
-                <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-white/50 to-transparent dark:from-black/80 dark:via-black/50" />
-            </div>
-
-            {/* LEFT */}
-
-            <div className="flex-1 p-8 space-y-8 relative z-10">
-
-                {/* MEMBER DROPDOWN */}
-
+        <div className="flex flex-col lg:flex-row min-h-full bg-[#fafafa] dark:bg-[#0b0c10] text-zinc-900 dark:text-zinc-100 relative overflow-hidden font-sans">
+            {/* LEFT CONTENT AREA */}
+            <div className="flex-1 p-8 space-y-12 relative z-10">
+                {/* MEMBER DROPDOWN - Linear Style */}
                 <MemberDropdown
                     members={members}
                     selectedMemberId={selectedMemberId}
@@ -117,15 +100,13 @@ const Overview = ({
                     selectedMember={selectedMember}
                 />
 
-                {/* WORKLOAD */}
-
-                <section className="space-y-4">
-
-                    <h2 className="font-satoshi text-xl font-black text-black dark:text-white">
+                {/* WORKLOAD SECTION */}
+                <section className="space-y-6">
+                    <h2 className="text-sm font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest px-1">
                         Team Workload
                     </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {visibleMembers.map((member) => {
                             const active =
                                 tasks.filter(
@@ -154,18 +135,16 @@ const Overview = ({
                         })}
                     </div>
                 </section>
-
-
             </div>
 
-            {/* RIGHT SIDEBAR */}
-
-            <div className="w-full lg:w-80 border-l border-zinc-200/50 dark:border-zinc-800/50 p-6 space-y-6 relative z-10 bg-white/40 dark:bg-black/40 backdrop-blur-xl">
-
-                <h2 className="font-body text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 mb-8 flex items-center gap-2.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                    Live Activity
-                </h2>
+            {/* RIGHT SIDEBAR - Solid State */}
+            <aside className="w-full lg:w-80 border-l border-zinc-200 dark:border-zinc-800 p-8 space-y-8 relative z-10 bg-white dark:bg-zinc-900 transition-colors">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 flex items-center gap-2.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
+                        Live Activity
+                    </h2>
+                </div>
 
                 <div className="space-y-0 relative">
                     {filteredActivities.map(
@@ -181,7 +160,7 @@ const Overview = ({
                         )
                     )}
                 </div>
-            </div>
+            </aside>
         </div>
     )
 }
@@ -189,7 +168,7 @@ const Overview = ({
 export default Overview
 
 /* ===================================================== */
-/* DROPDOWN */
+/* DROPDOWN - Standard Product UI */
 /* ===================================================== */
 
 function MemberDropdown({
@@ -201,28 +180,26 @@ function MemberDropdown({
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <button className="w-full max-w-md flex justify-between px-4 py-3 border rounded-2xl">
-                    <div>
-                        <p className="text-xs text-zinc-400">
-                            Member
-                        </p>
-                        <p className="font-satoshi font-black text-black dark:text-white">
+                <button className="flex items-center gap-3 px-5 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] outline-none min-w-[240px]">
+                    <div className="flex flex-col items-start min-w-0">
+                        <span className="text-[10px] uppercase font-semibold text-zinc-400 tracking-wider">Member Filter</span>
+                        <span className="text-[15px] font-semibold text-zinc-900 dark:text-white truncate max-w-[200px]">
                             {selectedMemberId === "all"
                                 ? "All members"
                                 : selectedMember?.users
                                     ?.full_name}
-                        </p>
+                        </span>
                     </div>
-                    <ChevronRight />
+                    <ChevronRight className="w-4 h-4 ml-auto text-zinc-400" />
                 </button>
             </PopoverTrigger>
 
-            <PopoverContent className="w-72">
+            <PopoverContent className="w-72 p-2 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl">
                 <button
                     onClick={() =>
                         setSelectedMemberId("all")
                     }
-                    className="w-full text-left p-2"
+                    className="w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors"
                 >
                     All members
                 </button>
@@ -235,7 +212,7 @@ function MemberDropdown({
                                 m.user_id
                             )
                         }
-                        className="w-full text-left p-2"
+                        className="w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors border-t border-zinc-100 dark:border-zinc-800 mt-1"
                     >
                         {m.users?.full_name}
                     </button>
@@ -246,7 +223,7 @@ function MemberDropdown({
 }
 
 /* ===================================================== */
-/* WORKLOAD CARD */
+/* WORKLOAD CARD - Standard Card System */
 /* ===================================================== */
 
 function WorkloadCard({
@@ -256,33 +233,39 @@ function WorkloadCard({
 }: any) {
     return (
         <motion.div
-            whileHover={{ y: -3 }}
-            className="p-4 border rounded-2xl space-y-3"
+            whileHover={{ y: -2 }}
+            className="p-5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm hover:shadow-md transition-all group cursor-default"
         >
-            <div className="flex gap-3">
-                <div className="w-8 h-8 bg-black text-white flex items-center justify-center rounded-lg">
-                    {member.users?.email?.[0]}
+            <div className="flex items-center gap-4 mb-5">
+                <div className="w-10 h-10 bg-gradient-to-br from-zinc-900 to-zinc-700 text-white flex items-center justify-center rounded-full text-sm font-medium shadow-sm shrink-0 border border-white/10">
+                    {member.users?.email?.[0]?.toUpperCase()}
                 </div>
-                <div>
-                    <p className="font-satoshi font-black text-black dark:text-white">
+                <div className="min-w-0">
+                    <p className="text-[15px] font-semibold text-zinc-900 dark:text-white truncate">
                         {member.users?.full_name}
                     </p>
-                    <p className="text-xs text-zinc-500">
-                        {member.role}
+                    <p className="text-[12px] font-medium text-zinc-400 capitalize">
+                        {member.role || "Innovator"}
                     </p>
                 </div>
             </div>
 
-            <div className="flex gap-4 text-sm font-black">
-                <span className="text-red-600 dark:text-red-500">Active {active}</span>
-                <span className="text-green-600 dark:text-green-500">Done {done}</span>
+            <div className="flex gap-6 border-t border-zinc-100 dark:border-zinc-800/50 pt-4">
+                <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-semibold text-zinc-400 dark:text-zinc-500 tracking-wider mb-0.5">Active</span>
+                    <span className="text-sm font-medium text-red-500">{active} tasks</span>
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-semibold text-zinc-400 dark:text-zinc-500 tracking-wider mb-0.5">Completed</span>
+                    <span className="text-sm font-medium text-emerald-500">{done} done</span>
+                </div>
             </div>
         </motion.div>
     )
 }
 
 /* ===================================================== */
-/* ACTIVITY */
+/* ACTIVITY ITEM - Premium Micro-UI */
 /* ===================================================== */
 
 function ActivityItem({
@@ -294,44 +277,40 @@ function ActivityItem({
 }: any) {
     return (
         <motion.div
-            initial={{ opacity: 0, x: -10 }}
+            initial={{ opacity: 0, x: -5 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.05 }}
             className="relative flex gap-4 pr-2 group"
         >
             {/* Minimal Timeline Line */}
             {!isLast && (
-                <div className="absolute left-[15px] top-8 bottom-[-8px] w-[1px] bg-gradient-to-b from-zinc-200 to-transparent dark:from-zinc-800 dark:to-transparent" />
+                <div className="absolute left-[15px] top-8 bottom-[-8px] w-[1px] bg-zinc-200 dark:bg-zinc-800 opacity-50" />
             )}
 
-            {/* Slim Icon Container */}
-            <div className="relative shrink-0 flex flex-col items-center">
-                <div className="w-[30px] h-[30px] rounded-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center shadow-sm group-hover:scale-110 transition-all duration-500 bg-white dark:bg-black z-10">
-                    <Activity size={12} className="text-zinc-500 group-hover:text-violet-500 transition-colors" />
+            {/* Dot Container */}
+            <div className="relative shrink-0 pt-1.5">
+                <div className="relative w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-center z-10 group-hover:border-zinc-400 dark:group-hover:border-zinc-600 transition-colors duration-300">
+                    <Activity size={12} className="text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                 </div>
             </div>
 
             {/* Action Content */}
-            <div className="flex-1 pb-6 pt-1">
-                <div className="flex flex-col gap-1">
-                    <div className="flex items-baseline justify-between gap-2">
-                        <p className="text-[13px] text-zinc-600 dark:text-zinc-300 font-body">
-                            {user ? (
-                                <span className="font-bold text-zinc-900 dark:text-white">
-                                    {user.full_name || 'Member'}
-                                </span>
-                            ) : (
-                                <span className="font-bold text-zinc-900 dark:text-white">System</span>
-                            )}
-                            <span className="ml-1 opacity-80">{action}</span>
-                        </p>
-                    </div>
+            <div className="flex-1 pb-8 pt-1">
+                <div className="flex flex-col gap-1.5">
+                    <p className="text-[13px] leading-relaxed text-zinc-600 dark:text-zinc-400 font-medium">
+                        {user ? (
+                            <span className="font-semibold text-zinc-900 dark:text-white mr-1.5">
+                                {user.full_name || 'Member'}
+                            </span>
+                        ) : (
+                            <span className="font-semibold text-zinc-900 dark:text-white mr-1.5">System</span>
+                        )}
+                        <span className="opacity-70">{action}</span>
+                    </p>
 
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-violet-500/60 transition-colors">
-                            {formatDistanceToNow(new Date(time), { addSuffix: true })}
-                        </span>
-                    </div>
+                    <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
+                        {formatDistanceToNow(new Date(time), { addSuffix: true })}
+                    </span>
                 </div>
             </div>
         </motion.div>

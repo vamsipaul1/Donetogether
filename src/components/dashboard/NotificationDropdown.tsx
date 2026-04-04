@@ -24,14 +24,14 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAllAsRead }: N
                 <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="relative h-11 w-11 rounded-2xl bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all group overflow-hidden"
+                    className="relative h-10 w-10 rounded-xl bg-transparent hover:bg-zinc-100 dark:hover:bg-white/5 transition-all group outline-none ring-0 focus-visible:ring-0"
                 >
                     <Bell className={cn(
-                        "h-5 w-5 text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors",
-                        unreadCount > 0 && "animate-none" // Could add a subtle animation here if unread
-                    )} />
+                        "h-[18px] w-[18px] text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors",
+                        unreadCount > 0 && "animate-none"
+                    )} strokeWidth={2} />
                     {unreadCount > 0 && (
-                        <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-zinc-900 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                        <span className="absolute top-2.5 right-2.5 h-1.5 w-1.5 bg-red-500 rounded-full ring-[2px] ring-[#fafafa] dark:ring-[#0b0c10] z-20" />
                     )}
                 </Button>
             </PopoverTrigger>

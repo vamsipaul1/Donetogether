@@ -423,13 +423,14 @@ const Dashboard = () => {
             <motion.aside
                 initial={false}
                 animate={{
-                    width: isSidebarOpen ? (isMobile ? 220 : 280) : 0,
-                    opacity: isSidebarOpen ? 1 : 0,
+                    x: isMobile ? (isSidebarOpen ? 0 : -300) : 0,
+                    width: isMobile ? 280 : (isSidebarOpen ? 280 : 0),
+                    opacity: isSidebarOpen ? 1 : (isMobile ? 0 : 0),
                 }}
                 transition={{
                     type: "spring",
-                    stiffness: 300,
-                    damping: 30
+                    stiffness: 400,
+                    damping: 40
                 }}
                 className={`
                     bg-[hsl(var(--sidebar-background))] dark:bg-[#050505] border-r border-zinc-200 dark:border-zinc-800 
@@ -528,23 +529,28 @@ const Dashboard = () => {
                                 <button
                                     key={proj.id}
                                     onClick={() => { setSelectedProject(proj); setActiveView('overview'); }}
-                                    className={`flex items-center gap-3 px-3 py-2 w-full rounded-xl text-sm font-bold transition-all group active:scale-95 ${selectedProject?.id === proj.id
-                                        ? 'bg-zinc-200 dark:bg-[#454547] text-zinc-900 dark:text-white shadow-sm'
-                                        : 'text-zinc-500 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-[#3d3e40]'
+                                    className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold transition-all group active:scale-95 ${selectedProject?.id === proj.id
+                                        ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
+                                        : 'text-zinc-500 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
                                         }`}
                                 >
                                     <div className="relative shrink-0">
-                                        <Avatar className="w-5 h-5 border border-zinc-200 dark:border-zinc-800 shadow-sm transition-transform group-hover:scale-110">
+                                        <Avatar className={cn("w-6 h-6 border-2 transition-all group-hover:scale-105", selectedProject?.id === proj.id ? "border-violet-200 dark:border-violet-800 shadow-sm" : "border-transparent group-hover:border-zinc-200")}>
                                             <AvatarImage src={proj.avatar_url} />
-                                            <AvatarFallback className={cn("text-[8px] font-black text-white", selectedProject?.id === proj.id ? "bg-emerald-600" : "bg-zinc-400 group-hover:bg-emerald-500")}>
+                                            <AvatarFallback className={cn("text-[9px] font-black text-white", selectedProject?.id === proj.id ? "bg-violet-600" : "bg-zinc-400 group-hover:bg-violet-500")}>
                                                 {proj.team_name?.slice(0, 1).toUpperCase() || proj.title.slice(0, 1).toUpperCase()}
                                             </AvatarFallback>
                                         </Avatar>
                                         {selectedProject?.id === proj.id && (
-                                            <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full ring-1 ring-white dark:ring-black animate-pulse" />
+                                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-[#050505] shadow-sm animate-pulse" />
                                         )}
                                     </div>
-                                    <span className="truncate tracking-normal font-medium">{proj.team_name || proj.title}</span>
+                                    <span className="truncate tracking-tight font-black text-[13px] text-zinc-900 dark:text-white">
+                                        {(proj.team_name || proj.title).charAt(0).toUpperCase() + (proj.team_name || proj.title).slice(1).toLowerCase()}
+                                    </span>
+                                    {selectedProject?.id === proj.id && (
+                                        <ChevronRight className="ml-auto w-3.5 h-3.5 opacity-50" />
+                                    )}
                                 </button>
                             ))
                         )}
@@ -921,49 +927,51 @@ const Dashboard = () => {
 
 
                 </div>
-
-                {/* Bottom Navigation for Mobile - Premium Glassmorphism */}
+                {/* Bottom Navigation for Mobile - Premium Glassmorphism */}
                 {isMobile && (
-                    <nav className="fixed bottom-6 left-4 right-4 bg-black/80 dark:bg-zinc-900/90 backdrop-blur-2xl border border-white/10 dark:border-white/10 rounded-[32px] flex items-center justify-between h-[64px] px-6 z-50 shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-transform duration-300">
-                        <button
-                            onClick={() => { setActiveView('home'); setSelectedProject(null); setIsSidebarOpen(false); }}
-                            className={`flex flex-col items-center justify-center gap-1 ${activeView === 'home' ? 'text-white' : 'text-zinc-500'}`}
-                        >
-                            <Home className="w-5 h-5" />
-                        </button>
-
-                        <button
-                            onClick={() => { if (selectedProject) setActiveView('board'); setIsSidebarOpen(false); }}
-                            disabled={!selectedProject}
-                            className={`flex flex-col items-center justify-center gap-1 ${activeView === 'board' ? 'text-white' : (selectedProject ? 'text-zinc-500' : 'text-zinc-700 opacity-50')}`}
-                        >
-                            <LayoutDashboard className="w-5 h-5" />
-                        </button>
-
-                        <button
-                            onClick={() => setIsCreateTaskOpen(true)}
-                            className="relative -top-8 bg-violet-600 hover:bg-violet-500 text-white w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(124,58,237,0.5)] border-4 border-[#F9F8F6] dark:border-black transition-transform active:scale-95"
-                        >
-                            <Plus className="w-7 h-7" />
-                        </button>
-
-                        {selectedProject && (
-                            <button
-                                onClick={() => { setActiveView('messages'); setIsSidebarOpen(false); }}
-                                className={`flex flex-col items-center justify-center gap-1 ${activeView === 'messages' ? 'text-white' : 'text-zinc-500'}`}
+                    <nav className="fixed bottom-6 left-6 right-6 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl border border-zinc-200/50 dark:border-white/10 rounded-[32px] flex items-center h-[72px] px-4 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-300">
+                        {/* Navigation Items - Redistributed for better spacing without the Plus button */}
+                        <div className="flex-1 flex items-center justify-between px-2">
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => { setActiveView('home'); setSelectedProject(null); setIsSidebarOpen(false); }}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'home' ? 'bg-blue-50 text-blue-600' : 'text-zinc-400'}`}
                             >
-                                <MessageSquare className="w-5 h-5" />
-                            </button>
-                        )}
+                                <Home className={activeView === 'home' ? "w-6 h-6" : "w-5 h-5"} />
+                            </motion.button>
 
-                        <button
-                            onClick={() => setIsSidebarOpen(true)}
-                            className={`flex flex-col items-center justify-center gap-1 ${isSidebarOpen ? 'text-white' : 'text-zinc-500'}`}
-                        >
-                            <Menu className="w-5 h-5" />
-                        </button>
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => { if (selectedProject) setActiveView('board'); setIsSidebarOpen(false); }}
+                                disabled={!selectedProject}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'board' ? 'bg-emerald-50 text-emerald-600' : (selectedProject ? 'text-zinc-400' : 'text-zinc-200 opacity-50')}`}
+                            >
+                                <LayoutDashboard className={activeView === 'board' ? "w-6 h-6" : "w-5 h-5"} />
+                            </motion.button>
+
+                            {selectedProject ? (
+                                <motion.button
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => { setActiveView('messages'); setIsSidebarOpen(false); }}
+                                    className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'messages' ? 'bg-indigo-50 text-indigo-600' : 'text-zinc-400'}`}
+                                >
+                                    <MessageSquare className={activeView === 'messages' ? "w-6 h-6" : "w-5 h-5"} />
+                                </motion.button>
+                            ) : (
+                                <div className="w-12" />
+                            )}
+
+                            <motion.button
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => setIsSidebarOpen(true)}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${isSidebarOpen ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400'}`}
+                            >
+                                <Menu className="w-5 h-5" />
+                            </motion.button>
+                        </div>
                     </nav>
                 )}
+
             </main>
 
             {/* Modals */}

@@ -42,8 +42,8 @@ export default function FeaturesSection() {
         relative
         isolate
         w-full
-        py-28
-        pt-16
+        py-16
+        sm:py-24
         border-t
         border-border
         scroll-mt-28
@@ -86,16 +86,16 @@ export default function FeaturesSection() {
               font-sans
               font-[500]
 
-              text-[32px]
+              text-[28px]
+              xs:text-[32px]
               sm:text-[48px]
 
-              leading-[1.05]
+              leading-[1.15]
+              sm:leading-[1.05]
 
               tracking-[-0.03em]
 
               text-zinc-900
-
-              
             "
           >
             Structure. Clarity. Execution.
@@ -150,7 +150,7 @@ export default function FeaturesSection() {
                 transition: { type: "spring", stiffness: 400, damping: 14 }
               }}
               className={clsx(
-                "group relative overflow-hidden rounded-3xl border border-border/60 bg-card/80 backdrop-blur-sm p-8",
+                "group relative overflow-hidden rounded-3xl border border-border/60 bg-card/80 backdrop-blur-sm p-6 sm:p-8",
                 "transition duration-300 hover:border-border hover:ring-2 hover:ring-border/60 hover:shadow-lg",
                 "motion-reduce:transition-none motion-reduce:hover:transform-none motion-reduce:hover:shadow-none motion-reduce:hover:ring-0",
                 feature.featured && "ring-2 ring-border/60",

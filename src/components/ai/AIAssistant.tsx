@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { X, Send, Sparkles, Copy, Check, ExternalLink, Layers, Zap, Calendar, Search, Music, Image as ImageIcon, History, Clock, ArrowLeft, Plus, Trash2, Mic, MicOff } from 'lucide-react';
+import { X, Send, Sparkles, Copy, Check, ExternalLink, Layers, Zap, Calendar, Search, Music, Image as ImageIcon, History, Clock, ArrowLeft, Plus, Trash2, Mic, MicOff, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ShiningText } from '@/components/ui/shining-text';
 import { supabase } from '@/lib/supabase';
@@ -328,28 +328,28 @@ const AIAssistant = ({
 
     const popularIdeas = [
         {
-            label: 'Contribute ideas',
-            sub: 'Offer feedback & manage tasks',
+            label: 'Share ideas',
+            sub: 'Feedback & tasks',
             icon: Layers,
             prompt: 'How can I contribute to the project tasks effectively?',
             color: 'text-orange-600 dark:text-orange-400',
-            bg: 'from-orange-500/20 to-amber-500/20'
+            bg: 'from-orange-500/25 to-amber-500/25'
         },
         {
-            label: 'Stay connected',
-            sub: 'Align goals effortlessly',
-            icon: Zap,
+            label: 'Sync goals',
+            sub: 'Keep goals aligned',
+            icon: Target,
             prompt: 'Help me align with the team goals',
             color: 'text-violet-600 dark:text-violet-400',
-            bg: 'from-violet-500/20 to-fuchsia-500/20'
+            bg: 'from-violet-500/25 to-fuchsia-500/25'
         },
         {
-            label: 'Organize time',
-            sub: 'Set clear priorities',
-            icon: Calendar,
+            label: 'Track time',
+            sub: 'Set your priorities',
+            icon: Clock,
             prompt: 'Help me prioritize my current tasks',
             color: 'text-blue-600 dark:text-blue-400',
-            bg: 'from-blue-500/20 to-cyan-500/20'
+            bg: 'from-blue-500/25 to-cyan-500/25'
         }
     ];
 
@@ -522,34 +522,35 @@ const AIAssistant = ({
                                         className="grid grid-cols-1 md:grid-cols-3 gap-4"
                                     >
                                         {popularIdeas.map((idea, idx) => (
-                                            <button
+                                            <motion.div
                                                 key={idx}
+                                                whileHover={{ scale: 1.03 }}
+                                                whileTap={{ scale: 0.98 }}
                                                 onClick={() => sendMessage(idea.prompt)}
-                                                className="group relative p-5 md:p-6 rounded-[20px] md:rounded-[24px] overflow-hidden transition-all duration-300 hover:scale-[1.02] text-left h-full flex flex-row items-center md:items-start md:flex-col justify-between gap-4 md:gap-0"
+                                                className="group relative p-6 md:p-8 rounded-[48px] overflow-hidden cursor-pointer transition-shadow duration-500 text-left h-full flex flex-row items-center md:items-start md:flex-col justify-between gap-4 md:gap-0 shadow-xl hover:shadow-2xl border border-white/30 dark:border-white/10 isolate bg-white/40 dark:bg-black/40 backdrop-blur-3xl"
                                             >
-                                                <div className={`absolute inset-0 bg-gradient-to-br ${idea.bg} opacity-50 dark:opacity-20 group-hover:opacity-100 transition-opacity`} />
-                                                <div className="absolute inset-0 backdrop-blur-3xl" />
-                                                <div className="absolute inset-0 bg-white/40 dark:bg-black/20" />
-
-                                                <div className="relative z-10 w-12 h-12 rounded-2xl bg-white/80 dark:bg-black/50 backdrop-blur-md flex items-center justify-center md:mb-4 shadow-lg ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-300 shrink-0">
-                                                    <idea.icon className={`w-6 h-6 ${idea.color}`} />
+                                                {/* Background layer with inherited rounding */}
+                                                <div className={`absolute inset-0 bg-gradient-to-br ${idea.bg} opacity-20 dark:opacity-20 group-hover:opacity-100 transition-opacity duration-500 rounded-[48px]`} />
+                                                
+                                                <div className="relative z-10 w-14 h-14 rounded-[28px] bg-white/90 dark:bg-black/50 backdrop-blur-xl flex items-center justify-center md:mb-6 shadow-xl ring-1 ring-black/5 dark:ring-white/10 group-hover:scale-110 transition-transform duration-500 shrink-0">
+                                                    <idea.icon className={`w-7 h-7 ${idea.color}`} />
                                                 </div>
 
                                                 <div className="relative z-10 flex-1">
-                                                    <h3 className="text-base md:text-xl font-bold text-zinc-900 dark:text-white mb-0.5 md:mb-2 leading-tight tracking-tight">
+                                                    <h3 className="text-lg md:text-2xl font-black text-black dark:text-white mb-1 md:mb-2 leading-tight tracking-tighter">
                                                         {idea.label}
                                                     </h3>
-                                                    <p className="text-[11px] md:text-[13px] text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
+                                                    <p className="text-[12px] md:text-[14px] text-zinc-700 dark:text-zinc-300 font-bold leading-relaxed opacity-75 group-hover:opacity-100 transition-opacity">
                                                         {idea.sub}
                                                     </p>
                                                 </div>
 
-                                                <div className="relative md:absolute md:bottom-4 md:right-4 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 md:translate-x-2 group-hover:translate-x-0 shrink-0">
-                                                    <div className="w-8 h-8 rounded-full bg-white/90 dark:bg-black/90 flex items-center justify-center shadow-sm">
-                                                        <ExternalLink className="w-4 h-4 text-zinc-900 dark:text-white" />
+                                                <div className="relative md:absolute md:bottom-6 md:right-6 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-500 md:translate-x-4 group-hover:translate-x-0 shrink-0 z-10">
+                                                    <div className="w-10 h-10 rounded-full bg-white/95 dark:bg-black/90 flex items-center justify-center shadow-md">
+                                                        <ExternalLink className="w-5 h-5 text-black dark:text-white" />
                                                     </div>
                                                 </div>
-                                            </button>
+                                            </motion.div>
                                         ))}
                                     </motion.div>
                                 </div>

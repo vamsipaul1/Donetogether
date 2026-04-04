@@ -109,8 +109,8 @@ const Navbar = () => {
               }
               className="
                 text-[15px]
-                font-medium
-                text-zinc-700
+                font-normal
+                text-black
                 hover:text-black
                 transition
               "

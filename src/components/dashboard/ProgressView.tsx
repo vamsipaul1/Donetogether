@@ -220,17 +220,15 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                         >
                             ANALYTICS-VIEW
                         </motion.h2>
-                        <p className="text-[14px] font-bold text-zinc-500 dark:text-zinc-400 mt-0.5 tracking-[0.2em] opacity-80">
-                            Real-time Collaboration Intelligence
-                        </p>
+
                     </div>
 
                     <div className="flex items-center gap-3 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
                         <div className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-00 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </div>
-                        <span className="text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">Live System</span>
+                        <span className="text-emerald-800 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest">Live System</span>
                     </div>
                 </div>
 
@@ -544,7 +542,7 @@ export default function ProgressView({ tasks, members }: ProgressViewProps) {
                                                         <p className="text-[10px] font-black text-violet-600">{member.active}</p>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div className="min-w-0">
                                                     <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">{member.name}</p>
                                                     <p className="text-[9px] font-medium text-zinc-500 uppercase tracking-tight mt-0.5">{member.role || 'Member'}</p>

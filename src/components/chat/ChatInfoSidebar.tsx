@@ -72,7 +72,7 @@ export const ChatInfoSidebar = ({
             url: msg.attachment_url
         }))
         .reverse()
-    , [messages]);
+        , [messages]);
 
     const handleClearChat = () => {
         if (confirm('Are you sure you want to clear all messages? This cannot be undone.')) {
