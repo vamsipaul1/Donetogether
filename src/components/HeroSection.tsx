@@ -112,7 +112,13 @@ const HeroSection = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-700 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
               </div>
-              <span className="tracking-[-0.025em] sm:tracking-[-0.02em] font-[15.5px] font-body text-slate-700">New teams are joining every week!</span>
+              <span className="font-body
+              font-semibold
+              text-[14px]
+              leading-[22px]
+              tracking-[-0.01em]
+              text-zinc-700
+              antialiased">New teams are joining every week!</span>
             </div>
             <div className="w-7 h-7 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center transition-transform group-hover:translate-x-0.5 shadow-sm">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
@@ -233,7 +239,7 @@ const HeroSection = () => {
         </motion.div>
       </div>
 
-    </section>
+    </section >
   )
 }
 

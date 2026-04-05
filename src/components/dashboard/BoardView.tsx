@@ -15,6 +15,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ProofSubmissionModal from '@/components/dashboard/ProofSubmissionModal';
+import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
 import type { Task, ProjectMember, User as UserType, TaskStatus } from '@/types/database';
 
 interface BoardViewProps {
@@ -37,6 +38,13 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
     const [optimisticTasks, setOptimisticTasks] = useState(tasks);
     const [isProofModalOpen, setIsProofModalOpen] = useState(false);
     const [taskForProof, setTaskForProof] = useState<Task | null>(null);
+    const [selectedTaskForDetail, setSelectedTaskForDetail] = useState<Task | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    const handleTaskClick = (task: Task) => {
+        setSelectedTaskForDetail(task);
+        setIsDetailModalOpen(true);
+    };
 
     // Sync optimistic state when props change (revalidation)
     useEffect(() => {
@@ -211,8 +219,9 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
                                                                 {...provided.dragHandleProps}
-                                                                className={`p-4 md:p-5 rounded-[20px] md:rounded-[22px] shadow-sm border group hover:shadow-md transition-all ${snapshot.isDragging ? 'rotate-2 shadow-xl scale-105 z-50' : ''} ${getTaskColor(task.id)}`}
+                                                                className={`p-4 md:p-5 rounded-[20px] md:rounded-[22px] shadow-sm border group hover:shadow-md transition-all cursor-pointer ${snapshot.isDragging ? 'rotate-2 shadow-xl scale-105 z-50' : ''} ${getTaskColor(task.id)}`}
                                                                 style={provided.draggableProps.style}
+                                                                onClick={() => handleTaskClick(task)}
                                                             >
                                                                 <div className="flex justify-between items-start mb-3">
                                                                     <div className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase bg-white/50 dark:bg-black/20 ${task.priority === 'high' ? 'text-rose-600 dark:text-rose-400' :
@@ -305,6 +314,15 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
                     // Status stays as is, but notification is sent (via DB record)
                     toast.info("Task completion under review by project lead");
                 }}
+            />
+            <TaskDetailModal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                task={selectedTaskForDetail}
+                onTaskUpdated={onTasksUpdated}
+                currentUserId={currentUserId}
+                onEditTask={onEditTask}
+                onDeleteTask={handleDeleteTask}
             />
         </div >
     );

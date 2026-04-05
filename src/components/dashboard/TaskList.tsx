@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import ProofSubmissionModal from '@/components/dashboard/ProofSubmissionModal';
+import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
 
 interface TaskListProps {
     tasks: Task[];
@@ -32,6 +33,13 @@ interface TaskListProps {
 const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAddTask, onEditTask }: TaskListProps) => {
     const [isProofModalOpen, setIsProofModalOpen] = useState(false);
     const [taskForProof, setTaskForProof] = useState<Task | null>(null);
+    const [selectedTaskForDetail, setSelectedTaskForDetail] = useState<Task | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    const handleTaskClick = (task: Task) => {
+        setSelectedTaskForDetail(task);
+        setIsDetailModalOpen(true);
+    };
 
     // Group tasks by status (To do, Doing, Done)
     const sections = [
@@ -124,8 +132,8 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                                 return (
                                     <div
                                         key={task.id}
-                                        onClick={() => isOwner && onEditTask(task)}
-                                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-transform"
+                                        onClick={() => handleTaskClick(task)}
+                                        className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-4 shadow-sm active:scale-[0.98] transition-transform cursor-pointer"
                                     >
                                         <div className="flex items-start justify-between gap-3 mb-3">
                                             <div className="flex items-start gap-3">
@@ -235,7 +243,11 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                             {sectionTasks[section.id].map(task => {
                                 const assignee = members.find(m => m.user_id === task.assigned_to)?.users;
                                 return (
-                                    <div key={task.id} className="flex items-center px-6 border-y border-transparent hover:border-zinc-200/50 dark:hover:border-white/5 hover:bg-white/40 dark:hover:bg-zinc-900/40 group transition-all h-12 min-w-[900px]">
+                                    <div 
+                                        key={task.id} 
+                                        onClick={() => handleTaskClick(task)}
+                                        className="flex items-center px-6 border-y border-transparent hover:border-zinc-200/50 dark:hover:border-white/5 hover:bg-white/40 dark:hover:bg-zinc-900/40 group transition-all h-12 min-w-[900px] cursor-pointer"
+                                    >
                                         {/* Name Row */}
                                         <div className="flex-[4] flex items-center gap-3 min-w-20 pr-4">
                                             {isOwner && (
@@ -344,6 +356,15 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                 onSubmitted={() => {
                     toast.info("Proof submitted. Waiting for review.");
                 }}
+            />
+            <TaskDetailModal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                task={selectedTaskForDetail}
+                onTaskUpdated={onTasksUpdated}
+                currentUserId={currentUserId}
+                onEditTask={onEditTask}
+                onDeleteTask={handleDeleteTask}
             />
         </div>
     );

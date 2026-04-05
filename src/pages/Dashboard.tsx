@@ -755,10 +755,10 @@ const Dashboard = () => {
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="hidden sm:block">
                                 <Button
                                     onClick={() => setIsCreateTaskOpen(true)}
-                                    className="bg-black hover:bg-zinc-900 text-white dark:bg-white dark:text-black dark:hover:bg-zinc-200 font-black text-[14px] px-6 h-10 rounded-full flex items-center gap-2 shadow-lg transition-colors border-none"
+                                    className="bg-zinc-950 hover:bg-black text-white dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 font-bold text-[15px] px-7 h-11 rounded-full flex items-center gap-2 shadow-xl shadow-zinc-500/10 transition-all border-none active:scale-[0.98]"
                                 >
-                                    <Plus className="w-4 h-4" strokeWidth={3} />
-                                    <span>ADD TASK</span>
+                                    <Plus className="w-5 h-5" strokeWidth={2.5} />
+                                    <span>Add Mission</span>
                                 </Button>
                             </motion.div>
                         )}
@@ -1034,8 +1034,8 @@ const Dashboard = () => {
 
     function renderView() {
         switch (activeView) {
-            case 'home': return <HomeView user={currentUser} tasks={userTasks} onAddTask={handleAddTask} onTasksUpdated={fetchUserTasks} />;
-            case 'overview': return selectedProject ? <Overview project={selectedProject} members={members} tasks={projectTasks} onProjectUpdated={fetchProjectDetails} isOwner={isOwner} /> : <HomeView user={currentUser} tasks={userTasks} onAddTask={handleAddTask} onTasksUpdated={fetchUserTasks} />;
+            case 'home': return <HomeView user={currentUser} tasks={userTasks} onAddTask={handleAddTask} onTasksUpdated={fetchUserTasks} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
+            case 'overview': return selectedProject ? <Overview project={selectedProject} members={members} tasks={projectTasks} onProjectUpdated={fetchProjectDetails} isOwner={isOwner} /> : <HomeView user={currentUser} tasks={userTasks} onAddTask={handleAddTask} onTasksUpdated={fetchUserTasks} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
             case 'list': return <TaskList tasks={selectedProject ? projectTasks : userTasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} onAddTask={() => setIsCreateTaskOpen(true)} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
             case 'board': return selectedProject ? <BoardView tasks={projectTasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={fetchProjectDetails} onAddTask={() => setIsCreateTaskOpen(true)} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} /> : <ComingSoon view="Board" />;
             case 'timeline': return selectedProject ? <TimelineView tasks={projectTasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={fetchProjectDetails} onAddTask={() => setIsCreateTaskOpen(true)} /> : <ComingSoon view="Timeline" />;

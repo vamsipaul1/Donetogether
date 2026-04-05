@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BadgeQuestionMark, Calendar, User, AlertCircle, Plus, Sparkles } from 'lucide-react';
+import { X, BadgeQuestionMark, Calendar, User, AlertCircle, Plus, Sparkles, Trash2, GripVertical, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { TASK_SUGGESTIONS, type TaskPriority, type Task } from '@/types/database';
+import { TASK_SUGGESTIONS, type TaskPriority, type Task, type TaskStep } from '@/types/database';
 import type { ProjectMember, User as UserType } from '@/types/database';
 
 interface CreateTaskModalProps {
@@ -40,7 +40,7 @@ const CreateTaskModal = ({
     const [showSuggestions, setShowSuggestions] = useState(!task);
     const [formData, setFormData] = useState({
         title: '',
-        description: '',
+        steps: [] as TaskStep[],
         assignedTo: '',
         priority: 'medium' as TaskPriority,
         startDate: '',
@@ -49,9 +49,18 @@ const CreateTaskModal = ({
 
     useEffect(() => {
         if (task) {
+            let initialSteps: TaskStep[] = [];
+            try {
+                if (task.description && (task.description.startsWith('[') || task.description.startsWith('{'))) {
+                    initialSteps = JSON.parse(task.description);
+                }
+            } catch (e) {
+                console.error("Failed to parse steps", e);
+            }
+
             setFormData({
                 title: task.title,
-                description: task.description || '',
+                steps: initialSteps,
                 assignedTo: task.assigned_to || '',
                 priority: task.priority || 'medium',
                 startDate: task.start_date || '',
@@ -61,7 +70,7 @@ const CreateTaskModal = ({
         } else {
             setFormData({
                 title: '',
-                description: '',
+                steps: [],
                 assignedTo: '',
                 priority: 'medium' as TaskPriority,
                 startDate: '',
@@ -97,10 +106,11 @@ const CreateTaskModal = ({
         setLoading(true);
 
         const executeTask = async () => {
+            const stepsJson = JSON.stringify(formData.steps);
             const { error } = await (task
                 ? supabase.from('tasks').update({
                     title: formData.title,
-                    description: formData.description || null,
+                    description: stepsJson,
                     assigned_to: formData.assignedTo,
                     priority: formData.priority,
                     start_date: formData.startDate || null,
@@ -109,7 +119,7 @@ const CreateTaskModal = ({
                 : supabase.from('tasks').insert({
                     project_id: projectId,
                     title: formData.title,
-                    description: formData.description || null,
+                    description: stepsJson,
                     assigned_to: formData.assignedTo,
                     assigned_by: currentUserId,
                     priority: formData.priority,
@@ -142,7 +152,7 @@ const CreateTaskModal = ({
         // Reset form
         setFormData({
             title: '',
-            description: '',
+            steps: [],
             assignedTo: '',
             priority: 'medium',
             startDate: '',
@@ -239,16 +249,75 @@ const CreateTaskModal = ({
                                 />
                             </div>
 
-                            {/* Description */}
-                            <div className="space-y-1.5">
-                                <Label htmlFor="description" className="text-[10px] font-bold uppercase text-zinc-500 ml-1">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    placeholder="Add details, requirements, or notes..."
-                                    className="min-h-[80px] rounded-xl resize-none bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 focus:ring-zinc-400 dark:focus:ring-zinc-600 font-medium text-sm"
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                />
+                            {/* Task Steps */}
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between px-1">
+                                    <Label className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Execution Steps</Label>
+                                    <span className="text-[10px] font-bold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full">{formData.steps.length} Steps</span>
+                                </div>
+                                
+                                <div className="space-y-2">
+                                    {formData.steps.map((step, idx) => (
+                                        <motion.div
+                                            layout
+                                            key={step.id}
+                                            initial={{ opacity: 0, x: -10 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            className="flex items-center gap-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200/50 dark:border-white/5 rounded-2xl p-2 group transition-all"
+                                        >
+                                            <div className="w-6 h-6 shrink-0 flex items-center justify-center text-[10px] font-black text-zinc-400 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-100 dark:border-white/5">
+                                                {idx + 1}
+                                            </div>
+                                            <Input
+                                                value={step.text}
+                                                onChange={(e) => {
+                                                    const newSteps = [...formData.steps];
+                                                    newSteps[idx].text = e.target.value;
+                                                    setFormData({ ...formData, steps: newSteps });
+                                                }}
+                                                placeholder={`Step ${idx + 1} focus...`}
+                                                className="h-9 border-none bg-transparent focus:ring-0 text-sm font-semibold p-0 shadow-none"
+                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                type="button"
+                                                onClick={() => {
+                                                    const newSteps = formData.steps.filter((_, i) => i !== idx);
+                                                    setFormData({ ...formData, steps: newSteps });
+                                                }}
+                                                className="w-8 h-8 rounded-xl opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </motion.div>
+                                    ))}
+                                    
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newStep: TaskStep = {
+                                                id: Math.random().toString(36).substr(2, 9),
+                                                text: '',
+                                                completed: false
+                                            };
+                                            setFormData({ ...formData, steps: [...formData.steps, newStep] });
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl text-[11px] font-black uppercase text-zinc-400 hover:text-black dark:hover:text-white hover:border-zinc-400 dark:hover:border-zinc-600 transition-all group active:scale-[0.98]"
+                                    >
+                                        <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                        Add Milestone / Step
+                                    </button>
+                                    
+                                    {formData.steps.length === 0 && (
+                                        <div className="flex flex-col items-center justify-center p-6 bg-zinc-50/50 dark:bg-white/[0.02] border border-zinc-100 dark:border-zinc-800/50 rounded-2xl text-center">
+                                            <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-2">
+                                                <AlertCircle className="w-4 h-4 text-zinc-400" />
+                                            </div>
+                                            <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-relaxed"> No structured steps provided<br/>Tasks are vague without them</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Assign To */}

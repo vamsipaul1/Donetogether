@@ -8,16 +8,42 @@ import type { User, Task } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import ProofSubmissionModal from '@/components/dashboard/ProofSubmissionModal';
+import ProofSubmissionModal from './ProofSubmissionModal';
+import TaskDetailModal from './TaskDetailModal';
 
 interface HomeViewProps {
     user: User | null;
     tasks: Task[];
     onAddTask: () => void;
     onTasksUpdated: () => void;
+    onEditTask: (task: Task) => void;
 }
 
-const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => {
+const HomeView = ({ user, tasks, onAddTask, onTasksUpdated, onEditTask }: HomeViewProps) => {
+    // State
+    const [selectedTaskForDetail, setSelectedTaskForDetail] = useState<Task | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [isProofModalOpen, setIsProofModalOpen] = useState(false);
+    const [taskForProof, setTaskForProof] = useState<Task | null>(null);
+
+    const handleTaskClick = (task: Task) => {
+        setSelectedTaskForDetail(task);
+        setIsDetailModalOpen(true);
+    };
+
+    const handleDeleteTask = async (taskId: string) => {
+        if (!confirm('Are you sure you want to delete this task?')) return;
+        try {
+            const { error } = await supabase.from('tasks').update({ status: 'deleted' }).eq('id', taskId);
+            if (error) throw error;
+            toast.success('Task moved to history');
+            onTasksUpdated();
+        } catch (error) {
+            console.error('Error deleting task:', error);
+            toast.error('Failed to delete task');
+        }
+    };
+
     // Date formatting
     const today = new Date();
     const dateStr = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(today);
@@ -86,17 +112,12 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
     });
 
 
-    const [isProofModalOpen, setIsProofModalOpen] = useState(false);
-    const [taskForProof, setTaskForProof] = useState<Task | null>(null);
+
 
     const handleTaskCompletion = async (task: Task) => {
         try {
             // PROOF OF WORK CHECK
             // If completing a task AND not a leader, require proof
-            // Note: HomeView usually shows global tasks or user tasks. Permissions here are based on 'user.role' (LEADER/MEMBER).
-            // This is slightly less granular than ProjectMember permissions, but fits the 'Home' context.
-            // If user.role is LEADER, they can bypass.
-
             const isLeader = user?.role === 'LEADER';
 
             if (task.status !== 'completed' && !isLeader) {
@@ -121,12 +142,12 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
             {/* Header Section */}
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 shrink-0 pb-4 border-b border-zinc-200/50 dark:border-zinc-800/50">
                 <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                        <p className="text-zinc-400 dark:text-zinc-600 font-bold text-[10px] tracking-widest uppercase">{dateStr}</p>
+                    <div className="flex items-center gap-2.5 mb-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                        <p className="text-zinc-500 dark:text-zinc-400 font-bold text-[13px] tracking-tight">{dateStr}</p>
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight leading-none flex flex-wrap items-baseline gap-x-3">
-                        {greeting}, {user?.full_name?.split(' ')[0] || 'Student'}
+                    <h1 className="text-3xl md:text-4xl font-black text-zinc-900 dark:text-white tracking-tight leading-none flex flex-wrap items-baseline gap-x-3">
+                        {greeting}, {user?.full_name?.split(' ')[0] || 'Member'}
                     </h1>
 
 
@@ -214,6 +235,7 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                                             whileHover={{ scale: 1.01 }}
                                             whileTap={{ scale: 0.98 }}
                                             key={task.id}
+                                            onClick={() => handleTaskClick(task)}
                                             className="group flex items-center gap-4 px-5 py-4 bg-white/70 dark:bg-white/[0.03] border border-white dark:border-white/5 hover:border-violet-500/20 dark:hover:border-white/10 rounded-[28px] transition-all cursor-pointer backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
                                         >
                                             <motion.button
@@ -272,8 +294,8 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                 </div>
 
                 {/* Right Side: Widgets */}
-                <div className="flex flex-col gap-6 md:gap-4 order-1 lg:order-2">
-                    <div className="relative p-6 md:p-8 rounded-[38px] overflow-hidden group border border-white/50 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 min-h-[220px] flex flex-col justify-between isolate bg-white/40 dark:bg-black/40 backdrop-blur-2xl">
+                <div className="flex flex-col gap-4 md:gap-4 order-1 lg:order-2">
+                    <div className="relative p-5 md:p-6 rounded-[32px] overflow-hidden group border border-white/50 dark:border-white/10 shadow-lg transition-all duration-500 min-h-[180px] flex flex-col justify-between isolate bg-white/40 dark:bg-black/40 backdrop-blur-2xl">
                         {/* Custom Neon Background - integrated into glass */}
                         <div className="absolute inset-0 z-[-1] opacity-60 dark:opacity-40">
                             <img
@@ -283,30 +305,30 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                             />
                         </div>
 
-                        <div className="relative z-10 flex flex-col gap-8">
+                        <div className="relative z-10 flex flex-col gap-5">
                             {/* Header Row - Aligned perfectly */}
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-white/40 dark:bg-white/10 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/60 shrink-0">
-                                    <Award className="w-6 h-6 text-indigo-600 dark:text-white" />
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-white/40 dark:bg-white/10 backdrop-blur-md flex items-center justify-center shadow-sm border border-white/60 shrink-0">
+                                    <Award className="w-5 h-5 text-indigo-600 dark:text-white" />
                                 </div>
                                 <div className="flex flex-col gap-0.5 min-w-0">
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-black/70 dark:text-white/40 leading-none">Your Progress</span>
-                                    <h3 className="text-lg md:text-xl font-black text-black dark:text-white leading-tight tracking-tight">Personal Goals</h3>
+                                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-black/70 dark:text-white/40 leading-none">Your Progress</span>
+                                    <h3 className="text-base md:text-lg font-black text-black dark:text-white leading-tight tracking-tight">Personal Goals</h3>
                                 </div>
                             </div>
 
                             {/* Badge Row - Aligned to one grid */}
-                            <div className="flex items-center gap-4">
-                                <div className="bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 px-4 py-2 rounded-[22px] text-xl font-black shadow-xl border border-white/10">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 px-3 py-1 rounded-[18px] text-lg font-black shadow-lg border border-white/10">
                                     {completedTasks}
                                 </div>
-                                <span className="text-[13px] md:text-[15px] font-black uppercase tracking-widest text-black/100 dark:text-white/80">Tasks Finished</span>
+                                <span className="text-[12px] md:text-[14px] font-black uppercase tracking-widest text-black/100 dark:text-white/80">Tasks Finished</span>
                             </div>
                         </div>
 
                         {/* Progress Row - Lower Section */}
-                        <div className="relative z-10 mt-6 space-y-4">
-                            <div className="h-3 w-full bg-black/5 dark:bg-white/10 rounded-full overflow-hidden border border-white/20">
+                        <div className="relative z-10 mt-4 space-y-3">
+                            <div className="h-2 w-full bg-black/5 dark:bg-white/10 rounded-full overflow-hidden border border-white/20">
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${completionRate}%` }}
@@ -321,14 +343,14 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                                 </motion.div>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-[11px] font-black uppercase tracking-[0.25em] text-black/100 dark:text-white/40">Efficiency Rate</span>
-                                <div className="text-xl md:text-2xl font-black leading-none tracking-tighter text-black dark:text-white">{completionRate}%</div>
+                                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-black/100 dark:text-white/40">Efficiency</span>
+                                <div className="text-lg md:text-xl font-black leading-none tracking-tighter text-black dark:text-white">{completionRate}%</div>
                             </div>
                         </div>
                     </div>
 
                     {/* STREAK WIDGET */}
-                    <div className="p-2 md:p-6 rounded-[34px] shadow-[0_15px_40px_rgba(0,0,0,0.05)] relative overflow-hidden group border border-white dark:border-white/10 transition-all duration-500">
+                    <div className="p-4 md:p-5 rounded-[32px] shadow-md relative overflow-hidden group border border-white dark:border-white/10 transition-all duration-500">
                         {/* Soft Neat Background - Iridescent CSS Mesh */}
                         <div className="absolute inset-0 z-0">
                             <div className="absolute inset-0 bg-[#fefefe]/80 dark:bg-zinc-950/80 backdrop-blur-3xl" />
@@ -336,10 +358,10 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                             <div className="absolute bottom-0 left-0 w-[80%] h-[80%] opacity-15 blur-[60px] bg-gradient-to-tr from-[#84FAB0] to-[#8FD3F4]" />
                         </div>
 
-                        <div className="relative z-10 flex flex-row md:flex-col items-center justify-between md:justify-center gap-4 h-full">
-                            <div className="flex items-center gap-4 md:gap-0 md:justify-center relative md:mb-4">
-                                <div className="relative w-12 h-12 md:w-16 md:h-16 bg-white/60 dark:bg-zinc-800 rounded-2xl md:rounded-3xl flex items-center justify-center transform group-hover:scale-110 transition-transform cursor-pointer border border-white/50 shadow-sm">
-                                    <Flame className="w-6 h-6 md:w-8 md:h-8 text-orange-500" fill="currentColor" />
+                        <div className="relative z-10 flex flex-row md:flex-col items-center justify-between md:justify-center gap-3 h-full">
+                            <div className="flex items-center gap-3 md:gap-0 md:justify-center relative md:mb-3">
+                                <div className="relative w-10 h-10 md:w-12 md:h-12 bg-white/60 dark:bg-zinc-800 rounded-[18px] md:rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform cursor-pointer border border-white/50 shadow-sm">
+                                    <Flame className="w-5 h-5 md:w-6 md:h-6 text-orange-500" fill="currentColor" />
                                 </div>
                                 <div className="block md:hidden">
                                     <h3 className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase leading-none mb-1 tracking-widest">Status</h3>
@@ -351,24 +373,24 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                             </div>
 
                             <div className="hidden md:block text-center">
-                                <h3 className="text-[13px] font-black text-zinc-900 dark:text-white mb-0.5 uppercase tracking-tighter">Focus Streak</h3>
+                                <h3 className="text-[12px] font-black text-zinc-900 dark:text-white mb-0.5 uppercase tracking-tighter">Focus Streak</h3>
                                 <div className="flex flex-col items-center justify-center">
                                     <div className="flex items-baseline gap-1">
-                                        <span className={currentStreak > 0 ? "text-4xl font-black text-orange-500" : "text-4xl font-black text-zinc-900 dark:text-white"}>{currentStreak}</span>
-                                        <span className="text-[12px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{currentStreak === 1 ? 'Day' : 'Days'}</span>
+                                        <span className={currentStreak > 0 ? "text-3xl font-black text-orange-500" : "text-3xl font-black text-zinc-900 dark:text-white"}>{currentStreak}</span>
+                                        <span className="text-[11px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{currentStreak === 1 ? 'Day' : 'Days'}</span>
                                     </div>
-                                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-wider mt-1">+{(currentStreak * 5)} XP Multiplier</p>
+                                    <p className="text-[8px] font-black text-emerald-600 uppercase tracking-wider mt-0.5">+{(currentStreak * 5)} XP Multiplier</p>
                                 </div>
                             </div>
 
                             {/* Visual Streak Tracker - Desktop Only */}
-                            <div className="w-full mt-4 hidden md:flex justify-between px-4">
+                            <div className="w-full mt-3 hidden md:flex justify-between px-2">
                                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
                                     const isActive = i < currentStreak;
                                     return (
-                                        <div key={i} className="flex flex-col items-center gap-2">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-orange-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
-                                            <span className={`text-[9px] font-bold ${isActive ? 'text-orange-600 dark:text-orange-500' : 'text-zinc-400'}`}>{day}</span>
+                                        <div key={i} className="flex flex-col items-center gap-1.5">
+                                            <div className={`w-1 h-1 rounded-full ${isActive ? 'bg-orange-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
+                                            <span className={`text-[8px] font-bold ${isActive ? 'text-orange-600 dark:text-orange-500' : 'text-zinc-400'}`}>{day}</span>
                                         </div>
                                     );
                                 })}
@@ -376,7 +398,7 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
 
                             <div className="flex md:hidden gap-1">
                                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((_, i) => (
-                                    <div key={i} className={`w-1.5 h-1.5 rounded-full ${i < currentStreak ? 'bg-orange-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
+                                    <div key={i} className={`w-1 h-1 rounded-full ${i < currentStreak ? 'bg-orange-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
                                 ))}
                             </div>
                         </div>
@@ -404,6 +426,15 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated }: HomeViewProps) => 
                 onSubmitted={() => {
                     toast.info("Proof submitted. Waiting for review.");
                 }}
+            />
+            <TaskDetailModal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                task={selectedTaskForDetail}
+                onTaskUpdated={onTasksUpdated}
+                currentUserId={user?.id || ''}
+                onEditTask={onEditTask}
+                onDeleteTask={handleDeleteTask}
             />
         </div >
     );

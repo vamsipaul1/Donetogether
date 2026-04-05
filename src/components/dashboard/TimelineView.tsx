@@ -8,6 +8,7 @@ import { format, addDays, startOfWeek, addWeeks, subWeeks, isSameDay, isToday, d
 import type { Task, ProjectMember, User as UserType } from '@/types/database';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import TaskDetailModal from '@/components/dashboard/TaskDetailModal';
 
 interface TimelineViewProps {
     tasks: Task[];
@@ -22,6 +23,13 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
     const [viewDate, setViewDate] = useState(new Date());
     const [timelineRange, setTimelineRange] = useState(28); // Default 4 weeks
     const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+    const [selectedTaskForDetail, setSelectedTaskForDetail] = useState<Task | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
+    const handleTaskClick = (task: Task) => {
+        setSelectedTaskForDetail(task);
+        setIsDetailModalOpen(true);
+    };
 
     const COLUMN_WIDTH = 52; // Fixed width for perfect alignment
 
@@ -390,9 +398,12 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
                                                                         <div
                                                                             onMouseDown={isOwner ? (e) => handleDragStart(e, task) : undefined}
                                                                             onTouchStart={isOwner ? (e) => handleDragStart(e, task) : undefined}
+                                                                            onClick={() => {
+                                                                                if (manipulationOffset === 0) handleTaskClick(task);
+                                                                            }}
                                                                             className={`group/bar absolute h-7 md:h-9 rounded-lg md:rounded-xl px-2 md:px-3 flex items-center gap-1.5 md:gap-2 shadow-lg border-t border-white/20 transition-all z-10
                                                                             ${colorClass} ${activeTaskId === task.id ? 'z-50 ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-black scale-105 opacity-90' : ''}
-                                                                            ${isOwner ? 'cursor-grab active:cursor-grabbing hover:brightness-105 active:scale-[0.99]' : 'cursor-default'}
+                                                                            ${isOwner ? 'cursor-grab active:cursor-grabbing hover:brightness-105 active:scale-[0.99]' : 'cursor-pointer'}
                                                                         `}
                                                                             style={{ left: style.left, width: style.width }}
                                                                         >
@@ -470,6 +481,16 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
                     })}
                 </div>
             </div>
+
+            <TaskDetailModal
+                isOpen={isDetailModalOpen}
+                onClose={() => setIsDetailModalOpen(false)}
+                task={selectedTaskForDetail}
+                onTaskUpdated={onTasksUpdated}
+                currentUserId={currentUserId}
+                onEditTask={() => {}} // Not implemented in Timeline but needed for prop
+                onDeleteTask={() => {}}
+            />
         </div>
     );
 };

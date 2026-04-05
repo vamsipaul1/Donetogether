@@ -76,11 +76,18 @@ export interface TaskProof {
 export type TaskStatus = 'not_started' | 'in_progress' | 'completed' | 'blocked' | 'deleted';
 export type TaskPriority = 'low' | 'medium' | 'high';
 
+export interface TaskStep {
+    id: string;
+    text: string;
+    completed: boolean;
+}
+
 export interface Task {
     id: string;
     project_id: string;
     title: string;
-    description?: string;
+    description?: string; // Kept for DB compatibility, but will use 'steps' in UI
+    steps?: TaskStep[];
     assigned_to?: string;
     assigned_by: string;
     status: TaskStatus;
