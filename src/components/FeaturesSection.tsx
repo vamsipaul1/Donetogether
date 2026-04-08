@@ -15,7 +15,7 @@ export default function FeaturesSection() {
     {
       title: "AI-Assisted Planning",
       desc:
-        "Enter your idea and generate a structured roadmap with milestones and weekly goals.",
+        "Removes doubt, simplifies decisions, and keeps your workflow on track.",
       featured: true,
     },
     {

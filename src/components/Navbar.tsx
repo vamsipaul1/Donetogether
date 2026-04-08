@@ -69,7 +69,7 @@ const Navbar = () => {
         transition-all
         duration-300
         ${isScrolled
-          ? "bg-white/80 backdrop-blur-lg border-b border-zinc-200 py-3"
+          ? "backdrop-blur-lg border-b border-zinc-200/50 py-3"
           : "bg-transparent py-5"
         }
       `}
@@ -137,7 +137,7 @@ const Navbar = () => {
                   hover:opacity-70
                 "
               >
-                Dashboard
+                Project Room
               </Link>
 
               <button

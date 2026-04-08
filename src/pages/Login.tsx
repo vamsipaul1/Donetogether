@@ -86,13 +86,14 @@ const Login = () => {
                         className="relative w-full max-w-[520px] flex flex-col items-center text-center"
                     >
                         <motion.h1
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8 }}
-                            className="font-body font-black tracking-[-0.04em] text-[#0b0c10] text-[40px] md:text-[56px] leading-[0.95] antialiased uppercase"
+                            className="font-sans font-semibold tracking-[-0.03em] text-zinc-950 text-[32px] md:text-[48px] leading-[1.1] antialiased"
                         >
                             Log in to <br />
-                            DoneTogether Work <span className="text-orange-500 inline-block translate-y-[-2px] animate-[bounce-x_2s_infinite]">→</span>
+                            <span className="text-slate-600">DoneTogether Work</span>
+                            <span className="ml-3 text-orange-500 font-light inline-block transition-transform group-hover:translate-x-1 animate-bounce">→</span>
                         </motion.h1>
                     </motion.div>
                 </div>
@@ -111,15 +112,15 @@ const Login = () => {
                                 <div className="w-12 h-12 bg-black rounded-[20px] flex items-center justify-center text-white shadow-2xl group-hover:scale-105 transition-transform duration-300">
                                     <img src="/favicon.ico" alt="Logo" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
                                 </div>
-                                <span className="font-body font-black text-3xl tracking-tighter text-zinc-900">
+                                <span className="font-body font-black text-3xl tracking-normal text-slate-900">
                                     DoneTogether
                                 </span>
                             </Link>
                         </div>
 
                         <div className="space-y-1 mb-8 text-center font-body">
-                            <h2 className="text-3xl font-black text-zinc-900 tracking-tight antialiased capitalize">Welcome back</h2>
-                            <p className="text-zinc-600 text-[15px] antialiased">Access your dashboard</p>
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight antialiased capitalize">Welcome back</h2>
+                            <p className="text-slate-600 text-[15px] antialiased">Access your dashboard</p>
                         </div>
 
                         <div className="space-y-5">

@@ -1,6 +1,24 @@
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { 
+  ShieldCheck, 
+  Users2, 
+  BarChart3, 
+  FileCheck2, 
+  BellRing, 
+  Trophy, 
+  Target, 
+  Lock 
+} from "lucide-react";
+
+const FontLoader = () => (
+  <style>{`
+    @import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,900&display=swap');
+    .hiw-header, .hiw-header * { font-family: 'Satoshi', sans-serif; }
+    .hiw-header { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  `}</style>
+);
 
 const fadeUp = {
   hidden: { opacity: 0, y: 28 },
@@ -14,49 +32,50 @@ const fadeUp = {
 const reasons = [
   {
     title: "Accountability That Works",
-    description:
-      "Stay on track with built-in accountability mechanisms that keep you and your team motivated and committed to your goals.",
+    description: "Stay on track with built-in mechanisms that keep your team motivated and committed.",
+    icon: ShieldCheck,
   },
   {
     title: "Real-Time Collaboration",
-    description:
-      "Work together seamlessly with live updates, shared workspaces, and instant communication tools designed for modern teams.",
+    description: "Work seamlessly with live updates and shared workspaces designed for modern teams.",
+    icon: Users2,
   },
   {
     title: "Progress Visibility",
-    description:
-      "Get a crystal-clear view of every milestone, task, and deadline with dashboards that make progress impossible to miss.",
+    description: "Get a clear view of every milestone and deadline with intuitive progress dashboards.",
+    icon: BarChart3,
   },
   {
     title: "Proof of Completion",
-    description:
-      "Submit and verify task completion with evidence-based proof features, so achievements are always recognized and validated.",
+    description: "Submit and verify task completion with evidence-based features for recognized achievements.",
+    icon: FileCheck2,
   },
   {
     title: "Smart Reminders",
-    description:
-      "Never miss a deadline again with intelligent reminders that adapt to your schedule and keep priorities front and center.",
+    description: "Never miss a deadline with intelligent alerts that adapt to your team's specific schedule.",
+    icon: BellRing,
   },
   {
     title: "Team Motivation",
-    description:
-      "Celebrate wins, track streaks, and encourage one another with built-in motivation tools that make progress rewarding.",
+    description: "Celebrate wins and track streaks with tools that make progress genuinely rewarding.",
+    icon: Trophy,
   },
   {
     title: "Flexible Goal Setting",
-    description:
-      "Set personal or team goals of any size, break them into actionable steps, and adjust as your priorities evolve.",
+    description: "Set personal or team goals, break them into steps, and adjust as priorities evolve.",
+    icon: Target,
   },
   {
     title: "Secure & Private",
-    description:
-      "Your data is protected with enterprise-grade security so you can collaborate with confidence and full peace of mind.",
+    description: "Protect your data with enterprise-grade security for full peace of mind while collaborating.",
+    icon: Lock,
   },
 ];
 
 export default function WhyChoose() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <FontLoader />
       <Navbar />
 
       <main className="flex-1 pt-24 pb-20 px-4">
@@ -67,22 +86,11 @@ export default function WhyChoose() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="text-center mb-4"
+            className="text-center mb-16"
           >
-            <span className="inline-block rounded-full border border-border/60 bg-background/40 px-4 py-1.5 text-xs font-medium tracking-widest uppercase text-muted-foreground mb-6">
+            <h1 className="font-body text-[32px] sm:text-[42px] font-bold tracking-tight text-zinc-900">
               Why DoneTogether?
-            </span>
-            <h1 className="font-sans font-bold text-4xl md:text-5xl xl:text-6xl tracking-tight leading-tight text-foreground text-balance">
-              Built for teams that{" "}
-              <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                actually get things done
-              </span>
             </h1>
-            <p className="mt-5 max-w-2xl mx-auto font-body text-base md:text-lg text-muted-foreground text-balance leading-relaxed">
-              DoneTogether combines accountability, collaboration, and smart
-              progress tracking — giving your team every reason to stay aligned
-              and finish strong.
-            </p>
           </motion.div>
 
           {/* Cards Grid */}
@@ -106,10 +114,10 @@ export default function WhyChoose() {
               grid-cols-1
               md:grid-cols-2
               xl:grid-cols-4
-              gap-8
-              px-2
+              gap-6
+              px-4
               md:px-8
-              xl:px-16
+              xl:px-12
               w-full
               max-w-[1440px]
               mx-auto
@@ -117,14 +125,14 @@ export default function WhyChoose() {
           >
             {reasons.map((item, index) => {
               const lineColors = [
-                'linear-gradient(90deg,#6366f1,#60a5fa)',
-                'linear-gradient(90deg,#f59e42,#fbbf24)',
-                'linear-gradient(90deg,#10b981,#34d399)',
-                'linear-gradient(90deg,#f472b6,#f87171)',
-                'linear-gradient(90deg,#818cf8,#a5b4fc)',
-                'linear-gradient(90deg,#38bdf8,#0ea5e9)',
-                'linear-gradient(90deg,#facc15,#fde68a)',
-                'linear-gradient(90deg,#4ade80,#22d3ee)',
+                'linear-gradient(90deg, #6366f1, #3b82f6)', // Indigo - Blue
+                'linear-gradient(90deg, #a855f7, #ec4899)', // Purple - Pink
+                'linear-gradient(90deg, #10b981, #06b6d4)', // Emerald - Cyan
+                'linear-gradient(90deg, #f59e0b, #ef4444)', // Amber - Red
+                'linear-gradient(90deg, #eab308, #fbbf24)', // Golden - Amber
+                'linear-gradient(90deg, #f43f5e, #fb923c)', // Rose - Orange
+                'linear-gradient(90deg, #8b5cf6, #d946ef)', // Violet - Fuchsia
+                'linear-gradient(90deg, #22c55e, #84cc16)', // Green - Lime
               ];
               const lineColor = lineColors[index % 8];
               return (
@@ -132,11 +140,11 @@ export default function WhyChoose() {
                   key={item.title}
                   variants={fadeUp}
                   whileHover={{
-                    y: -10,
-                    scale: 1.045,
-                    boxShadow: "0 8px 32px 0 rgba(80,80,180,0.10), 0 1.5px 8px 0 rgba(0,0,0,0.04)"
+                    y: -5,
+                    scale: 1.02,
+                    boxShadow: "0 12px 24px -8px rgba(0,0,0,0.08)"
                   }}
-                  transition={{ type: "spring", stiffness: 320, damping: 24 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   className="
                     group
                     relative
@@ -144,69 +152,61 @@ export default function WhyChoose() {
                     rounded-2xl
                     border
                     border-border/60
-                    bg-white dark:bg-zinc-950/90
-                    shadow-[0_2px_12px_rgba(80,80,180,0.04)]
-                    backdrop-blur-md
-                    px-8
-                    py-7
-                    md:px-10
-                    md:py-8
+                    bg-white dark:bg-zinc-950
+                    shadow-sm
+                    p-6
                     flex flex-col
                     items-stretch
-                    justify-between
-                    min-h-[200px]
+                    min-h-[190px]
                     transition-all
                     duration-300
-                    hover:border-border
-                    hover:ring-2
-                    hover:ring-border/60
-                    hover:shadow-xl
-                    motion-reduce:transition-none
-                    motion-reduce:hover:transform-none
+                    hover:border-zinc-300
                   "
                 >
-                  {/* sheen */}
-                  <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-br from-muted/35 via-transparent to-muted/15" />
+                  {/* number and text container side-by-side */}
+                  <div className="relative z-10 flex gap-4 items-start">
+                    {/* far left icon with animation */}
+                    <div className="shrink-0 pt-1">
+                      <motion.div 
+                        whileHover={{ rotate: 12, scale: 1.3, y: -2 }}
+                        className="flex items-center justify-center w-8 h-8"
+                        style={{ color: lineColor.split(',')[1].trim() }}
+                      >
+                        <item.icon size={22} strokeWidth={2.5} />
+                      </motion.div>
+                    </div>
 
-                  {/* top meta */}
-                  <div className="relative z-[1] flex flex-col gap-2 items-start w-full">
-                    <div className="flex items-center gap-2 w-full">
-                      <span className="inline-flex items-center rounded-full border border-border/60 bg-background/40 px-3 py-1 font-body text-[12px] leading-none tracking-[-0.01em] text-foreground/80">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
+                    {/* text content aligned with number */}
+                    <div className="flex flex-col gap-1.5 flex-1">
                       <h3
                         className="
-                          relative
-                          z-[1]
-                          font-sans
-                          font-semibold
-                          text-[18px] md:text-[19px] xl:text-[20px]
+                          font-body
+                          font-bold
+                          text-[17px]
                           leading-tight
-                          tracking-[-0.02em]
-                          text-foreground
-                          text-balance
-                          line-clamp-2
-                          min-h-[2.7em]
-                          flex-1
-                          truncate
+                          tracking-tight
+                          text-zinc-900
                         "
                       >
-                        <span className="block w-full truncate">{item.title}</span>
-                        <motion.div
-                          initial={{ scaleX: 0 }}
-                          whileInView={{ scaleX: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.7, delay: 0.15 + index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                          className="origin-left mt-2 h-[4px] w-full rounded-full"
-                          style={{ background: lineColor }}
-                        />
+                        {item.title}
                       </h3>
+                      <motion.div
+                        initial={{ scaleX: 0 }}
+                        whileInView={{ scaleX: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.7, delay: 0.15 + index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                        className="origin-left h-[2.5px] w-full rounded-full"
+                        style={{ background: lineColor }}
+                      />
+
+                      <p className="mt-4 font-body text-[14px] leading-[22px] text-slate-800 antialiased">
+                        {item.description}
+                      </p>
                     </div>
                   </div>
 
-                  <p className="relative z-[1] mt-4 font-body text-[15.5px] leading-[23px] text-muted-foreground line-clamp-2 min-h-[2.7em] text-balance">
-                    {item.description}
-                  </p>
+                  {/* subtle sheen */}
+                  <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-br from-zinc-50/50 to-transparent" />
                 </motion.div>
               );
             })}

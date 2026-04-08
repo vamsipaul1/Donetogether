@@ -589,7 +589,7 @@ const Dashboard = () => {
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent side="right" align="start" className={`${isMobile ? 'w-52' : 'w-64'} ml-2 rounded-xl p-2 font-body bg-white dark:bg-black border-zinc-200 dark:border-[#3d3e40] shadow-xl`}>
-                                <DropdownMenuLabel className="text-[11px] text-zinc-500 font-bold uppercase tracking-tight px-2 py-1.5 mb-1">My workspace</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-[11px] text-zinc-500 font-bold uppercase tracking-normal px-2 py-1.5 mb-1">My workspace</DropdownMenuLabel>
 
                                 {isOwner && (
                                     <>
@@ -700,7 +700,7 @@ const Dashboard = () => {
 
                                 <DropdownMenuItem onClick={() => navigate('/create-project')} className="flex items-center gap-3.5 p-2 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-colors outline-none">
                                     <div className="w-11 h-11 rounded-[14px] bg-zinc-100/80 dark:bg-zinc-800/80 flex items-center justify-center shrink-0 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm">
-                                        <FolderPlus className="w-5 h-5 text-violet-500" strokeWidth={2} />
+                                        <FolderPlus className="w-5 h-5 text-zinc-900 dark:text-white" strokeWidth={2} />
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-[15px] font-bold text-zinc-900 dark:text-white leading-tight">New Project</span>
@@ -927,7 +927,8 @@ const Dashboard = () => {
 
 
                 </div>
-                {/* Bottom Navigation for Mobile - Premium Glassmorphism */}
+
+                {/* Bottom Navigation for Mobile - Premium Glassmorphism */}
                 {isMobile && (
                     <nav className="fixed bottom-6 left-6 right-6 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl border border-zinc-200/50 dark:border-white/10 rounded-[32px] flex items-center h-[72px] px-4 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-300">
                         {/* Navigation Items - Redistributed for better spacing without the Plus button */}

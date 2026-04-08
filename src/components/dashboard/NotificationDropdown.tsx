@@ -42,81 +42,81 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAllAsRead }: N
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
-                className="w-80 md:w-96 rounded-2xl p-0 bg-white dark:bg-black border-zinc-100 dark:border-white/10 shadow-2xl overflow-hidden font-sans z-[100]"
+                className="w-80 md:w-80 rounded-2xl p-0 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 shadow-2xl overflow-hidden font-sans z-[100]"
                 sideOffset={12}
             >
-                <div className="px-5 py-4 flex items-center justify-between border-b border-zinc-100 dark:border-white/5 bg-zinc-50/50 dark:bg-white/[0.02]">
+                <div className="px-5 py-5 flex items-center justify-between border-b border-zinc-50 dark:border-white/5">
                     <div>
-                        <h3 className="text-sm font-black text-zinc-900 dark:text-white tracking-tight">NOTIFICATIONS</h3>
-                        <p className="text-[10px] text-zinc-400 font-bold tracking-widest uppercase mt-0.5">{unreadCount} Unread Alerts</p>
+                        <h3 className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">Notifications</h3>
+                        <p className="text-[12px] text-zinc-500 mt-0.5">{unreadCount} unread alerts</p>
                     </div>
                     {unreadCount > 0 && (
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={onMarkAllAsRead}
-                            className="h-7 px-2.5 rounded-lg text-[10px] font-black uppercase text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 tracking-wider transition-all"
+                            className="h-8 px-3 rounded-lg text-[12px] font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-all underline underline-offset-4"
                         >
-                            Mark all read
+                            Mark all as read
                         </Button>
                     )}
                 </div>
 
-                <div className="max-h-[70vh] overflow-y-auto scrollbar-hide py-2">
+                <div className="max-h-[60vh] overflow-y-auto scrollbar-hide py-1">
                     {notifications.length > 0 ? (
                         notifications.slice(0, 10).map((notification) => (
                             <div
                                 key={notification.id}
                                 className={cn(
-                                    "px-5 py-3.5 flex items-start gap-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.03] cursor-pointer group",
-                                    !notification.read && "bg-emerald-50/20 dark:bg-emerald-500/[0.02]"
+                                    "px-5 py-4 flex items-start gap-4 transition-colors hover:bg-zinc-50 dark:hover:bg-white/[0.02] cursor-pointer group",
+                                    !notification.read && "bg-zinc-50/50 dark:bg-white/[0.01]"
                                 )}
                             >
                                 <div className={cn(
-                                    "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-all",
+                                    "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border transition-all",
                                     notification.read
-                                        ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-100 dark:border-zinc-700 text-zinc-400"
-                                        : "bg-emerald-100 dark:bg-emerald-900/30 border-emerald-100 dark:border-emerald-800 text-emerald-600"
+                                        ? "bg-zinc-50 dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 text-zinc-400"
+                                        : "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 text-emerald-600"
                                 )}>
-                                    <Sparkles className="w-4 h-4" />
+                                    <Sparkles className="w-3.5 h-3.5" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between gap-2">
                                         <p className={cn(
-                                            "text-[13px] tracking-tight truncate",
-                                            notification.read ? "text-zinc-500 font-medium" : "text-zinc-900 dark:text-zinc-100 font-bold"
+                                            "text-[13.5px] tracking-tight truncate",
+                                            notification.read ? "text-zinc-500 font-normal" : "text-zinc-900 dark:text-zinc-100 font-semibold"
                                         )}>
                                             {notification.title}
                                         </p>
                                         {!notification.read && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />}
                                     </div>
-                                    <p className="text-[12px] text-zinc-500 dark:text-zinc-400 leading-snug mt-0.5 line-clamp-2">
+                                    <p className="text-[13px] text-zinc-500 dark:text-zinc-400 leading-[1.4] mt-1 line-clamp-2">
                                         {notification.message}
                                     </p>
-                                    <p className="text-[10px] font-bold text-zinc-400 mt-2 uppercase tracking-wide">
+                                    <p className="text-[11px] text-zinc-400 mt-2.5">
                                         {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                                     </p>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="py-12 flex flex-col items-center justify-center text-center opacity-40">
-                            <div className="w-12 h-12 rounded-full border border-dashed border-zinc-400 flex items-center justify-center mb-4">
-                                <Bell className="w-5 h-5" />
+                        <div className="py-16 flex flex-col items-center justify-center text-center opacity-60">
+                            <div className="flex items-center justify-center mb-5">
+                                <Bell className="w-8 h-8 text-zinc-300" strokeWidth={1.5} />
                             </div>
-                            <p className="text-xs font-black uppercase tracking-[0.2em]">All Caught Up!</p>
-                            <p className="text-[10px] font-bold mt-1 max-w-[160px]">You have no new notifications at this time.</p>
+                            <p className="text-[15px] font-semibold text-zinc-900 dark:text-white">All caught up!</p>
+                            <p className="text-[13px] text-zinc-500 mt-1 max-w-[200px]">You have no new notifications at this time.</p>
                         </div>
                     )}
                 </div>
 
-                <div className="p-3 bg-zinc-50/50 dark:bg-white/[0.02] border-t border-zinc-100 dark:border-white/5">
+                <div className="p-4 border-t border-zinc-50 dark:border-white/5">
                     <Button
                         variant="ghost"
-                        className="w-full h-10 rounded-xl text-[11px] font-black uppercase text-zinc-500 hover:text-zinc-900 dark:hover:text-white tracking-widest transition-all"
+                        className="w-full h-11 rounded-xl text-[13px] font-semibold text-zinc-600 hover:text-zinc-900 dark:hover:text-white transition-all bg-zinc-50 dark:bg-white/5"
                         onClick={() => { }}
                     >
-                        View Full Activity
+                        View full activity
                     </Button>
                 </div>
             </DropdownMenuContent>

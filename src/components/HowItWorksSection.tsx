@@ -37,7 +37,7 @@ const STEPS = [
     icon: Bot,
     title: "Plan with AI",
     description:
-      "Enter your idea and let AI generate milestones and weekly goals.",
+      "It removes confusion, reduces guesswork, and brings clarity to your workflow",
     image: "/card3.png",
   },
   {
@@ -307,14 +307,13 @@ const HowItWorksSection = () => {
                 leading-[24px]
                 tracking-[-0.03em]
                 text-zinc-800
-                max-w-[480px]
+                max-w-[580px]
                 mx-auto
                 antialiased
               "
               style={{ MozOsxFontSmoothing: "grayscale" }}
             >
-              Built for students and startup founders to plan, collaborate, and
-              execute with clarity from first idea to final delivery.
+              For ambitious minds to turn ideas into action plan with clarity, collaborate with purpose, and execute with confidence from start to finish.
             </p>
           </motion.div>
 

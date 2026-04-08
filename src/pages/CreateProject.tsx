@@ -553,8 +553,8 @@ const CreateProject = () => {
                     </div>
                 </div>
 
-                <div className="mt-10 flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-bold text-zinc-500 uppercase tracking-[0.2em] opacity-80">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <div className="mt-12 flex items-center justify-center gap-2.5 text-[13px] font-medium text-zinc-500 opacity-60">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500/80" strokeWidth={1.5} />
                     <span>Tier-1 Encrypted Project Cloud</span>
                 </div>
             </motion.div>

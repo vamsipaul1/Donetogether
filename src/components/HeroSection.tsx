@@ -1,5 +1,5 @@
 import { motion, Variants } from "framer-motion"
-import { ArrowUpRight } from "lucide-react"
+import { ArrowRight as ArrowIcon } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 
@@ -28,10 +28,60 @@ const HeroSection = () => {
   return (
     <section className="relative isolate min-h-screen flex items-center justify-center bg-white text-[#0b0c10] overflow-hidden">
 
-      {/* VIDEO BACKGROUND */}
-      <div className="absolute inset-0 z-0 transform scale-y-[-1] overflow-hidden pointer-events-none">
+      {/* ANIMATED CUBE GRID SYSTEM (High-Fidelity Match) */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none bg-white">
+
+        {/* The Grid Container */}
+        <div className="absolute inset-0 grid grid-cols-6 sm:grid-cols-10 md:grid-cols-12 lg:grid-cols-14 xl:grid-cols-18 gap-2 p-2 opacity-[0.8]">
+          {Array.from({ length: 180 }).map((_, i) => {
+            const col = i % 18;
+            const row = Math.floor(i / 18);
+
+            // Logic to color only the top and sides, fading to white in the middle/bottom
+            // We want it heavy at the top and fading down.
+            // col 0-4 (Blue vibe), col 5-9 (Purple vibe), col 10-18 (Pink/Rose vibe)
+
+            let colorClass = "bg-transparent";
+            let opacity = 0;
+
+            if (row < 5) {
+              // Calculate opacity based on row (fade down)
+              opacity = Math.max(0, 1 - (row * 0.22));
+
+              if (col < 6) colorClass = "bg-blue-400";
+              else if (col < 12) colorClass = "bg-purple-400";
+              else colorClass = "bg-rose-400";
+
+              // Reduce intensity towards the center x-axis slightly
+              const centerDist = Math.abs(col - 9);
+              opacity *= (0.4 + (centerDist / 9) * 0.6);
+            }
+
+            // Exclude the bottom right area as marked in the user's image (approx row 3-5, col 14-18)
+            if (row >= 3 && col >= 14) opacity = 0;
+
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0 }}
+                animate={{
+                  opacity: opacity * 0.15,
+                  scale: [1, 1.02, 1],
+                }}
+                transition={{
+                  duration: 3 + Math.random() * 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2
+                }}
+                className={`aspect-square rounded-[12px] ${colorClass} blur-[20px]`}
+              />
+            );
+          })}
+        </div>
+
+        {/* The Video (Restored for Full Vibrancy) */}
         <video
-          className="w-full h-full object-cover opacity-100 contrast-125 saturate-140"
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.85] contrast-[1.15] saturate-[1.6] transform scale-y-[-1] transition-opacity duration-1000 mix-blend-multiply"
           autoPlay
           loop
           muted
@@ -43,12 +93,9 @@ const HeroSection = () => {
           />
         </video>
 
-        {/* Symmetry-Perfect Masking System (Extreme Visibility) */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_0%,rgba(255,255,255,0.3)_66%,white_95%)]" />
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-white opacity-50" />
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-transparent to-white opacity-30" />
-        {/* subtle top fade to ground the view */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-transparent to-transparent opacity-100" />
+        {/* Global Fades for center clarity and white block reduction */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-white/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-white/20" />
       </div>
 
       {/* FLOATING UI ELEMENTS (CodeDale Stacked System - Temporarily Disabled) 
@@ -105,24 +152,25 @@ const HeroSection = () => {
           {/* TOP BADGE (High-Fidelity Restoration) */}
           <motion.div
             variants={fadeUp}
-            className="group cursor-pointer inline-flex items-center gap-3 pl-1 pr-1.5 py-1 rounded-full bg-white/40 backdrop-blur-xl border border-white/40 text-[12.5px] font-semibold text-slate-950 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:bg-white/60 transition-all mb-4"
+            className="group cursor-pointer inline-flex items-center rounded-full bg-white/40 backdrop-blur-xl border border-white/40 text-[12.5px] font-semibold text-slate-950 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:bg-white/60 transition-all mb-4"
           >
-            <div className="flex items-center gap-2.5 px-2">
-              <div className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-700 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></span>
+            <Link 
+              to={user ? "/dashboard" : "/signup"}
+              className="flex items-center gap-3 pl-1 pr-1.5 py-1"
+            >
+              <div className="flex items-center gap-2.5 px-2">
+                <div className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.3)]"></span>
+                </div>
+                <span className="font-body font-normal text-[14px] leading-[22px] tracking-[-0.01em] text-zinc-800 antialiased whitespace-nowrap">
+                  New teams are joining every week!
+                </span>
               </div>
-              <span className="font-body
-              font-semibold
-              text-[14px]
-              leading-[22px]
-              tracking-[-0.01em]
-              text-zinc-700
-              antialiased">New teams are joining every week!</span>
-            </div>
-            <div className="w-7 h-7 rounded-full bg-zinc-50 border border-zinc-100 flex items-center justify-center transition-transform group-hover:translate-x-0.5 shadow-sm">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-            </div>
+              <div className="w-7 h-7 rounded-full bg-[#262626] flex items-center justify-center transition-transform group-hover:translate-x-0.5 shadow-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </div>
+            </Link>
           </motion.div>
 
           {/* HEADING (The Narrative) */}
@@ -130,7 +178,7 @@ const HeroSection = () => {
             <h1
               className="
                   font-sans
-                  font-[700]
+                  font-[600]
                   text-[34px]
                   sm:text-[52px]
                   leading-[48px]
@@ -182,7 +230,7 @@ const HeroSection = () => {
                   h-14
                   px-8
                   pr-16
-                  bg-black
+                  bg-[#1a1a2a]
                   text-white
                   group
                   transition-all
@@ -194,6 +242,7 @@ const HeroSection = () => {
                   justify-center
                   overflow-visible
                   shadow-[0_16px_44px_-26px_rgba(0,0,0,0.65)]
+                
                 "
               >
                 <span className="relative z-10 whitespace-nowrap">Create Your Team</span>
@@ -204,8 +253,8 @@ const HeroSection = () => {
                     right-1
                     w-12
                     h-12
-                    bg-white
-                    text-zinc-950
+                    bg-zinc-700
+                    text-white
                     rounded-full
                     flex
                     items-center
@@ -213,10 +262,9 @@ const HeroSection = () => {
                     transition-all
                     duration-500
                     group-hover:right-[calc(100%-52px)]
-                    group-hover:rotate-45
                   "
                 >
-                  <ArrowUpRight size={18} strokeWidth={3} />
+                  <ArrowIcon size={20} strokeWidth={3} />
                 </div>
               </button>
             </Link>

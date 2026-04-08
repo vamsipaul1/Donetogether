@@ -89,8 +89,7 @@ const GovernanceModal = ({
             await supabase.from('tasks')
                 .update({ assigned_by: currentUserId })
                 .eq('project_id', project.id)
-                .eq('assigned_by', user_id)
-                .catch(console.warn);
+                .eq('assigned_by', user_id);
 
             // 3. Clean Chat (Messages)
             try {
@@ -102,14 +101,14 @@ const GovernanceModal = ({
             } catch (e) { console.warn("Chat cleanup warning", e); }
 
             // 4. Clean AI Logs
-            await supabase.from('ai_logs').delete().eq('project_id', project.id).eq('user_id', user_id).catch(() => { });
+            await supabase.from('ai_logs').delete().eq('project_id', project.id).eq('user_id', user_id);
 
             // 5. Clean Invites (Best Guess)
-            await supabase.from('project_invites').delete().eq('project_id', project.id).eq('invited_by', user_id).catch(() => { });
-            await supabase.from('invitations').delete().eq('project_id', project.id).eq('invited_by', user_id).catch(() => { });
+            await supabase.from('project_invites').delete().eq('project_id', project.id).eq('invited_by', user_id);
+            await supabase.from('invitations').delete().eq('project_id', project.id).eq('invited_by', user_id);
 
             // 6. Clean Proofs (Best effort)
-            await supabase.from('task_proofs').delete().eq('user_id', user_id).catch(() => { });
+            await supabase.from('task_proofs').delete().eq('user_id', user_id);
 
 
             // --- FINAL DELETE ---
@@ -243,21 +242,21 @@ const GovernanceModal = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-xl bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 rounded-[32px] p-0 overflow-hidden font-sans shadow-2xl flex flex-col h-[85vh] max-h-[850px]">
+            <DialogContent className="max-w-xl bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 rounded-[32px] p-0 overflow-hidden font-body shadow-2xl flex flex-col h-[85vh] max-h-[850px]">
                 <div className="absolute top-0 inset-x-0 h-1.5 bg-black dark:bg-zinc-800 z-10" />
 
                 <DialogHeader className="p-6 md:p-8 pb-4 flex-shrink-0">
                     <div className="flex items-center justify-between">
                         <div>
-                            <DialogTitle className="text-2xl font-bold text-zinc-900 dark:text-white mb-1">
+                            <DialogTitle className="text-2xl font-bold text-zinc-950 dark:text-white mb-1 tracking-tight">
                                 Team Permissions
                             </DialogTitle>
-                            <DialogDescription className="text-zinc-500 font-medium text-sm">
+                            <DialogDescription className="text-zinc-500 font-normal text-[15px] leading-relaxed">
                                 Manage roles, access levels, and project ownership.
                             </DialogDescription>
                         </div>
                         <div className="w-12 h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center border border-zinc-100 dark:border-zinc-800 shadow-sm">
-                            <ShieldCheck className="w-6 h-6 text-zinc-900 dark:text-white" />
+                            <ShieldCheck className="w-6 h-6 text-zinc-900 dark:text-white" strokeWidth={1.5} />
                         </div>
                     </div>
                 </DialogHeader>
@@ -274,7 +273,7 @@ const GovernanceModal = ({
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-bold text-zinc-900 dark:text-white">
+                                                    <span className="text-[15px] font-semibold text-zinc-950 dark:text-white">
                                                         {member.users?.full_name || member.users?.email?.split('@')[0]}
                                                     </span>
                                                     {member.role === 'owner' ? (
@@ -285,7 +284,7 @@ const GovernanceModal = ({
                                                         <Badge variant="outline" className="text-[9px] text-zinc-400 border-zinc-200 dark:border-zinc-700 uppercase font-black px-2 py-0.5">Member</Badge>
                                                     )}
                                                 </div>
-                                                <p className="text-xs text-zinc-400 font-medium truncate max-w-[180px]">{member.users?.email}</p>
+                                                <p className="text-[13px] text-zinc-500 font-normal truncate max-w-[180px]">{member.users?.email}</p>
                                             </div>
                                         </div>
 

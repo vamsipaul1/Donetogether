@@ -32,7 +32,7 @@ export default function CTASection() {
           variants={fadeUp}
           className="
             font-sans
-            font-bold
+            font-semibold
             text-3xl xs:text-4xl sm:text-5xl md:text-6xl 
             tracking-[-0.03em] 
             text-[#0a0a0a] 
