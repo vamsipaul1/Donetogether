@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, ArrowUpRight } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import FAQSection from "./FAQSection";
 
 const navLinks = [
   { name: "Features", href: "/#features" },
   { name: "How it works", href: "/#how-it-works" },
+  { name: "FAQs", href: "#", action: "faq" },
   { name: "Why Choose", href: "/why-choose" },
   {
     name: "Contact Us",
@@ -18,16 +20,24 @@ const navLinks = [
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isFAQOpen, setIsFAQOpen] = useState(false);
 
   const { user, signOut } = useAuth();
   const location = useLocation();
 
   const handleNavClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    href: string
+    link: { name: string, href: string, action?: string }
   ) => {
-    if (href.startsWith("/#")) {
-      const hash = href.substring(1);
+    if (link.action === "faq") {
+      e.preventDefault();
+      setIsFAQOpen(true);
+      setIsMobileMenuOpen(false);
+      return;
+    }
+
+    if (link.href.startsWith("/#")) {
+      const hash = link.href.substring(1);
 
       if (location.pathname === "/") {
         e.preventDefault();
@@ -45,8 +55,9 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 400);
     };
+
 
     window.addEventListener("scroll", handleScroll);
 
@@ -62,79 +73,103 @@ const Navbar = () => {
       className={`
         font-body
         fixed
-        top-0
+        top-4
         left-0
         right-0
         z-50
         transition-all
-        duration-300
-        ${isScrolled
-          ? "backdrop-blur-lg border-b border-zinc-200/50 py-3"
-          : "bg-transparent py-5"
-        }
+        duration-500
+        px-4
       `}
     >
-      <div className="mx-auto max-w-[1280px] px-6 flex items-center justify-between">
+      <div className={`
+        mx-auto max-w-[1280px] px-8 py-3 
+        flex items-center justify-between relative
+        transition-all duration-500
+      `}>
+
 
         {/* LOGO */}
-
-        <Link
-          to="/"
-          className="flex items-center gap-2 text-zinc-900 font-medium"
+        <motion.div
+          animate={{
+            opacity: isScrolled ? 0 : 1,
+            x: isScrolled ? -20 : 0,
+            pointerEvents: isScrolled ? "none" : "auto",
+          }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
         >
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-            <img
-              src="/favicon.ico"
-              alt="logo"
-              className="w-5 h-5"
-            />
-          </div>
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-zinc-900 font-medium"
+          >
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+              <img
+                src="/favicon.ico"
+                alt="logo"
+                className="w-5 h-5"
+              />
+            </div>
 
-          <span className="text-[17px] font-semibold">
-            DoneTogether
-          </span>
-        </Link>
+            <span className="text-[17px] font-semibold">
+              DoneTogether
+            </span>
+          </Link>
+        </motion.div>
 
 
-        {/* DESKTOP NAV */}
-
-        <nav className="hidden md:flex items-center gap-8">
+        {/* DESKTOP NAV - CENTERED PILL */}
+        <nav className={`
+          absolute left-1/2 -translate-x-1/2
+          hidden md:flex items-center gap-8 
+          bg-white/80 backdrop-blur-xl
+          px-8 py-3 rounded-full 
+          border border-black/[0.08] shadow-[0_4px_12px_rgba(0,0,0,0.03)]
+          transition-all duration-500
+          ${isScrolled ? "shadow-md" : "scale-100"}
+        `}>
 
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.href}
               onClick={(e) =>
-                handleNavClick(e, link.href)
+                handleNavClick(e, link)
               }
               className="
                 text-[15px]
-                font-normal
-                text-black
+                font-medium
+                text-zinc-800
                 hover:text-black
-                transition
+                transition-colors
               "
             >
               {link.name}
             </Link>
           ))}
-
         </nav>
 
 
+
         {/* ACTIONS */}
-
-        <div className="hidden md:flex items-center gap-5">
-
+        <motion.div
+          animate={{
+            opacity: isScrolled ? 0 : 1,
+            x: isScrolled ? 20 : 0,
+            pointerEvents: isScrolled ? "none" : "auto",
+          }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+          className="hidden md:flex items-center gap-5"
+        >
           {user ? (
-            <>
+            <div className="flex items-center gap-8">
               <Link
                 to="/dashboard"
                 className="
-                  text-sm
+                  text-[15px]
                   font-medium
-                  text-zinc-900
-                  hover:opacity-70
+                  text-zinc-800
+                  hover:text-black
+                  transition-colors
                 "
               >
                 Project Room
@@ -143,23 +178,26 @@ const Navbar = () => {
               <button
                 onClick={() => signOut()}
                 className="
-                  text-sm
-                  text-zinc-700
+                  text-[15px]
+                  font-medium
+                  text-zinc-500
                   hover:text-red-500
+                  transition-colors
                 "
               >
                 Sign Out
               </button>
-            </>
+            </div>
           ) : (
-            <>
+            <div className="flex items-center gap-8">
               <Link
                 to="/login"
                 className="
-                  text-sm
+                  text-[15px]
                   font-medium
-                  text-zinc-900
-                  hover:opacity-80
+                  text-zinc-800
+                  hover:text-black
+                  transition-colors
                 "
               >
                 Log in
@@ -170,22 +208,25 @@ const Navbar = () => {
                   className="
                     bg-black
                     text-white
-                    px-5
-                    py-2.5
-                    text-sm
-                    font-medium
-                    rounded-md
+                    px-7
+                    py-3
+                    text-[15px]
+                    font-semibold
+                    rounded-2xl
                     hover:bg-zinc-800
-                    transition
+                    transition-all
+                    shadow-sm
                   "
                 >
                   Get Started
                 </button>
               </Link>
-            </>
+            </div>
           )}
 
-        </div>
+        </motion.div>
+
+
 
 
         {/* MOBILE BUTTON */}
@@ -198,6 +239,7 @@ const Navbar = () => {
         >
           {isMobileMenuOpen ? <X /> : <Menu />}
         </button>
+
       </div>
 
 
@@ -230,8 +272,8 @@ const Navbar = () => {
                   key={link.name}
                   to={link.href}
                   onClick={(e) => {
+                    handleNavClick(e, link);
                     setIsMobileMenuOpen(false);
-                    handleNavClick(e, link.href);
                   }}
                   className="
                     text-[15px]
@@ -305,6 +347,30 @@ const Navbar = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* FAQ MODAL OVERLAY */}
+      <AnimatePresence>
+        {isFAQOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsFAQOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-[#f8f9fa] rounded-3xl shadow-2xl custom-scrollbar"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <FAQSection onClose={() => setIsFAQOpen(false)} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </motion.header>
   );
 };

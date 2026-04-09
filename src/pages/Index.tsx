@@ -7,6 +7,7 @@ import CTASection from '@/components/CTASection';
 import Footer from '@/components/Footer';
 
 import HowItWorksSection from '@/components/HowItWorksSection';
+import ComparisonSection from '@/components/ComparisonSection';
 
 const Index = () => {
   const location = useLocation();
@@ -23,17 +24,19 @@ const Index = () => {
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-blue-100 overflow-x-hidden">
+    <div className="min-h-screen bg-white font-sans selection:bg-blue-100 overflow-x-hidden dotted-pattern">
       <Navbar />
       <main>
         <HeroSection />
         <FeaturesSection />
         <HowItWorksSection />
+        <ComparisonSection />
         <CTASection />
       </main>
       <Footer />
     </div>
   );
 };
+
 
 export default Index;

@@ -1,7 +1,7 @@
 import { useState, useRef, KeyboardEvent, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Send, Paperclip, Smile, Image as ImageIcon, Mic, MicOff, Plus, FileText, X, CheckSquare, Loader2, Reply } from 'lucide-react';
+import { Send, Paperclip, Smile, Image as ImageIcon, Mic, MicOff, Plus, FileText, X, CheckSquare, Loader2, Reply, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { uploadFile, formatFileSize, FileUploadResult } from '@/lib/fileUpload';
@@ -307,132 +307,44 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setRep
     };
 
     return (
-        <div className="relative px-2 sm:px-4 md:px-6 pb-2 sm:pb-4 md:pb-6 pt-2 z-40 font-body">
-            <div className="max-w-5xl mx-auto relative">
-                {/* Reply Context Bar */}
-                {replyTo && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-2 px-1"
-                    >
-                        <div className="flex items-center gap-3 px-4 py-2 bg-zinc-50 dark:bg-zinc-800 border-l-4 border-zinc-900 dark:border-zinc-600 rounded-r-xl shadow-sm">
-                            <Reply className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
-                            <div className="flex-1 min-w-0">
-                                <div className="text-[10px] font-bold text-zinc-900 dark:text-zinc-100 uppercase">
-                                    Replying to {replyTo.sender?.display_name || 'Partner'}
-                                </div>
-                                <div className="text-xs text-zinc-600 dark:text-zinc-400 truncate">
-                                    {replyTo.content || '📎 Attachment'}
-                                </div>
-                            </div>
-                            <button onClick={() => setReplyTo(null)} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-md transition-colors">
-                                <X className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-
+        <div className="relative px-8 pb-8 pt-2 z-40">
+            <div className="max-w-4xl mx-auto relative group">
+                
                 {/* Task Suggestions Popup */}
                 {showTaskSuggestions && taskSuggestions.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        className="absolute bottom-full mb-3 left-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl w-80 overflow-hidden z-50 flex flex-col"
-                    >
-                        <div className="p-2.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 text-[10px] font-black text-zinc-400 uppercase tracking-wider flex items-center justify-between">
-                            <span>Suggested Tasks</span>
-                            <span className="text-[9px] bg-zinc-200 dark:bg-zinc-700 px-1.5 rounded text-zinc-500 dark:text-zinc-300">ESC to close</span>
+                    <div className="absolute bottom-full mb-4 left-0 bg-white border border-indigo-100 rounded-[32px] shadow-[0_32px_96px_-16px_rgba(79,70,229,0.15)] w-80 overflow-hidden z-50 flex flex-col">
+                        <div className="p-3 bg-indigo-50/50 border-b border-indigo-100/50 text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] flex items-center justify-between">
+                            <span>Link Task Mention</span>
+                            <span className="text-[9px] bg-indigo-100 px-1.5 rounded text-indigo-500">ESC</span>
                         </div>
-                        <div className="max-h-60 overflow-y-auto p-1 space-y-0.5">
-                            {taskSuggestions.map((task, i) => (
+                        <div className="max-h-60 overflow-y-auto p-2 space-y-1">
+                            {taskSuggestions.map((task) => (
                                 <button
                                     key={task.id}
                                     onClick={() => insertTaskMention(task)}
-                                    className={cn(
-                                        "w-full text-left px-3 py-2.5 rounded-xl transition-all flex items-start gap-3 group",
-                                        i === 0 ? "bg-zinc-50 dark:bg-zinc-800/60" : "hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                                    )}
+                                    className="w-full text-left px-4 py-3 rounded-2xl transition-all flex items-start gap-3 hover:bg-indigo-50/50 group"
                                 >
-                                    <div className="shrink-0 w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-[10px] font-black text-zinc-500 group-hover:bg-white dark:group-hover:bg-zinc-700 group-hover:scale-105 transition-all">
+                                    <div className="shrink-0 w-8 h-8 rounded-lg bg-indigo-100 border border-indigo-200 flex items-center justify-center text-[10px] font-black text-indigo-600 group-hover:scale-110 transition-all font-satoshi">
                                         #{task.task_number || '?'}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-xs font-bold text-blue-600 dark:text-blue-400 truncate mb-0.5 transition-colors">
+                                        <div className="text-[13px] font-bold text-indigo-950 truncate mb-0.5 font-satoshi">
                                             {task.title}
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className={cn(
-                                                "text-[9px] font-bold uppercase px-1.5 py-0.5 rounded",
-                                                task.priority === 'high' ? "bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400" :
-                                                    task.priority === 'medium' ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400" :
-                                                        "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                                            )}>
-                                                {task.priority}
-                                            </span>
-                                            <span className="text-[10px] text-zinc-400 capitalize">
-                                                {task.status?.replace('_', ' ')}
-                                            </span>
-                                        </div>
                                     </div>
-                                    <CheckSquare className="w-3.5 h-3.5 text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
                                 </button>
                             ))}
                         </div>
-                    </motion.div>
-                )}
-
-                {/* Upload Progress */}
-                {isUploading && (
-                    <div className="absolute -top-12 left-4 px-3 py-2 bg-white dark:bg-zinc-800 rounded-xl shadow-lg border border-zinc-100 dark:border-zinc-700 flex items-center gap-2 animate-pulse">
-                        <Loader2 className="w-3 h-3 animate-spin text-emerald-500" />
-                        <span className="text-[10px] font-bold text-zinc-500 uppercase">Uploading...</span>
                     </div>
                 )}
 
-                {/* Refined Minimal Input Capsule */}
+                {/* Unified Input Bar - Clean State-of-the-art look exactly like image */}
                 <div className={cn(
-                    "flex items-end gap-3 p-1.5 px-3 rounded-[24px] transition-all duration-300 shadow-sm",
-                    isFocused
-                        ? "bg-white dark:bg-zinc-900 ring-2 ring-zinc-900/10 dark:ring-zinc-700/50"
-                        : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800/50"
+                    "flex items-center gap-4 bg-white dark:bg-zinc-900 border-t border-zinc-100 dark:border-white/5 py-5 px-2",
+                    isFocused ? "opacity-100" : "opacity-90"
                 )}>
-                    {/* Attach Button */}
-                    <div className="pb-0.5">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <button className="h-9 w-9 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all">
-                                    <Plus className="w-5 h-5" />
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent side="top" align="start" className="w-56 p-2 rounded-2xl shadow-xl border-zinc-200 dark:border-zinc-800 backdrop-blur-xl">
-                                <div className="flex flex-col gap-1">
-                                    <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 text-sm font-semibold text-zinc-600 dark:text-zinc-300 text-left">
-                                        <Paperclip className="w-4 h-4 text-zinc-900 dark:text-zinc-100" />
-                                        Files & Docs
-                                    </button>
-                                    <button onClick={() => imageInputRef.current?.click()} className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-800 text-sm font-semibold text-zinc-600 dark:text-zinc-300 text-left">
-                                        <ImageIcon className="w-4 h-4 text-blue-500" />
-                                        Photos
-                                    </button>
-                                </div>
-                                <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
-                                <input type="file" ref={imageInputRef} accept="image/*" className="hidden" onChange={handleFileSelect} />
-                            </PopoverContent>
-                        </Popover>
-                    </div>
-
-                    {/* Main Input Area */}
-                    <div className="flex-1 flex flex-col gap-1.5 py-1.5">
-                        {uploadedFile && (
-                            <div className="flex items-center gap-2 p-2 bg-emerald-50/50 dark:bg-zinc-800/50 rounded-xl border border-emerald-100/50 dark:border-zinc-700/50 w-fit">
-                                <FileText className="w-3.5 h-3.5 text-emerald-500" />
-                                <span className="text-[10px] font-bold text-zinc-600 dark:text-zinc-400 truncate max-w-[150px]">{uploadedFile.name}</span>
-                                <button onClick={() => setUploadedFile(null)} className="p-0.5 hover:bg-red-500/10 rounded-md text-zinc-400 hover:text-red-500 transition-colors">
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </div>
-                        )}
+                    {/* Input Area */}
+                    <div className="flex-1 flex items-center">
                         <textarea
                             ref={textareaRef}
                             value={message}
@@ -440,79 +352,33 @@ export const ChatInput = ({ onSendMessage, isLoading, projectId, replyTo, setRep
                             onKeyDown={handleKeyDown}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            placeholder="Type a message..."
-                            className="w-full bg-transparent border-0 ring-0 focus:ring-0 focus:outline-none p-0 text-[15px] leading-relaxed max-h-32 resize-none placeholder:text-zinc-400 text-zinc-800 dark:text-zinc-100"
+                            placeholder="SEND A MESSAGE"
+                            className="w-full bg-transparent border-0 ring-0 focus:ring-0 focus:outline-none p-0 text-[13px] font-black tracking-[0.2em] placeholder:text-indigo-200 text-indigo-950 dark:text-white dark:placeholder:text-zinc-700 font-body uppercase resize-none"
                             rows={1}
                         />
                     </div>
 
-                    {/* Emoji + Send */}
-                    <div className="flex items-center gap-1 pb-0.5">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <button className="h-9 w-9 rounded-full flex items-center justify-center text-zinc-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
-                                    <Smile className="w-5 h-5" />
-                                </button>
-                            </PopoverTrigger>
-                            <PopoverContent side="top" align="end" className="w-[280px] p-3 rounded-2xl shadow-2xl border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl">
-                                <div className="grid grid-cols-7 gap-1">
-                                    {EMOJIS.map(emoji => (
-                                        <button key={emoji} onClick={() => addEmoji(emoji)} className="h-8 w-8 flex items-center justify-center text-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors">
-                                            {emoji}
-                                        </button>
-                                    ))}
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-                        
-                        <div className="flex items-center gap-1">
-                            {/* Record Button (Hold to Record, Click to STT) */}
-                            <button 
-                                onMouseDown={startRecording}
-                                onMouseUp={stopRecording}
-                                onMouseLeave={stopRecording}
-                                onTouchStart={startRecording}
-                                onTouchEnd={stopRecording}
-                                onClick={(e) => {
-                                    // If it wasn't a long press (recording duration < 0.5s), do STT
-                                    if (recordingDuration < 1) {
-                                        toggleListening();
-                                    }
-                                }}
-                                className={cn(
-                                    "h-9 w-9 rounded-full flex items-center justify-center transition-all relative group",
-                                    isRecording 
-                                        ? "bg-red-500 text-white scale-110 shadow-lg" 
-                                        : isListening
-                                            ? "bg-emerald-500 text-white animate-pulse"
-                                            : "text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                                )}
-                            >
-                                <Mic className="w-5 h-5 flex-shrink-0" />
-                                {isRecording && (
-                                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-red-500 text-white px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-2 shadow-xl whitespace-nowrap">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                                        {formatDuration(recordingDuration)}
-                                    </div>
-                                )}
-                            </button>
-                        </div>
-
-                        <button
-                            onClick={handleSend}
-                            disabled={(!message.trim() && !uploadedFile) || isLoading || isUploading}
-                            className={cn(
-                                "h-9 w-9 rounded-full flex items-center justify-center transition-all duration-300",
-                                (message.trim() || uploadedFile)
-                                    ? "bg-zinc-900 text-white shadow-md hover:scale-110 active:scale-95 dark:bg-white dark:text-black"
-                                    : "text-zinc-300 dark:text-zinc-700 cursor-not-allowed"
-                            )}
-                        >
-                            <Send className={cn("w-4 h-4 ml-0.5", (message.trim() || uploadedFile) && "fill-current")} />
+                    {/* Action Tools */}
+                    <div className="flex items-center gap-1">
+                         <button 
+                            className="h-10 w-10 rounded-full flex items-center justify-center text-indigo-300 hover:text-indigo-600 hover:bg-indigo-50"
+                            onClick={() => imageInputRef.current?.click()}
+                         >
+                            <ImageIcon className="w-5 h-5" />
                         </button>
+                        
+                        {(message.trim() || uploadedFile) && (
+                            <button
+                                onClick={handleSend}
+                                className="h-10 w-10 flex items-center justify-center text-indigo-600 transition-all hover:scale-110"
+                            >
+                                <ArrowRight className="w-5 h-5" strokeWidth={3} />
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
         </div>
+
     );
 };

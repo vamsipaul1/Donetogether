@@ -1,4 +1,3 @@
-import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -191,18 +190,14 @@ const CreateProject = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] dotted-pattern flex flex-col items-center justify-center p-4 md:p-12 transition-colors duration-500 font-body">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="w-full max-w-6xl"
-            >
+        <div className="min-h-screen bg-[#fafafa] dark:bg-[#050505] dotted-pattern flex flex-col items-center justify-center p-4 md:p-12 font-body">
+            <div className="w-full max-w-6xl">
                 {/* Top Bar */}
                 <div className="mb-8 flex items-center justify-between px-4">
                     <Button
                         variant="ghost"
                         onClick={() => navigate('/dashboard')}
-                        className="group text-zinc-500 hover:text-black dark:hover:text-white flex items-center gap-2 font-bold tracking-tight bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-full px-5 py-2.5 shadow-sm active:scale-95 transition-all"
+                        className="group text-zinc-500 hover:text-black dark:hover:text-white flex items-center gap-2 font-bold tracking-tight bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 rounded-full px-5 py-2.5 shadow-sm"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         <span className="  font-body
@@ -234,7 +229,7 @@ const CreateProject = () => {
                         <div className="flex gap-1">
                             {[0, 1, 2].map((i) => (
                                 <div key={i} className={cn(
-                                    "h-1.5 rounded-full transition-all duration-500",
+                                    "h-1.5 rounded-full",
                                     i === step ? "w-8 bg-violet-600" : (i < step ? "w-4 bg-emerald-500" : "w-4 bg-zinc-200 dark:bg-zinc-800")
                                 )} />
                             ))}
@@ -286,7 +281,7 @@ const CreateProject = () => {
                                     <line x1="14" y1="10" x2="16.5" y2="10" />
                                 </svg>
                             </div>
-                            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-violet-500 animate-pulse">Builder Mode</h2>
+                            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-violet-500">Builder Mode</h2>
                             <h1 className="text-4xl md:text-5xl font-extrabold mb-2 pb-6 leading-[1.05] tracking-tighter">
                                 {step === 0 && <> <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Project</span><br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Creation</span></>}
                                 {step === 1 && <><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-300">Assemble</span><br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-300">Unit</span></>}
@@ -305,11 +300,11 @@ const CreateProject = () => {
 
                             {steps.map((s, i) => (
                                 <div key={i} className={cn(
-                                    "flex items-start gap-5 transition-all relative",
-                                    i === step ? "opacity-100 scale-105 origin-left" : "opacity-40"
+                                    "flex items-start gap-5 relative",
+                                    i === step ? "opacity-100" : "opacity-40"
                                 )}>
                                     <div className={cn(
-                                        "w-[40px] h-[40px] rounded-full border flex items-center justify-center text-sm font-black transition-all shadow-2xl z-10",
+                                        "w-[40px] h-[40px] rounded-full border flex items-center justify-center text-sm font-black z-10",
                                         i === step ? "bg-violet-600 border-violet-400 text-white shadow-violet-500/20" :
                                             (i < step ? "bg-emerald-500 border-emerald-400 text-white" : "bg-white/5 border-white/10 text-zinc-500")
                                     )}>
@@ -327,15 +322,8 @@ const CreateProject = () => {
                     {/* Step Card Content */}
                     <div className="flex-1 bg-white dark:bg-[#0a0a0a] p-8 md:p-14 flex flex-col justify-between">
                         <div className="max-w-xl mx-auto w-full">
-                            <AnimatePresence mode="wait">
-                                {step === 0 && (
-                                    <motion.div
-                                        key="step0"
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="space-y-8"
-                                    >
+                            {step === 0 && (
+                                <div className="space-y-8">
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-2.5">
                                                 <div className="w-1.5 h-6 rounded-full bg-violet-600" />
@@ -344,7 +332,7 @@ const CreateProject = () => {
                                             <div className="relative group">
                                                 <Input
                                                     placeholder="e.g. Smart Library System"
-                                                    className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white transition-all shadow-sm focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/60"
+                                                    className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white shadow-sm focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/60"
                                                     value={formData.title}
                                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                                 />
@@ -356,7 +344,7 @@ const CreateProject = () => {
                                             <div className="space-y-4">
                                                 <Label className="text-[14px] font-black text-zinc-600 font-body">Domain</Label>
                                                 <Select value={formData.domain} onValueChange={(val) => setFormData({ ...formData, domain: val })}>
-                                                    <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[14px] font-bold dark:text-white shadow-sm hover:bg-zinc-100 transition-all">
+                                                    <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[14px] font-bold dark:text-white shadow-sm hover:bg-zinc-100">
                                                         <SelectValue placeholder="Domain" />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-2xl border-zinc-200 dark:border-white/10 dark:bg-[#0d0d0d] shadow-2xl max-h-[300px]">
@@ -369,7 +357,7 @@ const CreateProject = () => {
                                             <div className="space-y-4">
                                                 <Label className="text-[14px] font-black text-zinc-600 tracking-widest ml-1">I am a...</Label>
                                                 <Select value={formData.projectType} onValueChange={(val) => setFormData({ ...formData, projectType: val as ProjectType })}>
-                                                    <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[14px] font-bold dark:text-white shadow-sm hover:bg-zinc-100 transition-all">
+                                                    <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[14px] font-bold dark:text-white shadow-sm hover:bg-zinc-100">
                                                         <SelectValue placeholder="I am a..." />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-2xl border-zinc-200 dark:border-white/10 dark:bg-[#0d0d0d] shadow-2xl">
@@ -384,22 +372,16 @@ const CreateProject = () => {
                                             <Label className="text-[14px] font-black text-zinc-600">The Mission</Label>
                                             <Textarea
                                                 placeholder="What are you trying to achieve with this project? Outline your core objectives."
-                                                className="min-h-[140px] bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[22px] p-7 text-[14px] font-semibold dark:text-zinc-200 resize-none transition-all shadow-sm focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50"
+                                                className="min-h-[140px] bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[22px] p-7 text-[14px] font-semibold dark:text-zinc-200 resize-none shadow-sm focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500/50"
                                                 value={formData.goal}
                                                 onChange={(e) => setFormData({ ...formData, goal: e.target.value })}
                                             />
                                         </div>
-                                    </motion.div>
+                                </div>
                                 )}
 
                                 {step === 1 && (
-                                    <motion.div
-                                        key="step1"
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="space-y-10"
-                                    >
+                                    <div className="space-y-10">
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center gap-2.5">
@@ -411,7 +393,7 @@ const CreateProject = () => {
                                             <div className="relative group">
                                                 <Input
                                                     placeholder="e.g. CodeWarriors"
-                                                    className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white transition-all shadow-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/60"
+                                                    className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white shadow-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/60"
                                                     value={formData.team_name}
                                                     onChange={(e) => setFormData({ ...formData, team_name: e.target.value })}
                                                 />
@@ -445,24 +427,18 @@ const CreateProject = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    </motion.div>
+                                </div>
                                 )}
 
                                 {step === 2 && (
-                                    <motion.div
-                                        key="step2"
-                                        initial={{ opacity: 0, x: 20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -20 }}
-                                        className="space-y-8"
-                                    >
+                                    <div className="space-y-8">
                                         <div className="space-y-4">
                                             <div className="flex items-center gap-2.5">
                                                 <div className="w-1.5 h-6 rounded-full bg-amber-500" />
                                                 <Label className="text-[13px] font-bold text-zinc-600">Development Cycle</Label>
                                             </div>
                                             <Select value={formData.duration} onValueChange={(val) => setFormData({ ...formData, duration: val })}>
-                                                <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white shadow-sm hover:bg-zinc-100 transition-all">
+                                                <SelectTrigger className="h-16 bg-zinc-50/50 dark:bg-white/[0.02] border-zinc-200 dark:border-white/10 rounded-[20px] px-7 text-[16px] font-bold dark:text-white shadow-sm hover:bg-zinc-100">
                                                     <SelectValue placeholder="Project Duration" />
                                                 </SelectTrigger>
                                                 <SelectContent className="rounded-2xl border-zinc-200 dark:border-white/10 dark:bg-[#0d0d0d] shadow-2xl">
@@ -485,7 +461,7 @@ const CreateProject = () => {
                                                         <PopoverTrigger asChild>
                                                             <Button
                                                                 variant="outline"
-                                                                className="w-full h-14 justify-start rounded-xl border-zinc-200 dark:border-white/10 bg-white dark:bg-black px-5 font-bold text-[13px] hover:bg-zinc-50 transition-all"
+                                                                className="w-full h-14 justify-start rounded-xl border-zinc-200 dark:border-white/10 bg-white dark:bg-black px-5 font-bold text-[13px] hover:bg-zinc-50"
                                                             >
                                                                 <CalendarIcon className="mr-3 h-4 w-4 text-zinc-400" />
                                                                 {formData.startDate ? format(formData.startDate, "PP") : "Start Date"}
@@ -502,7 +478,7 @@ const CreateProject = () => {
                                                         <PopoverTrigger asChild>
                                                             <Button
                                                                 variant="outline"
-                                                                className="w-full h-14 justify-start rounded-xl border-zinc-200 dark:border-white/10 bg-white dark:bg-black px-5 font-bold text-[13px] hover:bg-zinc-50 transition-all"
+                                                                className="w-full h-14 justify-start rounded-xl border-zinc-200 dark:border-white/10 bg-white dark:bg-black px-5 font-bold text-[13px] hover:bg-zinc-50"
                                                             >
                                                                 <CalendarIcon className="text-[13px] text-zinc-900 font-body py-3 dark:focus:bg-white/5" />
                                                                 {formData.endDate ? format(formData.endDate, "PP") : "End Date"}
@@ -515,9 +491,8 @@ const CreateProject = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                    </motion.div>
+                                    </div>
                                 )}
-                            </AnimatePresence>
                         </div>
 
                         {/* Pagination Actions */}
@@ -534,7 +509,7 @@ const CreateProject = () => {
                                 onClick={step === 2 ? handleSubmit : next}
                                 disabled={loading}
                                 className={cn(
-                                    "h-12 px-10 rounded-[16px] text-[15px] font-bold uppercase transition-all shadow-xl group active:scale-95",
+                                    "h-12 px-10 rounded-[16px] text-[15px] font-bold uppercase shadow-xl group",
                                     step === 2
                                         ? "bg-violet-600 hover:bg-violet-500 text-white shadow-violet-600/30"
                                         : "bg-black dark:bg-white text-white dark:text-black hover:bg-zinc-800"
@@ -557,7 +532,7 @@ const CreateProject = () => {
                     <ShieldCheck className="w-4 h-4 text-emerald-500/80" strokeWidth={1.5} />
                     <span>Tier-1 Encrypted Project Cloud</span>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 };

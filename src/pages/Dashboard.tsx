@@ -396,47 +396,29 @@ const Dashboard = () => {
     */
 
     return (
-        <div className="dashboard-theme flex h-screen bg-background dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden transition-colors duration-300">
-            <AnimatePresence>
-                {showWelcome && currentUser && (
-                    <WelcomeOverlay
-                        user={{ ...currentUser, role: userRole || undefined }}
-                        onComplete={() => setShowWelcome(false)}
-                    />
-                )}
-            </AnimatePresence>
+        <div className="dashboard-theme flex h-screen bg-background dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden">
+            {showWelcome && currentUser && (
+                <WelcomeOverlay
+                    user={{ ...currentUser, role: userRole || undefined }}
+                    onComplete={() => setShowWelcome(false)}
+                />
+            )}
 
             {/* Sidebar Overlay for Mobile */}
-            <AnimatePresence>
-                {isMobile && isSidebarOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setIsSidebarOpen(false)}
-                        className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
-                    />
-                )}
-            </AnimatePresence>
+            {isMobile && isSidebarOpen && (
+                <div
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+                />
+            )}
 
             {/* Sidebar */}
-            <motion.aside
-                initial={false}
-                animate={{
-                    x: isMobile ? (isSidebarOpen ? 0 : -300) : 0,
-                    width: isMobile ? 280 : (isSidebarOpen ? 280 : 0),
-                    opacity: isSidebarOpen ? 1 : (isMobile ? 0 : 0),
-                }}
-                transition={{
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 40
-                }}
-                className={`
-                    bg-[hsl(var(--sidebar-background))] dark:bg-[#050505] border-r border-zinc-200 dark:border-zinc-800 
-                    flex flex-col z-50 overflow-hidden dotted-pattern
-                    ${isMobile ? 'fixed inset-y-0 left-0 h-full w-[280px] shadow-2xl safe-area-left' : 'relative'}
-                `}
+            <aside
+                className={cn(
+                    "bg-[hsl(var(--sidebar-background))] dark:bg-[#050505] border-r border-zinc-200 dark:border-zinc-800 flex flex-col z-50 overflow-hidden dotted-pattern relative",
+                    isMobile ? (isSidebarOpen ? 'fixed inset-y-0 left-0 h-full w-[280px] shadow-2xl safe-area-left translate-x-0' : 'fixed inset-y-0 left-0 h-full w-[280px] -translate-x-full') : (isSidebarOpen ? 'w-[280px]' : 'w-0 opacity-0')
+                )}
+                style={{ transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
             >
                 <div className="h-16 shrink-0 flex items-center justify-between px-6 border-b border-zinc-200 dark:border-zinc-800 bg-[hsl(var(--sidebar-background))] dark:bg-[#050505] z-10">
                     <a href="/" className="flex items-center gap-3 group cursor-pointer">
@@ -517,7 +499,7 @@ const Dashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => navigate('/create-project')}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-bold transition-all active:scale-95 shadow-lg shadow-violet-500/20"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-bold shadow-lg shadow-violet-500/20"
                                 >
                                     <Plus className="w-4 h-4" />
                                     Create Project
@@ -529,13 +511,13 @@ const Dashboard = () => {
                                 <button
                                     key={proj.id}
                                     onClick={() => { setSelectedProject(proj); setActiveView('overview'); }}
-                                    className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold transition-all group active:scale-95 ${selectedProject?.id === proj.id
+                                    className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold group ${selectedProject?.id === proj.id
                                         ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
                                         : 'text-zinc-500 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
                                         }`}
                                 >
                                     <div className="relative shrink-0">
-                                        <Avatar className={cn("w-6 h-6 border-2 transition-all group-hover:scale-105", selectedProject?.id === proj.id ? "border-violet-200 dark:border-violet-800 shadow-sm" : "border-transparent group-hover:border-zinc-200")}>
+                                        <Avatar className={cn("w-6 h-6 border-2", selectedProject?.id === proj.id ? "border-violet-200 dark:border-violet-800 shadow-sm" : "border-transparent group-hover:border-zinc-200")}>
                                             <AvatarImage src={proj.avatar_url} />
                                             <AvatarFallback className={cn("text-[9px] font-black text-white", selectedProject?.id === proj.id ? "bg-violet-600" : "bg-zinc-400 group-hover:bg-violet-500")}>
                                                 {proj.team_name?.slice(0, 1).toUpperCase() || proj.title.slice(0, 1).toUpperCase()}
@@ -652,7 +634,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                 </div>
-            </motion.aside>
+            </aside>
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-black relative overflow-x-hidden dotted-pattern">
@@ -746,21 +728,21 @@ const Dashboard = () => {
                     <div className="flex items-center gap-2 md:gap-6 shrink-0">
                         {/* Team Chat Button - Always visible if a project is selected */}
                         {selectedProject && (
-                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="hidden md:block">
-                            </motion.div>
+                            <div className="hidden md:block">
+                            </div>
                         )}
 
 
                         {isOwner && activeView !== 'home' && activeView !== 'list' && (
-                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="hidden sm:block">
+                            <div className="hidden sm:block">
                                 <Button
                                     onClick={() => setIsCreateTaskOpen(true)}
-                                    className="bg-zinc-950 hover:bg-black text-white dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 font-bold text-[15px] px-7 h-11 rounded-full flex items-center gap-2 shadow-xl shadow-zinc-500/10 transition-all border-none active:scale-[0.98]"
+                                    className="bg-zinc-950 hover:bg-black text-white dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 font-bold text-[15px] px-7 h-11 rounded-full flex items-center gap-2 shadow-xl shadow-zinc-500/10 border-none"
                                 >
                                     <Plus className="w-5 h-5" strokeWidth={2.5} />
                                     <span>Add Mission</span>
                                 </Button>
-                            </motion.div>
+                            </div>
                         )}
 
 
@@ -770,25 +752,25 @@ const Dashboard = () => {
                             onMarkAllAsRead={markAllAsRead}
                         />
 
-                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="hidden sm:block">
+                        <div className="hidden sm:block">
                             <Link to="/">
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-600 dark:bg-zinc-800 text-zinc-900 hover:text-white dark:hover:text-white border dark:bg-white hover:bg-black dark:hover:bg-zinc-700 transition-all shadow-sm group"
+                                    className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-600 dark:bg-zinc-800 text-zinc-900 hover:text-white dark:hover:text-white border dark:bg-white hover:bg-black dark:hover:bg-zinc-700 shadow-sm group"
                                     title="Back to Landing Page"
                                 >
                                     <ArrowLeftToLine className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                                 </Button>
                             </Link>
-                        </motion.div>
+                        </div>
 
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="relative w-11 h-11 rounded-2xl bg-zinc-900 dark:bg-zinc-100 border border-zinc-900 dark:border-white flex items-center justify-center text-sm font-bold text-white dark:text-black outline-none hover:bg-zinc-800 dark:hover:bg-white/90 transition-all shrink-0 group shadow-lg">
+                                <button className="relative w-11 h-11 rounded-2xl bg-zinc-900 dark:bg-zinc-100 border border-zinc-900 dark:border-white flex items-center justify-center text-sm font-bold text-white dark:text-black outline-none hover:bg-zinc-800 dark:hover:bg-white/90 shrink-0 group shadow-lg">
                                     {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
-                                    <span className="absolute bottom-2 right-2 w-2.5 h-2.5 bg-emerald-500 border-2 border-zinc-900 dark:border-white rounded-full group-hover:scale-110 transition-transform shadow-sm"></span>
+                                    <span className="absolute bottom-2 right-2 w-2.5 h-2.5 bg-emerald-500 border-2 border-zinc-900 dark:border-white rounded-full group-hover:scale-110 shadow-sm"></span>
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[310px] rounded-[24px] p-0 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden font-body">
@@ -897,7 +879,7 @@ const Dashboard = () => {
 
                 {/* Navigation Tabs */}
                 {selectedProject && (
-                    <nav className="h-12 border-b border-zinc-100 dark:border-white/5 flex items-center px-4 md:px-6 gap-6 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-20 overflow-x-auto scrollbar-hide w-full sticky top-14 md:top-16 transition-all">
+                    <nav className="h-12 border-b border-zinc-100 dark:border-white/5 flex items-center px-4 md:px-6 gap-6 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-20 overflow-x-auto scrollbar-hide w-full sticky top-14 md:top-16">
                         <Tab active={activeView === 'overview'} onClick={() => setActiveView('overview')}>Team Activity</Tab>
                         <Tab active={activeView === 'board'} onClick={() => setActiveView('board')}>Task List</Tab>
                         <Tab active={activeView === 'timeline'} onClick={() => setActiveView('timeline')}>Timeline</Tab>
@@ -911,18 +893,9 @@ const Dashboard = () => {
                 <div className="flex-1 flex overflow-hidden bg-transparent relative font-sans">
                     {/* Main View Content */}
                     <div className={`flex-1 overflow-auto bg-transparent ${isMobile ? 'pb-[85px]' : ''}`}>
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={activeView + (selectedProject?.id || '')}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3, ease: "easeOut" }}
-                                className="h-full"
-                            >
-                                {renderView()}
-                            </motion.div>
-                        </AnimatePresence>
+                        <div className="h-full">
+                            {renderView()}
+                        </div>
                     </div>
 
 
@@ -930,45 +903,41 @@ const Dashboard = () => {
 
                 {/* Bottom Navigation for Mobile - Premium Glassmorphism */}
                 {isMobile && (
-                    <nav className="fixed bottom-6 left-6 right-6 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl border border-zinc-200/50 dark:border-white/10 rounded-[32px] flex items-center h-[72px] px-4 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-300">
+                    <nav className="fixed bottom-6 left-6 right-6 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl border border-zinc-200/50 dark:border-white/10 rounded-[32px] flex items-center h-[72px] px-4 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
                         {/* Navigation Items - Redistributed for better spacing without the Plus button */}
                         <div className="flex-1 flex items-center justify-between px-2">
-                            <motion.button
-                                whileTap={{ scale: 0.9 }}
+                            <button
                                 onClick={() => { setActiveView('home'); setSelectedProject(null); setIsSidebarOpen(false); }}
-                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'home' ? 'bg-blue-50 text-blue-600' : 'text-zinc-400'}`}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl ${activeView === 'home' ? 'bg-blue-50 text-blue-600' : 'text-zinc-400'}`}
                             >
                                 <Home className={activeView === 'home' ? "w-6 h-6" : "w-5 h-5"} />
-                            </motion.button>
+                            </button>
 
-                            <motion.button
-                                whileTap={{ scale: 0.9 }}
+                            <button
                                 onClick={() => { if (selectedProject) setActiveView('board'); setIsSidebarOpen(false); }}
                                 disabled={!selectedProject}
-                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'board' ? 'bg-emerald-50 text-emerald-600' : (selectedProject ? 'text-zinc-400' : 'text-zinc-200 opacity-50')}`}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl ${activeView === 'board' ? 'bg-emerald-50 text-emerald-600' : (selectedProject ? 'text-zinc-400' : 'text-zinc-200 opacity-50')}`}
                             >
                                 <LayoutDashboard className={activeView === 'board' ? "w-6 h-6" : "w-5 h-5"} />
-                            </motion.button>
+                            </button>
 
                             {selectedProject ? (
-                                <motion.button
-                                    whileTap={{ scale: 0.9 }}
+                                <button
                                     onClick={() => { setActiveView('messages'); setIsSidebarOpen(false); }}
-                                    className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'messages' ? 'bg-indigo-50 text-indigo-600' : 'text-zinc-400'}`}
+                                    className={`flex items-center justify-center w-12 h-12 rounded-2xl ${activeView === 'messages' ? 'bg-indigo-50 text-indigo-600' : 'text-zinc-400'}`}
                                 >
                                     <MessageSquare className={activeView === 'messages' ? "w-6 h-6" : "w-5 h-5"} />
-                                </motion.button>
+                                </button>
                             ) : (
                                 <div className="w-12" />
                             )}
 
-                            <motion.button
-                                whileTap={{ scale: 0.9 }}
+                            <button
                                 onClick={() => setIsSidebarOpen(true)}
-                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${isSidebarOpen ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400'}`}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl ${isSidebarOpen ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400'}`}
                             >
                                 <Menu className="w-5 h-5" />
-                            </motion.button>
+                            </button>
                         </div>
                     </nav>
                 )}
@@ -1062,14 +1031,14 @@ interface NavItemProps {
 const NavItem = ({ icon: Icon, label, active, onClick, color }: NavItemProps) => (
     <button
         onClick={onClick}
-        className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold transition-all group active:scale-95 ${active
+        className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold group ${active
             ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm border border-zinc-200/50 dark:border-white/5'
             : 'text-zinc-500 dark:text-zinc-500 hover:bg-white/50 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-white'
             }`}
     >
-        <Icon className={`w-4 h-4 transition-colors ${active ? (color || 'text-zinc-950 dark:text-white') : 'text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300'}`} />
+        <Icon className={`w-4 h-4 ${active ? (color || 'text-zinc-950 dark:text-white') : 'text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300'}`} />
         <span className="truncate tracking-tight">{label}</span>
-        {active && <motion.div layoutId="activeNav" className="ml-auto w-1 h-4 bg-zinc-950 dark:bg-white rounded-full" />}
+        {active && <div className="ml-auto w-1 h-4 bg-zinc-950 dark:bg-white rounded-full" />}
     </button>
 );
 
@@ -1082,17 +1051,15 @@ interface TabProps {
 const Tab = ({ children, active, onClick }: TabProps) => (
     <button
         onClick={onClick}
-        className={`h-full px-5 relative font-bold text-[13px] transition-all whitespace-nowrap active:scale-95 ${active
+        className={`h-full px-5 relative font-bold text-[13px] whitespace-nowrap ${active
             ? 'text-zinc-950 dark:text-white'
             : 'text-zinc-500 hover:text-zinc-950 dark:hover:text-white'
             }`}
     >
         <span className="relative z-10">{children}</span>
         {active && (
-            <motion.div
-                layoutId="activeTab"
+            <div
                 className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-950 dark:bg-white rounded-full"
-                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
             />
         )}
     </button>

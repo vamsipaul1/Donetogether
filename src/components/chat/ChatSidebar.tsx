@@ -19,18 +19,27 @@ export const ChatSidebar = ({ className, projectId, members = [], projectAvatar,
     const [isMembersOpen, setIsMembersOpen] = useState(false);
 
     return (
-        <div className={cn("flex flex-col h-full bg-transparent w-full font-body", className)}>
+        <div className={cn("flex flex-col h-full bg-white dark:bg-[#0c0c0c] w-full font-body", className)}>
             <div className="px-5 pt-7 pb-3">
-                <div className="mb-5">
-                    <h2 className="font-bold text-xl text-zinc-900 dark:text-white tracking-tight">Team Chat</h2>
+                <div className="mb-6 flex items-center justify-between">
+                    <h2 className="font-bold text-2xl text-indigo-950 dark:text-white tracking-tighter font-satoshi">Chats</h2>
+                    <div className="flex items-center gap-3">
+                        <button className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-500 hover:bg-zinc-50">
+                            <Search className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
 
-                <div className="relative group">
-                    <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-900 group-focus-within:text-zinc-900 dark:group-focus-within:text-white transition-colors" />
-                    <input
-                        placeholder="Search chats..."
-                        className="w-full pl-9 h-9 rounded-xl border border-zinc-600 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/40 px-3 py-1 text-xs font-medium transition-all placeholder:text-zinc-500/50 focus:bg-white dark:focus:bg-black/40 focus:ring-1 focus:ring-zinc-900/5 dark:focus:ring-white/5 outline-none"
-                    />
+                {/* New Conversation Button - Pink Theme exactly like the image */}
+                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border border-pink-100 bg-pink-50/20 text-pink-600 mb-8 font-bold text-[14px] hover:bg-pink-50 transition-all group">
+                    <div className="w-5 h-5 rounded-full border-2 border-pink-500 flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-pink-500" />
+                    </div>
+                    New conversation
+                </button>
+
+                <div className="flex items-center justify-between px-2 mb-4">
+                    <span className="text-[11px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] font-body">CHANNELS</span>
                 </div>
             </div>
 

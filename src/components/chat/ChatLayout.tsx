@@ -6,10 +6,11 @@ import { ChatInput } from './ChatInput';
 import { ChatInfoSidebar } from './ChatInfoSidebar';
 import { supabase } from '@/lib/supabase';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Info, Search, Phone, Video, MoreHorizontal, Menu, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Globe, Users, MessageSquare } from 'lucide-react';
+import { Loader2, Info, Search, Phone, Video, MoreHorizontal, Menu, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Globe, Users, MessageSquare, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { getAvatarColor, getInitials } from '@/lib/avatarUtils';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from 'framer-motion';
@@ -112,14 +113,22 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
 
     if (!projectId) {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground bg-white dark:bg-black p-8 text-center animate-in fade-in duration-700">
-                <div className="h-20 w-20 rounded-3xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center mb-6 shadow-sm border border-zinc-200 dark:border-zinc-800">
-                    <Globe className="h-10 w-10 text-zinc-400" />
+            <div className="flex flex-col items-center justify-center h-full text-zinc-500 bg-white dark:bg-black p-8 text-center animate-in fade-in duration-700">
+                <div className="relative mb-10">
+                    <div className="absolute inset-0 bg-zinc-100 dark:bg-zinc-900 blur-3xl rounded-full scale-150 opacity-50" />
+                    <div className="h-24 w-24 rounded-[40px] bg-white dark:bg-zinc-900 shadow-[0_20px_48px_-12px_rgba(0,0,0,0.1)] border-2 border-zinc-50 dark:border-zinc-800 flex items-center justify-center relative z-10">
+                        <Globe className="h-10 w-10 text-zinc-900 dark:text-white" />
+                    </div>
                 </div>
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 mb-2">No Project Selected</h3>
-                <p className="max-w-xs text-sm text-zinc-500 leading-relaxed italic">
-                    Select a project from your workspace to start collaborating with your team members.
+                <h3 className="text-[28px] font-[900] text-zinc-900 dark:text-zinc-100 mb-3 tracking-tight font-satoshi">
+                    Mission Hangar Empty
+                </h3>
+                <p className="max-w-sm text-[16px] font-medium text-zinc-400 leading-relaxed font-body">
+                    Select a core project from your workspace to initialize secure team communication.
                 </p>
+                <Button className="mt-8 rounded-full px-8 py-6 h-auto bg-zinc-900 text-white font-satoshi font-black text-sm uppercase tracking-widest shadow-xl shadow-zinc-500/10 dark:bg-white dark:text-black">
+                    Initialize Workspace
+                </Button>
             </div>
         );
     }
@@ -127,24 +136,19 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     return (
-        <div className="flex h-full bg-[#FAF9F6] dark:bg-[#0C0C0B] w-full overflow-hidden relative font-body transition-colors duration-700">
+        <div className="flex h-full bg-[#F5F7FF] dark:bg-[#0c0c0c] w-full overflow-hidden relative font-body">
             {/* Texture Overlay for that premium "best" feel */}
-            <div className="absolute inset-0 opacity-[0.4] dark:opacity-[0.15] pointer-events-none dotted-pattern" />
+            <div className="absolute inset-0 opacity-[0.2] dark:opacity-[0.05] pointer-events-none dotted-pattern" />
 
-            {/* Left Sidebar - Glassmorphism */}
-            <motion.div
-                initial={false}
-                animate={{
-                    width: isSidebarCollapsed ? 0 : 320,
-                    opacity: isSidebarCollapsed ? 0 : 1,
-                    x: isSidebarCollapsed ? -320 : 0
-                }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            {/* Left Sidebar - Clean White Palette like the image */}
+            <div
                 className={cn(
-                    "hidden md:block h-full border-r-2 border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-black/40 backdrop-blur-md shrink-0 relative overflow-hidden"
+                    "hidden md:block h-full border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0c0c0c] shrink-0 relative overflow-hidden",
+                    isSidebarCollapsed ? "w-0 opacity-0 -translate-x-full" : "w-[320px] opacity-100 translate-x-0"
                 )}
+                style={{ transition: 'all 0.2s ease-out' }}
             >
-                <div className="w-[320px] h-full"> {/* Inner fixed width container to prevent reflow while animating */}
+                <div className="w-[320px] h-full">
                     <ChatSidebar
                         projectId={projectId}
                         members={members}
@@ -153,7 +157,7 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                         lastMessage={messages[messages.length - 1]}
                     />
                 </div>
-            </motion.div>
+            </div>
 
             {/* Main Chat Area */}
             <div className="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -179,18 +183,18 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                         </button>
 
                         {/* Mobile Side Menu Trigger */}
-                        <div className="md:hidden">
+                                <div className="md:hidden">
                             <Sheet>
                                 <SheetTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-10 w-10 -ml-2 rounded-xl text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900">
                                         <Menu className="h-5 w-5" />
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent side="left" className="p-0 border-r-0 w-80 bg-white dark:bg-black">
+                                <SheetContent side="left" className="p-0 border-r-0 w-80 bg-white dark:bg-[#0c0c0c]">
                                     <SheetHeader className="p-6 border-b border-zinc-100 dark:border-zinc-800">
                                         <SheetTitle className="text-left font-black flex items-center gap-2">
-                                            <div className="h-8 w-8 bg-zinc-900 rounded-lg flex items-center justify-center shadow-md">
-                                                <Users className="h-4 w-4 text-white" />
+                                            <div className="h-8 w-8 bg-zinc-900 dark:bg-white rounded-lg flex items-center justify-center shadow-md">
+                                                <Users className="h-4 w-4 text-white dark:text-black" />
                                             </div>
                                             Team Space
                                         </SheetTitle>
@@ -207,57 +211,40 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
 
                         {/* Back button logic could go here for standalone views */}
 
-                        {/* Group Avatar with Subtle Glow */}
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="relative"
-                        >
-                            <Avatar className="h-11 w-11 ring-4 ring-white dark:ring-zinc-950 shadow-2xl transition-all duration-500 cursor-pointer hover:ring-emerald-500/20">
-                                <AvatarImage src={projectAvatar} />
-                                <AvatarFallback className="bg-zinc-900 text-white font-bold text-base shadow-inner">
-                                    {projectTitle.slice(0, 1).toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
-                            {isConnected && (
-                                <motion.span
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-white dark:border-zinc-950 shadow-sm"
-                                />
-                            )}
-                        </motion.div>
-
                         <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-sm md:text-base text-zinc-900 dark:text-zinc-50 truncate">
-                                    {projectTitle}
-                                </h3>
-                                <div className={cn(
-                                    "flex items-center gap-1.5 px-0 py-0 text-[10px] font-bold uppercase transition-all duration-500",
-                                    isConnected
-                                        ? "text-zinc-900 dark:text-zinc-100"
-                                        : "text-amber-600 dark:text-amber-400 animate-pulse"
-                                )}>
-                                    <span className={cn("h-1.5 w-1.5 rounded-full", isConnected ? "bg-green-500" : "bg-amber-500")} />
-                                    <span className="hidden sm:inline">{isConnected ? 'Active' : 'Loading'}</span>
-                                </div>
-                            </div>
+                            <h3 className="font-bold text-[15px] md:text-[17px] text-indigo-950 dark:text-zinc-50 truncate font-satoshi tracking-tight">
+                                {members.map(m => m.users?.full_name || m.users?.display_name).join(', ') || projectTitle}
+                            </h3>
                             <div className="flex items-center gap-2 mt-0">
-                                <span className="text-[12px] text-zinc-400 dark:text-zinc-500 font-medium lowercase">
-                                    {onlineUsers.size} online
+                                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-widest">
+                                    {onlineUsers.size} ONLINE
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-4">
+                        <div className="flex -space-x-2 mr-2">
+                            {members.slice(0, 3).map((member, i) => (
+                                <Avatar key={i} className="h-8 w-8 ring-2 ring-white dark:ring-zinc-950 shadow-sm">
+                                    <AvatarImage src={member.users?.avatar_url} />
+                                    <AvatarFallback className={cn("text-[9px] font-black text-white", getAvatarColor(member.user_id))}>
+                                        {getInitials(member.users?.full_name || '?')}
+                                    </AvatarFallback>
+                                </Avatar>
+                            ))}
+                            <button className="h-8 w-8 rounded-full bg-pink-500 flex items-center justify-center text-white ring-2 ring-white dark:ring-zinc-950 shadow-sm hover:scale-110 mb-[-2px] ml-[-2px] z-10 transition-transform">
+                                <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+                            </button>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 border-l border-zinc-100 dark:border-zinc-800 pl-4">
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => setIsInfoOpen(!isInfoOpen)}
                             className={cn(
-                                "h-11 w-11 rounded-2xl transition-all duration-300",
+                                "h-11 w-11 rounded-2xl",
                                 isInfoOpen
                                     ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-xl scale-105"
                                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900"
@@ -267,8 +254,9 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                         </Button>
                     </div>
                 </div>
+            </div>
 
-                {/* Messages List */}
+            {/* Messages List */}
                 <div className="flex-1 overflow-hidden relative">
                     <ScrollArea className="h-full px-4 md:px-8 relative z-0">
                         {isLoading ? (
@@ -279,10 +267,7 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                 </div>
                             </div>
                         ) : messages.length === 0 ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
+                            <div
                                 className="flex items-center justify-center h-full flex-col gap-6 text-center p-8 pt-32"
                             >
                                 <div className="relative group cursor-default">
@@ -309,7 +294,7 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
                                 >
                                     Say Hello
                                 </Button>
-                            </motion.div>
+                            </div>
                         ) : (
                             <div className="flex flex-col pb-8 pt-6 max-w-5xl mx-auto min-h-full">
                                 {/* Improved Date Divider */}
