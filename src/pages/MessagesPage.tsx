@@ -133,7 +133,7 @@ const MessagesPage = () => {
                 {/* Header */}
                 <div className="h-16 px-4 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 shrink-0">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate('/dashboard')} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+                        <button onClick={() => navigate('/project-room')} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                             <ChevronLeft className="h-5 w-5" />
                         </button>
                         <h1 className="text-[22px] font-black tracking-tight text-zinc-900 dark:text-white font-body">Messages</h1>
@@ -229,7 +229,7 @@ const MessagesPage = () => {
                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Active Now</span>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate('/dashboard')}>
+                    <Button variant="ghost" size="icon" className="rounded-xl" onClick={() => navigate('/project-room')}>
                         <Home className="h-5 w-5 text-zinc-500" />
                     </Button>
                 </div>
@@ -275,7 +275,7 @@ const MessagesPage = () => {
                         </p>
                         <Button
                             variant="secondary"
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => navigate('/project-room')}
                             className="mt-8 rounded-2xl h-11 px-8 font-black text-xs uppercase tracking-widest bg-zinc-900 text-white dark:bg-white dark:text-black hover:scale-105 transition-all shadow-xl"
                         >
                             Return to Dashboard

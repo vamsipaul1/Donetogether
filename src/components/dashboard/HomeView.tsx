@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import ProofSubmissionModal from './ProofSubmissionModal';
 import TaskDetailModal from './TaskDetailModal';
+import StreakStats from './StreakStats';
 
 interface HomeViewProps {
     user: User | null;
@@ -64,8 +65,13 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated, onEditTask }: HomeVi
         if (userTasks.length === 0) return { streak: 0, points: 0 };
 
         // Get unique completion dates (YYYY-MM-DD)
-        const dates = [...new Set(userTasks.map(t => new Date(t.completed_at!).toISOString().split('T')[0]))]
-            .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+        const dates = [...new Set(userTasks.filter(t => t.completed_at).map(t => {
+            try {
+                return new Date(t.completed_at!).toISOString().split('T')[0];
+            } catch (e) {
+                return null;
+            }
+        }))].filter(Boolean) as string[];
 
         const todayStr = new Date().toISOString().split('T')[0];
         const yesterday = new Date();
@@ -127,7 +133,10 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated, onEditTask }: HomeVi
             }
 
             const newStatus = task.status === 'completed' ? 'not_started' : 'completed';
-            const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', task.id);
+            const { error } = await supabase.from('tasks').update({ 
+                status: newStatus,
+                completed_at: newStatus === 'completed' ? new Date().toISOString() : null
+            }).eq('id', task.id);
             if (error) throw error;
             toast.success(newStatus === 'completed' ? 'Task completed' : 'Task re-opened');
             onTasksUpdated();
@@ -350,59 +359,7 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated, onEditTask }: HomeVi
                     </div>
 
                     {/* STREAK WIDGET */}
-                    <div className="p-4 md:p-5 rounded-[32px] shadow-md relative overflow-hidden group border border-white dark:border-white/10 transition-all duration-500">
-                        {/* Soft Neat Background - Iridescent CSS Mesh */}
-                        <div className="absolute inset-0 z-0">
-                            <div className="absolute inset-0 bg-[#fefefe]/80 dark:bg-zinc-950/80 backdrop-blur-3xl" />
-                            <div className="absolute top-0 right-0 w-[80%] h-[80%] opacity-20 blur-[60px] bg-gradient-to-br from-[#FF9A9E] to-[#FECFEF]" />
-                            <div className="absolute bottom-0 left-0 w-[80%] h-[80%] opacity-15 blur-[60px] bg-gradient-to-tr from-[#84FAB0] to-[#8FD3F4]" />
-                        </div>
-
-                        <div className="relative z-10 flex flex-row md:flex-col items-center justify-between md:justify-center gap-3 h-full">
-                            <div className="flex items-center gap-3 md:gap-0 md:justify-center relative md:mb-3">
-                                <div className="relative w-10 h-10 md:w-12 md:h-12 bg-white/60 dark:bg-zinc-800 rounded-[18px] md:rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform cursor-pointer border border-white/50 shadow-sm">
-                                    <Flame className="w-5 h-5 md:w-6 md:h-6 text-orange-500" fill="currentColor" />
-                                </div>
-                                <div className="block md:hidden">
-                                    <h3 className="text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase leading-none mb-1 tracking-widest">Status</h3>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-2xl font-black text-zinc-900 dark:text-white">{currentStreak}x</span>
-                                        <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Streak</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="hidden md:block text-center">
-                                <h3 className="text-[12px] font-black text-zinc-900 dark:text-white mb-0.5 uppercase tracking-tighter">Focus Streak</h3>
-                                <div className="flex flex-col items-center justify-center">
-                                    <div className="flex items-baseline gap-1">
-                                        <span className={currentStreak > 0 ? "text-3xl font-black text-orange-500" : "text-3xl font-black text-zinc-900 dark:text-white"}>{currentStreak}</span>
-                                        <span className="text-[11px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{currentStreak === 1 ? 'Day' : 'Days'}</span>
-                                    </div>
-                                    <p className="text-[8px] font-black text-emerald-600 uppercase tracking-wider mt-0.5">+{(currentStreak * 5)} XP Multiplier</p>
-                                </div>
-                            </div>
-
-                            {/* Visual Streak Tracker - Desktop Only */}
-                            <div className="w-full mt-3 hidden md:flex justify-between px-2">
-                                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => {
-                                    const isActive = i < currentStreak;
-                                    return (
-                                        <div key={i} className="flex flex-col items-center gap-1.5">
-                                            <div className={`w-1 h-1 rounded-full ${isActive ? 'bg-orange-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
-                                            <span className={`text-[8px] font-bold ${isActive ? 'text-orange-600 dark:text-orange-500' : 'text-zinc-400'}`}>{day}</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="flex md:hidden gap-1">
-                                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((_, i) => (
-                                    <div key={i} className={`w-1 h-1 rounded-full ${i < currentStreak ? 'bg-orange-500 shadow-[0_0_4px_rgba(245,158,11,0.5)]' : 'bg-zinc-200 dark:bg-zinc-800'}`} />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                    {user && <StreakStats userId={user.id} />}
 
                     {/* Motivation Block */}
                     <div className="p-4 md:p-5 flex items-center gap-4 bg-white/30 dark:bg-black/40 backdrop-blur-md border border-white dark:border-white/10 rounded-[28px] group hover:border-zinc-950 transition-colors">

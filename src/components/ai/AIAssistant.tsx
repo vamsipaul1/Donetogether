@@ -27,7 +27,7 @@ const AIAssistant = ({
         {
             id: '1',
             role: 'bot',
-            content: `Hi! 👋\nHow can I help you today?`,
+            content: `### Systems Online\nThinkSense AI initialized. I am your strategic partner for **${project?.title || 'this project'}**.\n\nReady to analyze your trajectory. How can I assist with your mission today?`,
             timestamp: new Date()
         }
     ]);
@@ -111,13 +111,22 @@ const AIAssistant = ({
     };
 
     const SYSTEM_INSTRUCTION = `
-    You are ThinkSense AI, a "Master Level" strategist and high-performance partner.
-    - Your intelligence is elite: you translate complex project challenges into simple, high-impact human language.
-    - Master the Art of Simplification: Deliver "insane" value by distilling complexity into brilliant, neat, and actionable advice.
-    - Tone: Peer-to-peer, visionary, and deeply intuitive. You aren't just a bot; you are a partner in ${project?.title || 'this project'}.
-    - Connect the Dots: Deeply link your answers to the project's specific goals, team members, and current tasks.
-    - Professional Fallback: If data is missing, offer a master-level "strategic framework" that guides the user toward the solution.
-    - Typography: Use bold for emphasis, minimalist lists, and elegant code blocks. Keep it visually perfect.
+    You are ThinkSense AI — a high-impact project strategist. Your goal is absolute precision and structured excellence.
+
+    RESPONSE ARCHITECTURE (STRICT ADHERENCE REQUIRED):
+    1. DEFINITION: Start with a crisp, exact definition of the concept or request.
+    2. KEY STRATEGIES: Provide 3-5 high-impact bullet points (•) for actionable execution.
+    3. STRATEGIC CONCLUSION: A single powerful sentence summarizing the core takeaway.
+    4. INTERACTIVE MOMENTUM: End every response with one highly relevant, strategic follow-up question to the user.
+
+    STRATEGIC TONE:
+    - Elite, objective-driven, and sharp.
+    - Use bolding for critical terms.
+    - NO FILLER intro phrases (e.g., "Sure, here is...").
+
+    PROJECT OVERVIEW:
+    - Mission: ${project?.title || 'Active Session'}.
+    - Active Focus: ${Array.isArray(tasks) ? tasks.slice(0, 3).map(t => t.title).join(', ') : 'Strategic mapping'}.
     `;
 
     const sendMessage = async (text?: string) => {
@@ -137,12 +146,14 @@ const AIAssistant = ({
 
         try {
             const context = buildContext();
+            const history = messages.slice(-6).map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join('\n');
+            const fullPrompt = `${SYSTEM_INSTRUCTION}\n\nCONVERSATION HISTORY:\n${history}\n\nCURRENT USER REQUEST: ${contentToSend}`;
 
             const { data, error } = await supabase.functions.invoke('ai-assistant', {
                 body: {
                     mode: 'task_assistant',
                     context,
-                    prompt: `${SYSTEM_INSTRUCTION}\n\nUSER REQUEST: ${contentToSend}`
+                    prompt: fullPrompt
                 }
             });
 
@@ -619,14 +630,14 @@ const MessageBubble = ({ message, isLast }: { message: Message; isLast: boolean 
                 </div>
             )}
 
-            <div className={`flex-1 max-w-full md:max-w-[92%] min-w-0 ${message.role === 'user'
-                ? 'bg-zinc-100 dark:bg-zinc-800 rounded-[24px] rounded-tr-sm px-6 py-4 text-zinc-900 dark:text-white shadow-sm'
-                : 'bg-white dark:bg-[#0f0f0f] border border-zinc-100 dark:border-zinc-800/60 rounded-[28px] rounded-tl-lg px-6 md:px-8 py-5 md:py-7 shadow-md'
+            <div className={`flex-1 max-w-full md:max-w-[94%] min-w-0 ${message.role === 'user'
+                ? 'bg-zinc-100 dark:bg-zinc-800 rounded-[22px] rounded-tr-sm px-6 py-4 text-zinc-900 dark:text-white shadow-sm'
+                : 'bg-white dark:bg-[#0c0c0d] border border-zinc-100/50 dark:border-white/5 rounded-[32px] px-8 md:px-12 py-8 md:py-12 shadow-xl relative'
                 }`}>
                 {message.role === 'bot' && (
-                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-100 dark:border-zinc-800/50">
-                        <Sparkles className="w-3.5 h-3.5 text-violet-500" />
-                        <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-pink-600">ThinkSense AI</span>
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="w-2 h-2 bg-violet-600 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.4)]" />
+                        <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest antialiased">Strategic Insight</span>
                     </div>
                 )}
                 {message.role === 'user' ? (
@@ -774,9 +785,9 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
             }
             else if (line.match(/^[\s]*[-•*]\s/)) {
                 elements.push(
-                    <div key={key} className="flex gap-3 mb-3 ml-1.5">
-                        <span className="text-violet-500/60 mt-2 text-[10px]">■</span>
-                        <span className="text-zinc-700 dark:text-zinc-300 leading-[1.6] font-medium text-[15.5px]">
+                    <div key={key} className="flex gap-4 mb-4 ml-1.5 items-start">
+                        <div className="w-[6px] h-[6px] bg-violet-400/80 rounded-sm mt-[9px] shrink-0" />
+                        <span className="text-zinc-700 dark:text-zinc-300 leading-[1.65] font-medium text-[15.5px]">
                             {formatInline(line.replace(/^[\s]*[-•*]\s/, ''))}
                         </span>
                     </div>
@@ -798,7 +809,7 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
             }
             else {
                 elements.push(
-                    <p key={key} className="text-zinc-700 dark:text-zinc-300 leading-[1.7] mb-4 text-[15.5px] font-medium antialiased">
+                    <p key={key} className="text-zinc-700 dark:text-zinc-300 leading-[1.8] mb-8 text-[15.5px] font-medium antialiased text-left tracking-normal">
                         {formatInline(line)}
                     </p>
                 );

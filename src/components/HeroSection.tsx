@@ -154,8 +154,8 @@ const HeroSection = () => {
             variants={fadeUp}
             className="group cursor-pointer inline-flex items-center rounded-full bg-white/40 backdrop-blur-xl border border-white/40 text-[12.5px] font-semibold text-slate-950 shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:bg-white/60 transition-all mb-4"
           >
-            <Link 
-              to={user ? "/dashboard" : "/signup"}
+            <Link
+              to={user ? "/project-room" : "/signup"}
               className="flex items-center gap-3 pl-1 pr-1.5 py-1"
             >
               <div className="flex items-center gap-2.5 px-2">
@@ -219,7 +219,7 @@ const HeroSection = () => {
 
           {/* CTA & TRUST (Action System) */}
           <motion.div variants={fadeUp} className="mt-10 flex flex-col items-center gap-6">
-            <Link to={user ? "/dashboard" : "/signup"}>
+            <Link to={user ? "/project-room" : "/signup"}>
               <button
                 className="
                   font-body

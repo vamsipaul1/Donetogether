@@ -100,7 +100,7 @@ export default function SetupProfile() {
 
             // Navigate to dashboard after brief delay
             setTimeout(() => {
-                navigate('/dashboard');
+                navigate('/project-room');
             }, 1500);
 
         } catch (error: any) {

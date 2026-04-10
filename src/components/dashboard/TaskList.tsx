@@ -65,7 +65,11 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
         }
 
         try {
-            const { error } = await supabase.from('tasks').update(updates).eq('id', taskId);
+            const finalUpdates: any = { ...updates };
+            if (updates.status) {
+                finalUpdates.completed_at = updates.status === 'completed' ? new Date().toISOString() : null;
+            }
+            const { error } = await supabase.from('tasks').update(finalUpdates).eq('id', taskId);
             if (error) throw error;
             onTasksUpdated();
         } catch (err: unknown) {

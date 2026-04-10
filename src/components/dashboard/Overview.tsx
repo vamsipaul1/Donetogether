@@ -89,9 +89,9 @@ const Overview = ({
     /* ===================================================== */
 
     return (
-        <div className="flex flex-col lg:flex-row min-h-full bg-[#fafafa] dark:bg-[#0b0c10] text-zinc-900 dark:text-zinc-100 relative overflow-hidden font-sans">
+        <div className="flex flex-col lg:flex-row min-h-full bg-[#fafafa] dark:bg-[#0b0c10] text-zinc-900 dark:text-zinc-100 relative overflow-hidden font-body">
             {/* LEFT CONTENT AREA */}
-            <div className="flex-1 p-8 space-y-12 relative z-10">
+            <div className="flex-1 p-8 space-y-12 relative z-10 font-body">
                 {/* MEMBER DROPDOWN - Linear Style */}
                 <MemberDropdown
                     members={members}
@@ -180,10 +180,10 @@ function MemberDropdown({
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <button className="flex items-center gap-3 px-5 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] outline-none min-w-[240px]">
-                    <div className="flex flex-col items-start min-w-0">
+                <button className="flex items-center font-body gap-3 px-5 py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm hover:shadow-md transition-all active:scale-[0.98] outline-none min-w-[240px]">
+                    <div className="flex flex-col items-start min-w-0 font-body">
                         <span className="text-[10px] uppercase font-semibold text-zinc-400 tracking-wider">Member Filter</span>
-                        <span className="text-[15px] font-semibold text-zinc-900 dark:text-white truncate max-w-[200px]">
+                        <span className="text-[15px] font-bold font-body text-zinc-900 dark:text-white truncate max-w-[200px]">
                             {selectedMemberId === "all"
                                 ? "All members"
                                 : selectedMember?.users
@@ -199,7 +199,7 @@ function MemberDropdown({
                     onClick={() =>
                         setSelectedMemberId("all")
                     }
-                    className="w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                    className="w-full text-left px-3 py-2.5 text-sm font-bold font-body hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors"
                 >
                     All members
                 </button>
@@ -212,7 +212,7 @@ function MemberDropdown({
                                 m.user_id
                             )
                         }
-                        className="w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors border-t border-zinc-100 dark:border-zinc-800 mt-1"
+                        className="w-full text-left px-3 py-2.5 text-sm font-bold font-body hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-lg transition-colors border-t border-zinc-100 dark:border-zinc-800 mt-1"
                     >
                         {m.users?.full_name}
                     </button>
@@ -241,7 +241,7 @@ function WorkloadCard({
                     {member.users?.email?.[0]?.toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                    <p className="text-[15px] font-semibold text-zinc-900 dark:text-white truncate">
+                    <p className="text-[15px] font-bold font-body text-zinc-900 dark:text-white truncate">
                         {member.users?.full_name}
                     </p>
                     <p className="text-[12px] font-medium text-zinc-400 capitalize">

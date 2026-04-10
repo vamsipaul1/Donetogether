@@ -43,7 +43,7 @@ const AnimatedRoutes = () => {
         <Route path="/onboarding" element={<ProtectedRoute><PageTransition><Onboarding /></PageTransition></ProtectedRoute>} />
         <Route path="/setup-profile" element={<ProtectedRoute><PageTransition><SetupProfile /></PageTransition></ProtectedRoute>} />
 
-        <Route path="/dashboard" element={<ProtectedRoute><PageTransition><Dashboard /></PageTransition></ProtectedRoute>} />
+        <Route path="/project-room" element={<ProtectedRoute><PageTransition><Dashboard /></PageTransition></ProtectedRoute>} />
         <Route path="/create-project" element={<ProtectedRoute><PageTransition><CreateProject /></PageTransition></ProtectedRoute>} />
         <Route path="/invite/:projectId" element={<ProtectedRoute><PageTransition><InvitePage /></PageTransition></ProtectedRoute>} />
         <Route path="/join" element={<ProtectedRoute><PageTransition><JoinProject /></PageTransition></ProtectedRoute>} />

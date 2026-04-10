@@ -127,14 +127,14 @@ export const ChatInfoSidebar = ({
                                 {localAvatar || projectAvatar ? (
                                     <img src={localAvatar || projectAvatar || ''} alt="" className="h-full w-full object-cover" />
                                 ) : (
-                                    <div className="h-full w-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black flex items-center justify-center text-4xl font-bold">
+                                    <div className="h-full w-full bg-purple-600 text-white flex items-center justify-center text-4xl font-bold">
                                         {projectTitle.slice(0, 1).toUpperCase()}
                                     </div>
                                 )}
                             </div>
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <button className="absolute bottom-1 right-1 bg-zinc-900 dark:bg-white p-2.5 rounded-full shadow-2xl border-4 border-white dark:border-zinc-950 group-hover:scale-110 transition-all">
+                                    <button className="absolute bottom-1 right-1 bg-purple-600 dark:bg-zinc-100 p-2.5 rounded-full shadow-2xl border-4 border-white dark:border-zinc-950 group-hover:scale-110 transition-all">
                                         <Camera className="h-3.5 w-3.5 text-white dark:text-black" />
                                     </button>
                                 </PopoverTrigger>
@@ -248,7 +248,7 @@ export const ChatInfoSidebar = ({
                 <SheetContent className="w-[400px] sm:w-[450px] bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-l-2 border-zinc-200 dark:border-white/5 p-0 font-body shadow-2xl">
                     <SheetHeader className="px-8 py-8 border-b border-zinc-200/50 dark:border-white/5 bg-zinc-50/50 dark:bg-white/5 flex flex-row items-center justify-between space-y-0">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-zinc-900 dark:bg-white flex items-center justify-center text-white dark:text-black">
+                            <div className="w-12 h-12 rounded-2xl bg-purple-600 flex items-center justify-center text-white">
                                 <HardDrive className="h-6 w-6" />
                             </div>
                             <div>

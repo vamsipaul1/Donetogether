@@ -24,7 +24,7 @@ const InvitePage = () => {
 
             if (error) {
                 toast.error('Project not found');
-                navigate('/dashboard');
+                navigate('/project-room');
             } else {
                 setProject(data);
             }
@@ -94,7 +94,7 @@ const InvitePage = () => {
                     </div>
 
                     <Button
-                        onClick={() => navigate('/dashboard')}
+                        onClick={() => navigate('/project-room')}
                         className="w-full h-14 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-bold group"
                     >
                         Go to Dashboard

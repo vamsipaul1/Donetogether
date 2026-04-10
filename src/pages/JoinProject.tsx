@@ -72,7 +72,7 @@ const JoinProject = () => {
 
             if (existingMember) {
                 toast.error('You are already a member of this project');
-                navigate('/dashboard');
+                navigate('/project-room');
                 return;
             }
 
@@ -139,7 +139,7 @@ const JoinProject = () => {
             }
 
             toast.success(`✅ Successfully joined "${projectDetails.team_name || projectDetails.title}"!`);
-            navigate('/dashboard');
+            navigate('/project-room');
         } catch (error: unknown) {
             console.error('Join project error:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to join project');
@@ -157,7 +157,7 @@ const JoinProject = () => {
             >
                 <Button
                     variant="ghost"
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate('/project-room')}
                     className="mb-8 rounded-full"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />

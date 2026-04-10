@@ -55,7 +55,7 @@ const Onboarding = () => {
         
         if (profile?.full_name && profile?.role) {
             // Already fully onboarded
-            navigate('/dashboard', { replace: true });
+            navigate('/project-room', { replace: true });
         } else if (profile?.full_name && !profile.full_name.includes('@')) {
             setFullName(profile.full_name);
             // Show a welcome screen first, then let the user choose role

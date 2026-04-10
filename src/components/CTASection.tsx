@@ -93,7 +93,7 @@ export default function CTASection() {
               />
             </svg>
           </div>
-          <Link to={user ? "/dashboard" : "/signup"}>
+          <Link to={user ? "/project-room" : "/signup"}>
             <button
               className="
                 group

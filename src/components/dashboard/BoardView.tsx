@@ -128,7 +128,10 @@ const BoardView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onA
         const movePromise = async () => {
             const { error } = await supabase
                 .from('tasks')
-                .update({ status: newStatus })
+                .update({ 
+                    status: newStatus,
+                    completed_at: newStatus === 'completed' ? new Date().toISOString() : null
+                })
                 .eq('id', draggableId);
 
             if (error) throw error;

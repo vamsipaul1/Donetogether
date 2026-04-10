@@ -167,11 +167,7 @@ export default function FeaturesSection() {
                     <span className="inline-flex items-center rounded-full border border-border/60 bg-background/40 px-3 py-1 font-body text-[12px] leading-none tracking-[-0.01em] text-foreground/80">
                       {String(index + 1).padStart(2, "0")}
                     </span>
-                    {feature.featured ? (
-                      <span className="inline-flex items-center rounded-full border border-border/60 bg-muted/35 px-3 py-1 font-body text-[12px] leading-none tracking-[-0.01em] text-foreground/80">
-                        Core
-                      </span>
-                    ) : null}
+
                   </div>
 
                   {/* title */}

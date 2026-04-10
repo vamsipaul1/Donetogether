@@ -1,4 +1,4 @@
-import { Bell, Check, Trash2, X, Sparkles } from 'lucide-react';
+import { Bell, BellRing, Check, Trash2, X, Sparkles } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -29,9 +29,9 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAllAsRead }: N
                     <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-white/5 flex items-center justify-center text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all shadow-sm"
+                        className="w-10 h-10 flex items-center justify-center text-zinc-600 hover:text-zinc-900 dark:hover:text-white transition-all shadow-sm"
                     >
-                        <Bell className="w-[18px] h-[18px]" strokeWidth={2.2} />
+                        <BellRing className="w-[18px] h-[18px]" strokeWidth={2.2} />
                         {unreadCount > 0 && (
                             <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-black rounded-full text-[9px] font-black text-white flex items-center justify-center animate-in fade-in zoom-in duration-300">
                                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -42,7 +42,7 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAllAsRead }: N
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 align="end"
-                className="w-80 md:w-80 rounded-2xl p-0 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 shadow-2xl overflow-hidden font-sans z-[100]"
+                className="w-80 md:w-80 rounded-2xl p-0 bg-white dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-800 shadow-2xl overflow-hidden font-body z-[100]"
                 sideOffset={12}
             >
                 <div className="px-5 py-5 flex items-center justify-between border-b border-zinc-50 dark:border-white/5">
@@ -102,7 +102,7 @@ const NotificationDropdown = ({ notifications, unreadCount, onMarkAllAsRead }: N
                     ) : (
                         <div className="py-16 flex flex-col items-center justify-center text-center opacity-60">
                             <div className="flex items-center justify-center mb-5">
-                                <Bell className="w-8 h-8 text-zinc-300" strokeWidth={1.5} />
+                                <BellRing className="w-8 h-8 text-zinc-300" strokeWidth={1.5} />
                             </div>
                             <p className="text-[15px] font-semibold text-zinc-900 dark:text-white">All caught up!</p>
                             <p className="text-[13px] text-zinc-500 mt-1 max-w-[200px]">You have no new notifications at this time.</p>

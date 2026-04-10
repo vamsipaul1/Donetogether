@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Settings2, Save, X, Users, Type, Crown, Shield } from "lucide-react";
+import { Settings2, Save, X, Users, Type, Crown, Shield, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -50,16 +50,16 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, members 
             <DialogContent className="w-[95vw] sm:max-w-[540px] max-h-[90vh] overflow-y-auto bg-white dark:bg-[#09090b] font-body border-zinc-200 dark:border-zinc-800 p-0 rounded-[2.5rem] shadow-2xl scrollbar-hide">
                 {/* Header */}
                 <div className="p-8 border-b border-zinc-100 dark:border-zinc-800/50 bg-white/50 dark:bg-zinc-900/20 backdrop-blur-xl">
-                    <div className="flex items-center gap-5">
+                    <div className="flex items-center gap-5 w-full">
                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-violet-500/20 border border-violet-400/20">
                             <Settings2 className="w-7 h-7 text-white" />
                         </div>
                         <div className="space-y-1">
-                            <DialogTitle className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">
+                            <DialogTitle className="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">
                                 Project Settings
                             </DialogTitle>
                             <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                                Manage your team's identity and mission
+                                Manage mission identity
                             </p>
                         </div>
                     </div>

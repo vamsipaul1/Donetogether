@@ -22,6 +22,17 @@ import InviteTeamModal from '@/components/InviteTeamModal';
 import EditProjectModal from '@/components/EditProjectModal';
 import GovernanceModal from '@/components/GovernanceModal';
 import type { Project, ProjectMember, User as UserType, Task } from '@/types/database';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import CompletionSummary from '@/components/dashboard/CompletionSummary';
 
 type ProjectMemberWithUser = ProjectMember & { users?: UserType };
 type TaskWithUser = Task & {
@@ -56,8 +67,9 @@ import { WelcomeOverlay } from '@/components/dashboard/WelcomeOverlay';
 import AIAssistant from '@/components/ai/AIAssistant';
 import NotificationDropdown from '@/components/dashboard/NotificationDropdown';
 import { useNotifications } from '@/hooks/useNotifications';
+import StreakStats from '@/components/dashboard/StreakStats';
 
-type DashboardView = 'home' | 'overview' | 'list' | 'board' | 'timeline' | 'dashboard' | 'calendar' | 'workflow' | 'messages' | 'files' | 'workspace' | 'history' | 'progress' | 'proof_of_work' | 'settings';
+type DashboardView = 'home' | 'overview' | 'list' | 'board' | 'timeline' | 'dashboard' | 'calendar' | 'workflow' | 'messages' | 'files' | 'workspace' | 'history' | 'progress' | 'proof_of_work' | 'settings' | 'completion_summary';
 
 const Dashboard = () => {
     const { user, signOut, loading: authLoading } = useAuth();
@@ -98,6 +110,7 @@ const Dashboard = () => {
     const [isGovernanceOpen, setIsGovernanceOpen] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
     const [isAIOpen, setIsAIOpen] = useState(false);
+    const [isCompletionConfirmOpen, setIsCompletionConfirmOpen] = useState(false);
 
 
     // State for Online Users Presence (Moved to top level)
@@ -343,6 +356,25 @@ const Dashboard = () => {
         setIsCreateTaskOpen(true);
     };
 
+    const handleCompleteProject = async () => {
+        if (!selectedProject) return;
+
+        try {
+            const { error } = await supabase
+                .from('projects')
+                .update({ is_active: false })
+                .eq('id', selectedProject.id);
+
+            if (error) throw error;
+
+            setActiveView('completion_summary');
+            fetchProjectDetails();
+        } catch (err) {
+            console.error('Project completion failed:', err);
+            toast.error('Could not complete project. Please try again.');
+        }
+    };
+
     // State to allow owner to bypass waiting room
     const [bypassedWaitingRoom, setBypassedWaitingRoom] = useState(false);
 
@@ -396,29 +428,47 @@ const Dashboard = () => {
     */
 
     return (
-        <div className="dashboard-theme flex h-screen bg-background dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden">
-            {showWelcome && currentUser && (
-                <WelcomeOverlay
-                    user={{ ...currentUser, role: userRole || undefined }}
-                    onComplete={() => setShowWelcome(false)}
-                />
-            )}
+        <div className="dashboard-theme flex h-screen bg-background dark:bg-black text-zinc-900 dark:text-zinc-100 font-sans overflow-hidden transition-colors duration-300">
+            <AnimatePresence>
+                {showWelcome && currentUser && (
+                    <WelcomeOverlay
+                        user={{ ...currentUser, role: userRole || undefined }}
+                        onComplete={() => setShowWelcome(false)}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Sidebar Overlay for Mobile */}
-            {isMobile && isSidebarOpen && (
-                <div
-                    onClick={() => setIsSidebarOpen(false)}
-                    className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
-                />
-            )}
+            <AnimatePresence>
+                {isMobile && isSidebarOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+                    />
+                )}
+            </AnimatePresence>
 
             {/* Sidebar */}
-            <aside
-                className={cn(
-                    "bg-[hsl(var(--sidebar-background))] dark:bg-[#050505] border-r border-zinc-200 dark:border-zinc-800 flex flex-col z-50 overflow-hidden dotted-pattern relative",
-                    isMobile ? (isSidebarOpen ? 'fixed inset-y-0 left-0 h-full w-[280px] shadow-2xl safe-area-left translate-x-0' : 'fixed inset-y-0 left-0 h-full w-[280px] -translate-x-full') : (isSidebarOpen ? 'w-[280px]' : 'w-0 opacity-0')
-                )}
-                style={{ transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)' }}
+            <motion.aside
+                initial={false}
+                animate={{
+                    x: isMobile ? (isSidebarOpen ? 0 : -300) : 0,
+                    width: isMobile ? 280 : (isSidebarOpen ? 280 : 0),
+                    opacity: isSidebarOpen ? 1 : (isMobile ? 0 : 0),
+                }}
+                transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 40
+                }}
+                className={`
+                    bg-[hsl(var(--sidebar-background))] dark:bg-[#050505] border-r border-zinc-200 dark:border-zinc-800 
+                    flex flex-col z-50 overflow-hidden dotted-pattern
+                    ${isMobile ? 'fixed inset-y-0 left-0 h-full w-[280px] shadow-2xl safe-area-left' : 'relative'}
+                `}
             >
                 <div className="h-16 shrink-0 flex items-center justify-between px-6 border-b border-zinc-200 dark:border-zinc-800 bg-[hsl(var(--sidebar-background))] dark:bg-[#050505] z-10">
                     <a href="/" className="flex items-center gap-3 group cursor-pointer">
@@ -499,7 +549,7 @@ const Dashboard = () => {
                                 </div>
                                 <button
                                     onClick={() => navigate('/create-project')}
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-bold shadow-lg shadow-violet-500/20"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-bold transition-all active:scale-95 shadow-lg shadow-violet-500/20"
                                 >
                                     <Plus className="w-4 h-4" />
                                     Create Project
@@ -511,16 +561,16 @@ const Dashboard = () => {
                                 <button
                                     key={proj.id}
                                     onClick={() => { setSelectedProject(proj); setActiveView('overview'); }}
-                                    className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold group ${selectedProject?.id === proj.id
+                                    className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold transition-all group active:scale-95 ${selectedProject?.id === proj.id
                                         ? 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400'
                                         : 'text-zinc-500 dark:text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50'
                                         }`}
                                 >
                                     <div className="relative shrink-0">
-                                        <Avatar className={cn("w-6 h-6 border-2", selectedProject?.id === proj.id ? "border-violet-200 dark:border-violet-800 shadow-sm" : "border-transparent group-hover:border-zinc-200")}>
+                                        <Avatar className={cn("w-6 h-6 border-2 transition-all group-hover:scale-105", selectedProject?.id === proj.id ? "border-violet-200 dark:border-violet-800 shadow-sm" : "border-transparent group-hover:border-zinc-200")}>
                                             <AvatarImage src={proj.avatar_url} />
                                             <AvatarFallback className={cn("text-[9px] font-black text-white", selectedProject?.id === proj.id ? "bg-violet-600" : "bg-zinc-400 group-hover:bg-violet-500")}>
-                                                {proj.team_name?.slice(0, 1).toUpperCase() || proj.title.slice(0, 1).toUpperCase()}
+                                                {proj.team_name?.slice(0, 1).toUpperCase() || proj.title?.slice(0, 1).toUpperCase() || 'P'}
                                             </AvatarFallback>
                                         </Avatar>
                                         {selectedProject?.id === proj.id && (
@@ -528,7 +578,7 @@ const Dashboard = () => {
                                         )}
                                     </div>
                                     <span className="truncate tracking-tight font-black text-[13px] text-zinc-900 dark:text-white">
-                                        {(proj.team_name || proj.title).charAt(0).toUpperCase() + (proj.team_name || proj.title).slice(1).toLowerCase()}
+                                        {((proj.team_name || proj.title || 'Project')).charAt(0).toUpperCase() + (proj.team_name || proj.title || 'Project').slice(1).toLowerCase()}
                                     </span>
                                     {selectedProject?.id === proj.id && (
                                         <ChevronRight className="ml-auto w-3.5 h-3.5 opacity-50" />
@@ -626,15 +676,13 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                <div className="p-4 border-t border-zinc-200 dark:border-[#3d3e40]">
-                    <div className="p-4 rounded-[20px] bg-zinc-100 dark:bg-zinc-800/50 space-y-3">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">v0.1.0-alpha</span>
-                        </div>
+                <div className="p-4 border-t border-zinc-200 dark:border-[#3d3e40] space-y-4">
+                    <div className="flex items-center gap-2 px-2">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest opacity-50">v1.2.4-PRO</span>
                     </div>
                 </div>
-            </aside>
+            </motion.aside>
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col min-w-0 bg-white dark:bg-black relative overflow-x-hidden dotted-pattern">
@@ -663,61 +711,65 @@ const Dashboard = () => {
                                     <ChevronDown className="w-4 h-4 shrink-0 text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                                 </button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" sideOffset={8} className="w-[280px] max-w-[calc(100vw-2rem)] p-2 rounded-2xl bg-white dark:bg-[#09090b] border-zinc-200 dark:border-zinc-800 shadow-xl font-body">
-                                <DropdownMenuLabel className="px-3 pt-3 pb-2 text-[11px] font-bold font-body text-zinc-400 dark:text-zinc-500 uppercase tracking-wide">
-                                    Project Actions
+                            <DropdownMenuContent align="start" sideOffset={8} className="w-[210px] p-1.5 rounded-2xl bg-white dark:bg-[#09090b] border-zinc-200 dark:border-zinc-800 shadow-2xl font-body z-[100]">
+                                <DropdownMenuLabel className="px-3 pt-2 pb-1 text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">
+                                    {activeView === 'home' ? 'Get Started' : 'Actions'}
                                 </DropdownMenuLabel>
 
-                                <DropdownMenuItem onClick={() => setIsCreateTaskOpen(true)} className="flex items-center gap-3.5 p-2 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-colors mb-1 outline-none">
-                                    <div className="w-11 h-11 rounded-[14px] bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm">
-                                        <div className="w-5 h-5 relative flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full text-zinc-900 dark:text-white"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /><path d="m15 5 3 3" /></svg>
-                                        </div>
+                                <DropdownMenuItem onClick={() => navigate('/create-project')} className="flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 transition-all outline-none group">
+                                    <div className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 transition-colors">
+                                        <Plus className="w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
                                     </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[15px] font-bold text-zinc-900 dark:text-white leading-tight">Create Task</span>
-                                        <span className="text-[12px] font-medium text-zinc-500 mt-0.5 leading-relaxed">Add to board</span>
-                                    </div>
+                                    <span className="text-[13.5px] font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white">New Project</span>
                                 </DropdownMenuItem>
 
-                                <DropdownMenuItem onClick={() => navigate('/create-project')} className="flex items-center gap-3.5 p-2 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 transition-colors outline-none">
-                                    <div className="w-11 h-11 rounded-[14px] bg-zinc-100/80 dark:bg-zinc-800/80 flex items-center justify-center shrink-0 border border-zinc-200/70 dark:border-zinc-700/50 shadow-sm">
-                                        <FolderPlus className="w-5 h-5 text-zinc-900 dark:text-white" strokeWidth={2} />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[15px] font-bold text-zinc-900 dark:text-white leading-tight">New Project</span>
-                                        <span className="text-[12px] font-medium text-zinc-500 mt-0.5 leading-relaxed">Create workspace</span>
-                                    </div>
-                                </DropdownMenuItem>
-
-                                {isOwner && (
+                                {activeView !== 'home' && (
                                     <>
-                                        <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-3 mx-2" />
-                                        <DropdownMenuLabel className="px-3 pb-2 text-[9px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-[0.2em] font-body opacity-80">
-                                            Admin
-                                        </DropdownMenuLabel>
-
-                                        <DropdownMenuItem onClick={() => setIsEditProjectOpen(true)} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 transition-colors outline-none">
-                                            <Settings className="w-[18px] h-[18px]" strokeWidth={2} />
-                                            <span className="text-[14.5px] font-bold">Edit Details</span>
+                                        <DropdownMenuItem onClick={() => setIsCreateTaskOpen(true)} className="flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 transition-all outline-none group">
+                                            <div className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 transition-colors">
+                                                <ListIcon className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
+                                            </div>
+                                            <span className="text-[13.5px] font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white">Create Task</span>
                                         </DropdownMenuItem>
 
-                                        <DropdownMenuItem onClick={() => setIsInviteOpen(true)} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 transition-colors outline-none">
-                                            <UserPlus className="w-[18px] h-[18px]" strokeWidth={2} />
-                                            <span className="text-[14.5px] font-bold">Invite Team</span>
-                                        </DropdownMenuItem>
+                                        {isOwner && (
+                                            <>
+                                                <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-1 mx-2" />
+                                                <DropdownMenuLabel className="px-3 py-1 text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest opacity-80">
+                                                    Admin
+                                                </DropdownMenuLabel>
 
-                                        <DropdownMenuItem onClick={() => setIsGovernanceOpen(true)} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-zinc-50 focus:bg-zinc-50 dark:hover:bg-zinc-800/50 dark:focus:bg-zinc-800/50 text-zinc-700 dark:text-zinc-300 transition-colors outline-none">
-                                            <ShieldCheck className="w-[18px] h-[18px]" strokeWidth={2} />
-                                            <span className="text-[14.5px] font-bold">Permissions</span>
-                                        </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setIsEditProjectOpen(true)} className="flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 transition-all outline-none group">
+                                                    <div className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 transition-colors">
+                                                        <Settings className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
+                                                    </div>
+                                                    <span className="text-[13.5px] font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white">Settings</span>
+                                                </DropdownMenuItem>
 
-                                        <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-2 mx-2" />
+                                                <DropdownMenuItem onClick={() => setIsInviteOpen(true)} className="flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 transition-all outline-none group">
+                                                    <div className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 transition-colors">
+                                                        <UserPlus className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
+                                                    </div>
+                                                    <span className="text-[13.5px] font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white">Invite Team</span>
+                                                </DropdownMenuItem>
 
-                                        <DropdownMenuItem onClick={() => handleDeleteProject()} className="flex items-center gap-3.5 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-red-50 focus:bg-red-50 dark:hover:bg-red-950/20 dark:focus:bg-red-950/20 text-red-600 dark:text-red-500 transition-colors outline-none">
-                                            <Trash2 className="w-[18px] h-[18px]" strokeWidth={2} />
-                                            <span className="text-[14.5px] font-bold">Delete Project</span>
-                                        </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => setIsGovernanceOpen(true)} className="flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5 transition-all outline-none group">
+                                                    <div className="w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0 transition-colors">
+                                                        <ShieldCheck className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
+                                                    </div>
+                                                    <span className="text-[13.5px] font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white">Permissions</span>
+                                                </DropdownMenuItem>
+
+                                                <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-1 mx-2" />
+
+                                                <DropdownMenuItem onClick={() => handleDeleteProject()} className="flex items-center gap-3 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-red-50 dark:hover:bg-red-950/20 transition-all outline-none group">
+                                                    <div className="w-7 h-7 rounded-lg bg-red-100/50 dark:bg-red-900/20 flex items-center justify-center shrink-0 transition-colors">
+                                                        <Trash2 className="w-3.5 h-3.5 text-red-600 dark:text-red-500 group-hover:text-red-700" />
+                                                    </div>
+                                                    <span className="text-[13.5px] font-bold text-red-600 dark:text-red-500 group-hover:text-red-700 dark:group-hover:text-red-400">Delete Project</span>
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
                                     </>
                                 )}
                             </DropdownMenuContent>
@@ -727,22 +779,19 @@ const Dashboard = () => {
 
                     <div className="flex items-center gap-2 md:gap-6 shrink-0">
                         {/* Team Chat Button - Always visible if a project is selected */}
-                        {selectedProject && (
-                            <div className="hidden md:block">
-                            </div>
-                        )}
+
 
 
                         {isOwner && activeView !== 'home' && activeView !== 'list' && (
-                            <div className="hidden sm:block">
+                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="hidden sm:block">
                                 <Button
                                     onClick={() => setIsCreateTaskOpen(true)}
-                                    className="bg-zinc-950 hover:bg-black text-white dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 font-bold text-[15px] px-7 h-11 rounded-full flex items-center gap-2 shadow-xl shadow-zinc-500/10 border-none"
+                                    className="bg-zinc-950 hover:bg-black text-white dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 font-bold text-[13.5px] px-4 h-9 rounded-full flex items-center gap-2 shadow-lg shadow-zinc-500/10 transition-all border-none active:scale-[0.98]"
                                 >
-                                    <Plus className="w-5 h-5" strokeWidth={2.5} />
+                                    <Plus className="w-4 h-4" strokeWidth={3} />
                                     <span>Add Mission</span>
                                 </Button>
-                            </div>
+                            </motion.div>
                         )}
 
 
@@ -752,25 +801,14 @@ const Dashboard = () => {
                             onMarkAllAsRead={markAllAsRead}
                         />
 
-                        <div className="hidden sm:block">
-                            <Link to="/">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="w-9 h-9 rounded-full bg-zinc-100 border border-zinc-600 dark:bg-zinc-800 text-zinc-900 hover:text-white dark:hover:text-white border dark:bg-white hover:bg-black dark:hover:bg-zinc-700 shadow-sm group"
-                                    title="Back to Landing Page"
-                                >
-                                    <ArrowLeftToLine className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                                </Button>
-                            </Link>
-                        </div>
+
 
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="relative w-11 h-11 rounded-2xl bg-zinc-900 dark:bg-zinc-100 border border-zinc-900 dark:border-white flex items-center justify-center text-sm font-bold text-white dark:text-black outline-none hover:bg-zinc-800 dark:hover:bg-white/90 shrink-0 group shadow-lg">
+                                <button className="relative w-10 h-10 rounded-2xl bg-zinc-900 dark:bg-zinc-100 border border-zinc-900 dark:border-white flex items-center justify-center text-sm font-bold text-white dark:text-black outline-none hover:bg-zinc-800 dark:hover:bg-white/90 transition-all shrink-0 group shadow-lg">
                                     {user?.user_metadata?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
-                                    <span className="absolute bottom-2 right-2 w-2.5 h-2.5 bg-emerald-500 border-2 border-zinc-900 dark:border-white rounded-full group-hover:scale-110 shadow-sm"></span>
+                                    <span className="absolute bottom-2 right-2 w-2.5 h-2.5 bg-emerald-500 border-2 border-zinc-900 dark:border-white rounded-full group-hover:scale-110 transition-transform shadow-sm"></span>
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[310px] rounded-[24px] p-0 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden font-body">
@@ -799,8 +837,8 @@ const Dashboard = () => {
                                             </div>
                                         </div>
                                         <div className="shrink-0 pt-0.5">
-                                            <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-lg border border-emerald-100/50 dark:border-emerald-500/20">
-                                                PRO
+                                            <div className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold px-2 py-0.5 rounded-lg border border-emerald-100/50 dark:border-emerald-500/20">
+                                                Early Access
                                             </div>
                                         </div>
                                     </div>
@@ -835,12 +873,38 @@ const Dashboard = () => {
 
                                     <div className="h-px bg-zinc-100 dark:bg-zinc-900 my-1" />
 
-                                    <DropdownMenuItem onClick={() => setActiveView('overview')} className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors">
+                                    {isOwner && selectedProject && activeView !== 'completion_summary' && !selectedProject.is_completed && (
+                                        <div className="px-2 py-1">
+                                            <DropdownMenuItem
+                                                onClick={() => setIsCompletionConfirmOpen(true)}
+                                                className="px-4 py-3 rounded-[1.25rem] flex items-center gap-4 bg-emerald-50 dark:bg-emerald-900/10 hover:bg-emerald-100 dark:hover:bg-emerald-900/20 focus:bg-emerald-100 dark:focus:bg-emerald-900/20 cursor-pointer outline-none group transition-all border border-emerald-100 dark:border-emerald-500/20"
+                                            >
+                                                <div className="w-9 h-9 rounded-2xl bg-emerald-500 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/20 transition-transform group-hover:scale-105">
+                                                    <CheckCircle2 className="w-5 h-5 text-white" />
+                                                </div>
+                                                <div className="flex flex-col text-left">
+                                                    <span className="text-[14px] font-black text-emerald-800 dark:text-emerald-400 tracking-tight leading-none">Completed your project?</span>
+                                                    <span className="text-[10px] font-bold text-emerald-600/70 dark:text-emerald-400/50 mt-1 uppercase tracking-widest leading-none">Mark as finished</span>
+                                                </div>
+                                            </DropdownMenuItem>
+                                        </div>
+                                    )}
+
+                                    <DropdownMenuItem
+                                        onClick={() => {
+                                            if (!selectedProject && projects.length > 0) {
+                                                setSelectedProject(projects[0]);
+                                            }
+                                            setActiveView('overview');
+                                        }}
+                                        className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors"
+                                    >
                                         <div className="w-5 h-5 flex items-center justify-center">
                                             <Activity className="w-[18px] h-[18px] text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                                         </div>
                                         <span className="text-[14.5px] font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors tracking-tight">Activity</span>
                                     </DropdownMenuItem>
+
 
                                     <DropdownMenuItem onClick={() => setActiveView('settings')} className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors">
                                         <div className="w-5 h-5 flex items-center justify-center">
@@ -849,14 +913,20 @@ const Dashboard = () => {
                                         <span className="text-[14.5px] font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors tracking-tight">Settings</span>
                                     </DropdownMenuItem>
 
+                                    <DropdownMenuItem onClick={() => navigate('/')} className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors">
+                                        <div className="w-5 h-5 flex items-center justify-center">
+                                            <ArrowLeftToLine className="w-[18px] h-[18px] text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+                                        </div>
+                                        <span className="text-[14.5px] font-semibold text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors tracking-tight">Back to Home</span>
+                                    </DropdownMenuItem>
                                     <div className="h-px bg-zinc-100 dark:bg-zinc-900 my-1" />
 
-                                    <DropdownMenuItem className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors">
+                                    {/* <DropdownMenuItem className="px-4 py-2.5 flex items-center gap-3 focus:bg-zinc-50 dark:focus:bg-zinc-900 cursor-pointer outline-none group transition-colors">
                                         <div className="w-5 h-5 flex items-center justify-center">
                                             <Plus className="w-[18px] h-[18px] text-zinc-600 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                                         </div>
                                         <span className="text-[14.5px] font-medium text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">Add Account</span>
-                                    </DropdownMenuItem>
+                                    </DropdownMenuItem> */}
 
                                     <DropdownMenuItem onClick={signOut} className="px-4 py-2.5 flex items-center gap-3 m-2 mx-1.5 rounded-xl cursor-all-scroll focus:bg-zinc-50 dark:focus:bg-zinc-900 group transition-all duration-300 bg-transparent hover:bg-zinc-50 dark:hover:bg-zinc-900 outline-none">
                                         <div className="w-5 h-5 flex items-center justify-center">
@@ -879,7 +949,7 @@ const Dashboard = () => {
 
                 {/* Navigation Tabs */}
                 {selectedProject && (
-                    <nav className="h-12 border-b border-zinc-100 dark:border-white/5 flex items-center px-4 md:px-6 gap-6 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-20 overflow-x-auto scrollbar-hide w-full sticky top-14 md:top-16">
+                    <nav className="h-12 border-b border-zinc-100 dark:border-white/5 flex items-center px-4 md:px-6 gap-6 bg-white/80 dark:bg-black/80 backdrop-blur-xl z-20 overflow-x-auto scrollbar-hide w-full sticky top-14 md:top-16 transition-all">
                         <Tab active={activeView === 'overview'} onClick={() => setActiveView('overview')}>Team Activity</Tab>
                         <Tab active={activeView === 'board'} onClick={() => setActiveView('board')}>Task List</Tab>
                         <Tab active={activeView === 'timeline'} onClick={() => setActiveView('timeline')}>Timeline</Tab>
@@ -903,12 +973,12 @@ const Dashboard = () => {
 
                 {/* Bottom Navigation for Mobile - Premium Glassmorphism */}
                 {isMobile && (
-                    <nav className="fixed bottom-6 left-6 right-6 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl border border-zinc-200/50 dark:border-white/10 rounded-[32px] flex items-center h-[72px] px-4 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
+                    <nav className="fixed bottom-6 left-6 right-6 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-3xl border border-zinc-200/50 dark:border-white/10 rounded-[32px] flex items-center h-[72px] px-4 z-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-300">
                         {/* Navigation Items - Redistributed for better spacing without the Plus button */}
                         <div className="flex-1 flex items-center justify-between px-2">
                             <button
                                 onClick={() => { setActiveView('home'); setSelectedProject(null); setIsSidebarOpen(false); }}
-                                className={`flex items-center justify-center w-12 h-12 rounded-2xl ${activeView === 'home' ? 'bg-blue-50 text-blue-600' : 'text-zinc-400'}`}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'home' ? 'bg-blue-50 text-blue-600' : 'text-zinc-400'}`}
                             >
                                 <Home className={activeView === 'home' ? "w-6 h-6" : "w-5 h-5"} />
                             </button>
@@ -916,7 +986,7 @@ const Dashboard = () => {
                             <button
                                 onClick={() => { if (selectedProject) setActiveView('board'); setIsSidebarOpen(false); }}
                                 disabled={!selectedProject}
-                                className={`flex items-center justify-center w-12 h-12 rounded-2xl ${activeView === 'board' ? 'bg-emerald-50 text-emerald-600' : (selectedProject ? 'text-zinc-400' : 'text-zinc-200 opacity-50')}`}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'board' ? 'bg-emerald-50 text-emerald-600' : (selectedProject ? 'text-zinc-400' : 'text-zinc-200 opacity-50')}`}
                             >
                                 <LayoutDashboard className={activeView === 'board' ? "w-6 h-6" : "w-5 h-5"} />
                             </button>
@@ -924,7 +994,7 @@ const Dashboard = () => {
                             {selectedProject ? (
                                 <button
                                     onClick={() => { setActiveView('messages'); setIsSidebarOpen(false); }}
-                                    className={`flex items-center justify-center w-12 h-12 rounded-2xl ${activeView === 'messages' ? 'bg-indigo-50 text-indigo-600' : 'text-zinc-400'}`}
+                                    className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${activeView === 'messages' ? 'bg-indigo-50 text-indigo-600' : 'text-zinc-400'}`}
                                 >
                                     <MessageSquare className={activeView === 'messages' ? "w-6 h-6" : "w-5 h-5"} />
                                 </button>
@@ -934,7 +1004,7 @@ const Dashboard = () => {
 
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
-                                className={`flex items-center justify-center w-12 h-12 rounded-2xl ${isSidebarOpen ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400'}`}
+                                className={`flex items-center justify-center w-12 h-12 rounded-2xl transition-all ${isSidebarOpen ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-400'}`}
                             >
                                 <Menu className="w-5 h-5" />
                             </button>
@@ -996,6 +1066,31 @@ const Dashboard = () => {
                 user={currentUser}
                 currentUserId={currentUser?.id || ''}
             />
+
+            <AlertDialog open={isCompletionConfirmOpen} onOpenChange={setIsCompletionConfirmOpen}>
+                <AlertDialogContent className="rounded-3xl bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 shadow-2xl p-8 font-body">
+                    <AlertDialogHeader>
+                        <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center mb-6">
+                            <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+                        </div>
+                        <AlertDialogTitle className="text-2xl font-black text-zinc-900 dark:text-white">Complete this project?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-zinc-500 dark:text-zinc-400 font-medium text-base mt-2">
+                            Are you sure you want to mark <span className="font-bold text-zinc-900 dark:text-white">"{selectedProject?.title}"</span> as completed? You will see a final summary report after this.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="mt-8 gap-3">
+                        <AlertDialogCancel className="h-11 px-6 rounded-xl border-zinc-200 dark:border-zinc-800 font-bold text-zinc-600 dark:text-zinc-400">
+                            Go back
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleCompleteProject}
+                            className="h-11 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-lg shadow-emerald-500/10"
+                        >
+                            Yes, Complete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 
@@ -1015,6 +1110,14 @@ const Dashboard = () => {
             case 'messages': return <InboxView projectId={selectedProject?.id} members={members} currentUserId={currentUser?.id || ''} onlineUsers={onlineUsers} />;
             case 'history': return <HistoryView tasks={selectedProject ? projectTasks : userTasks} members={members} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} />;
             case 'settings': return <SettingsView user={user} currentUser={currentUser} onUserUpdated={fetchUserTasks} />;
+            case 'completion_summary': return selectedProject ? (
+                <CompletionSummary
+                    project={selectedProject}
+                    tasks={projectTasks}
+                    members={members}
+                    onBack={() => setActiveView('overview')}
+                />
+            ) : <div />;
             default: return <ComingSoon view={activeView} />;
         }
     }
@@ -1031,12 +1134,12 @@ interface NavItemProps {
 const NavItem = ({ icon: Icon, label, active, onClick, color }: NavItemProps) => (
     <button
         onClick={onClick}
-        className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold group ${active
+        className={`flex items-center gap-3 px-3 py-2.5 w-full rounded-xl text-sm font-bold transition-all group active:scale-95 ${active
             ? 'bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white shadow-sm border border-zinc-200/50 dark:border-white/5'
             : 'text-zinc-500 dark:text-zinc-500 hover:bg-white/50 dark:hover:bg-zinc-900/50 hover:text-zinc-900 dark:hover:text-white'
             }`}
     >
-        <Icon className={`w-4 h-4 ${active ? (color || 'text-zinc-950 dark:text-white') : 'text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300'}`} />
+        <Icon className={`w-4 h-4 transition-colors ${active ? (color || 'text-zinc-950 dark:text-white') : 'text-zinc-500 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300'}`} />
         <span className="truncate tracking-tight">{label}</span>
         {active && <div className="ml-auto w-1 h-4 bg-zinc-950 dark:bg-white rounded-full" />}
     </button>
@@ -1051,7 +1154,7 @@ interface TabProps {
 const Tab = ({ children, active, onClick }: TabProps) => (
     <button
         onClick={onClick}
-        className={`h-full px-5 relative font-bold text-[13px] whitespace-nowrap ${active
+        className={`h-full px-5 relative font-bold text-[13px] transition-all whitespace-nowrap active:scale-95 ${active
             ? 'text-zinc-950 dark:text-white'
             : 'text-zinc-500 hover:text-zinc-950 dark:hover:text-white'
             }`}

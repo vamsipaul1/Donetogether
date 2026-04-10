@@ -1,14 +1,13 @@
-import { motion, AnimatePresence } from 'framer-motion';
 import { MessageWithSender } from '@/types/database';
 import { format, isToday, isYesterday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { getAvatarColor, getInitials } from '@/lib/avatarUtils';
-import { Check, CheckCheck, Clock, FileText, Download, Reply, Smile, Copy, Trash2, Image as ImageIcon, ExternalLink, Play, Pause, Volume2, CheckSquare } from 'lucide-react';
+import { Check, CheckCheck, Clock, FileText, Download, Reply, Smile, Copy, Trash2, Image as ImageIcon, ExternalLink, Play, Pause } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { toast } from 'sonner';
-import { downloadFile, formatFileSize, isImageFile } from '@/lib/fileUpload';
+import { downloadFile, formatFileSize } from '@/lib/fileUpload';
 
 interface MessageBubbleProps {
     message: MessageWithSender;
@@ -24,7 +23,6 @@ interface MessageBubbleProps {
     isSequence?: boolean;
 }
 
-// Message status enum
 type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read';
 
 export const MessageBubble = ({
@@ -40,292 +38,202 @@ export const MessageBubble = ({
     totalProjectMembers = 1,
     isSequence = false
 }: MessageBubbleProps) => {
-
     const [status, setStatus] = useState<MessageStatus>('sending');
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(message.content);
     const [showReactionPicker, setShowReactionPicker] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
 
-    // Determine message status
     useEffect(() => {
         if (message.id.startsWith('temp-')) {
             setStatus('sending');
         } else {
             const readCount = message.reads?.length || 0;
             const isReadByAll = totalProjectMembers > 1 && readCount >= (totalProjectMembers - 1);
-
-            if (isReadByAll) {
-                setStatus('read');
-            } else if (readCount > 0) {
-                setStatus('delivered');
-            } else {
-                setStatus('sent');
-            }
+            setStatus(isReadByAll ? 'read' : readCount > 0 ? 'delivered' : 'sent');
         }
     }, [message.reads, totalProjectMembers, message.id]);
 
     useEffect(() => {
         if (!isOwnMessage && onVisible && !message.id.startsWith('temp-')) {
-            const timer = setTimeout(() => {
-                onVisible(message.id);
-            }, 500);
+            const timer = setTimeout(() => onVisible(message.id), 500);
             return () => clearTimeout(timer);
         }
     }, [message.id, isOwnMessage, onVisible]);
 
+    const formatTime = (date: string) => {
+        const d = new Date(date);
+        if (isToday(d)) return format(d, 'h:mm a');
+        if (isYesterday(d)) return `Yesterday ${format(d, 'h:mm a')}`;
+        return format(d, 'MMM d, h:mm a');
+    };
+
+    const StatusIcon = () => {
+        if (!isOwnMessage) return null;
+        switch (status) {
+            case 'sending': return <Clock className="w-3 h-3 text-zinc-400 animate-pulse" />;
+            case 'sent': return <Check className="w-3 h-3 text-zinc-400" />;
+            case 'delivered': return <CheckCheck className="w-3 h-3 text-zinc-400" />;
+            case 'read': return <CheckCheck className="w-3 h-3 text-blue-500" />;
+        }
+    };
+
+    const attachmentUrl = (message as any).attachment_url;
+    const attachmentType = (message as any).attachment_type;
+    const attachmentName = (message as any).attachment_name || 'File';
+
     if (message.is_deleted) {
         return (
-            <div className={cn(
-                "flex w-full px-4 mb-1",
-                isOwnMessage ? "justify-end" : "justify-start"
-            )}>
-                <div className="bg-zinc-100/30 dark:bg-zinc-800/20 px-4 py-1.5 rounded-2xl text-[12px] italic text-zinc-400 border border-zinc-100 dark:border-zinc-800">
+            <div className={cn("flex w-full mb-1 px-4", isOwnMessage ? "justify-end" : "justify-start")}>
+                <div className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 py-1.5 px-4 rounded-xl text-[12px] italic text-zinc-400">
                     Message deleted
                 </div>
             </div>
         );
     }
 
-    const hasNewAttachment = !!(message as any).attachment_url;
-    const oldAttachmentMatch = message.content?.match(/^\[Attachment: (.*?) \((.*?)\)\](?:\s*\n(.*))?$/s);
-
-    let attachmentData = null;
-    let contentDisplay = message.content;
-
-    if (hasNewAttachment) {
-        attachmentData = {
-            url: (message as any).attachment_url,
-            name: (message as any).attachment_name || 'File',
-            size: (message as any).attachment_size || 0,
-            type: (message as any).attachment_type || 'document'
-        };
-    } else if (oldAttachmentMatch) {
-        const fileName = oldAttachmentMatch[1];
-        const fileSize = oldAttachmentMatch[2];
-        contentDisplay = oldAttachmentMatch[3] || '';
-
-        let fileType = 'document';
-        if (/\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i.test(fileName)) fileType = 'image';
-        else if (/\.(wav|mp3|ogg|webm|m4a)$/i.test(fileName)) fileType = 'audio';
-
-        attachmentData = {
-            url: '#',
-            name: fileName,
-            size: 0,
-            type: fileType,
-            isLegacy: true
-        };
-    }
-
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [audioProgress, setAudioProgress] = useState(0);
-
-    const togglePlay = () => {
-        const audio = document.getElementById(`audio-${message.id}`) as HTMLAudioElement;
-        if (!audio) return;
-        if (isPlaying) audio.pause();
-        else audio.play();
-        setIsPlaying(!isPlaying);
-    };
-
-    const renderContent = (text: string) => {
-        if (!text) return null;
-        return text.split(' ').map((word, i) => {
-            if (word.startsWith('@')) {
-                return <span key={i} className="text-blue-500 font-bold hover:underline cursor-pointer">{word} </span>;
-            }
-            if (word.startsWith('#')) {
-                return <span key={i} className="text-zinc-400 font-bold hover:text-zinc-600 cursor-pointer">{word} </span>;
-            }
-            return <span key={i}>{word} </span>;
-        });
-    };
-
-    // Status icon component
-    const StatusIcon = () => {
-        if (!isOwnMessage) return null;
-
-        switch (status) {
-            case 'sending':
-                return <Clock className="w-3.5 h-3.5 text-zinc-400 animate-pulse" strokeWidth={2.5} />;
-            case 'sent':
-                return <Check className="w-3.5 h-3.5 text-zinc-400" strokeWidth={2.5} />;
-            case 'delivered':
-                return <CheckCheck className="w-3.5 h-3.5 text-zinc-400" strokeWidth={2.5} />;
-            case 'read':
-                return <CheckCheck className="w-3.5 h-3.5 text-zinc-900 dark:text-white" strokeWidth={2.5} />;
-        }
-    };
-
-    // Context menu handlers
-    const handleReply = () => {
-        if (onReply) {
-            onReply();
-            toast.success('Replying to message');
-        } else {
-            toast.info('Reply feature coming soon!');
-        }
-    };
-
-    const handleCopy = async () => {
-        try {
-            await navigator.clipboard.writeText(message.content);
-            toast.success('Message copied to clipboard!');
-        } catch (error) {
-            console.error('Failed to copy:', error);
-            toast.error('Failed to copy message');
-        }
-    };
-
-    const handleSaveEdit = () => {
-        if (onEdit && editContent.trim()) {
-            onEdit(message.id, editContent);
-            setIsEditing(false);
-        }
-    };
-
-    const handleDelete = () => {
-        if (onDelete && isOwnMessage) {
-            if (confirm('Are you sure you want to delete this message?')) {
-                onDelete(message.id);
-            }
-        }
-    };
-
-    const formatTimeShort = (date: string) => {
-        return format(new Date(date), 'h:mm a');
-    };
-
     return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className={cn(
-                "flex w-full px-6 group relative",
-                isOwnMessage ? "justify-end" : "justify-start",
-                isSequence ? "mt-[4px]" : "mt-[16px]"
-            )}
-        >
-            {/* AVATAR COLUMN - Fixed Width */}
-            <div className="w-[44px] flex flex-col justify-end">
-                {!isOwnMessage && !isSequence && (
-                    <Avatar className="h-9 w-9 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-800">
+        <div className={cn(
+            "flex w-full px-4 relative group",
+            isOwnMessage ? "justify-end" : "justify-start",
+            isSequence ? "mt-0.5" : "mt-6"
+        )}>
+            {!isOwnMessage && !isSequence && (
+                <div className="mr-3 shrink-0">
+                    <Avatar className="h-8 w-8 border border-zinc-100 dark:border-white/5 shadow-sm">
                         <AvatarImage src={message.sender?.avatar_url} />
-                        <AvatarFallback className={cn("text-[10px] font-black text-white", getAvatarColor(message.sender_id))}>
-                            {getInitials(message.sender?.display_name || '?')}
+                        <AvatarFallback className={cn("text-[9px] font-black text-white uppercase", getAvatarColor(message.sender_id))}>
+                            {getInitials(message.sender?.display_name || 'Team Member')}
                         </AvatarFallback>
                     </Avatar>
-                )}
-            </div>
+                </div>
+            )}
+            {/* If sequence but not own, add spacer */}
+            {!isOwnMessage && isSequence && <div className="w-11 shrink-0" />}
 
-            <div className={cn(
-                "flex flex-col relative max-w-[70%]",
-                isOwnMessage ? "items-end" : "items-start ml-2"
-            )}>
-                {/* SENDER NAME */}
-                {!isOwnMessage && !isSequence && (
-                    <span className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100 mb-1 ml-1 font-satoshi capitalize">
-                        {message.sender?.display_name || 'Partner'}
-                    </span>
+            <div className={cn("max-w-[70%] flex flex-col", isOwnMessage ? "items-end" : "items-start")}>
+                {!isSequence && !isOwnMessage && (
+                    <div className="flex items-center gap-2 mb-1 px-1">
+                        <span className="text-[11px] font-black text-zinc-700 dark:text-zinc-300">
+                            {message.sender?.display_name || 'Team Member'}
+                        </span>
+                        <span className="text-[10px] font-medium text-zinc-400">{formatTime(message.created_at)}</span>
+                    </div>
                 )}
 
                 <ContextMenu>
-                    <ContextMenuTrigger>
+                    <ContextMenuTrigger className="w-full">
                         <div className={cn(
-                            "relative px-4 py-2.5 rounded-[22px] transition-all",
+                            "px-4 py-2.5 text-sm font-medium leading-[1.5] shadow-sm select-none",
                             isOwnMessage 
-                                ? "bg-white text-indigo-950 rounded-tr-[4px] border border-indigo-50 shadow-sm"
-                                : "bg-indigo-600 text-white rounded-tl-[4px] shadow-sm"
+                                ? "bg-purple-600 text-white rounded-2xl rounded-tr-none" 
+                                : "bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 text-zinc-900 dark:text-zinc-100 rounded-2xl rounded-tl-none",
+                            isSequence && (isOwnMessage ? "rounded-tr-2xl" : "rounded-tl-2xl")
                         )}>
-                            {/* ATTACHMENT */}
-                            {attachmentData && (
-                                <div className="mb-2">
-                                    {attachmentData.type === 'image' && (
-                                        <div className="rounded-xl overflow-hidden mb-2 border border-black/5">
-                                            <img src={attachmentData.url} alt="" className="max-w-xs h-auto" />
+                            {/* Attachments UI */}
+                            {attachmentUrl && (
+                                <div className="mb-2 space-y-2">
+                                    {attachmentType === 'image' ? (
+                                        <div className="rounded-xl overflow-hidden cursor-pointer shadow-sm border border-black/5" onClick={() => window.open(attachmentUrl, '_blank')}>
+                                            <img src={attachmentUrl} alt={attachmentName} className="max-w-xs h-auto max-h-64 object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className={cn(
+                                            "flex items-center gap-3 p-2.5 rounded-xl border transition-colors",
+                                            isOwnMessage ? "bg-white/10 border-white/10 hover:bg-white/15" : "bg-zinc-50 dark:bg-black/20 border-zinc-100 dark:border-white/5 hover:bg-zinc-100 dark:hover:bg-black/30"
+                                        )}>
+                                            <div className="h-10 w-10 shrink-0 bg-white/20 dark:bg-black/20 rounded-lg flex items-center justify-center">
+                                                <FileText className="w-5 h-5 text-zinc-400" />
+                                            </div>
+                                            <div className="flex-1 min-w-0 pr-2">
+                                                <p className="text-[12px] font-black truncate leading-tight uppercase tracking-tight">{attachmentName}</p>
+                                                <p className="text-[10px] opacity-70 mt-1 uppercase font-bold tracking-tighter">{formatFileSize((message as any).attachment_size || 0)}</p>
+                                            </div>
+                                            <button onClick={() => downloadFile(attachmentUrl, attachmentName)} className="h-8 w-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-transform active:scale-90">
+                                                <Download className="w-4 h-4" />
+                                            </button>
                                         </div>
                                     )}
-                                    <div className={cn(
-                                        "flex items-center gap-3 p-2 rounded-xl",
-                                        isOwnMessage ? "bg-white/10" : "bg-zinc-50"
-                                    )}>
-                                        <FileText className="w-4 h-4" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-bold truncate">{attachmentData.name}</p>
-                                        </div>
-                                    </div>
                                 </div>
                             )}
 
-                            {/* TEXT */}
                             {isEditing ? (
-                                <textarea
-                                    className="bg-transparent border-0 ring-0 focus:ring-0 w-full resize-none text-[15px]"
-                                    value={editContent}
-                                    onChange={(e) => setEditContent(e.target.value)}
-                                    onBlur={handleSaveEdit}
-                                    autoFocus
-                                />
+                                <div className="min-w-[200px] space-y-2 py-1">
+                                    <textarea 
+                                        className="w-full bg-transparent border-none focus:ring-0 text-sm resize-none font-medium p-0"
+                                        value={editContent}
+                                        onChange={(e) => setEditContent(e.target.value)}
+                                        autoFocus
+                                    />
+                                    <div className="flex justify-end gap-2 pt-2 border-t border-white/10">
+                                        <button onClick={() => setIsEditing(false)} className="text-[10px] uppercase font-black px-2 py-1 opacity-70">Cancel</button>
+                                        <button onClick={() => { onEdit?.(message.id, editContent); setIsEditing(false); }} className="text-[10px] uppercase font-black px-3 py-1 bg-white/10 rounded-lg">Save</button>
+                                    </div>
+                                </div>
                             ) : (
-                                <p className="text-[14.5px] font-medium leading-[1.6] antialiased whitespace-pre-wrap font-inter">
-                                    {renderContent(contentDisplay)}
-                                </p>
+                                <div className="whitespace-pre-wrap break-words">{message.content}</div>
                             )}
-
-                            {/* TIME - Only shows on hover or as tiny detail */}
-                            <div className={cn(
-                                "absolute bottom-1 right-2 opacity-0 group-hover:opacity-40 transition-opacity text-[9px] uppercase font-black",
-                                isOwnMessage ? "text-white" : "text-zinc-400"
-                            )}>
-                                {formatTimeShort(message.created_at)}
-                            </div>
                         </div>
                     </ContextMenuTrigger>
-
-                    <ContextMenuContent className="w-56 p-2 rounded-2xl shadow-2xl border-zinc-100">
-                        <ContextMenuItem onClick={onReply} className="gap-2 font-bold rounded-xl px-4 py-2.5">
-                            <Reply className="w-4 h-4" /> Reply
+                    <ContextMenuContent className="w-56 p-2 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 shadow-2xl">
+                        <ContextMenuItem onClick={() => onReply?.()} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5">
+                            <Reply className="w-4 h-4 text-zinc-400" /> <span className="text-xs font-bold">Reply</span>
                         </ContextMenuItem>
-                        
-                        <ContextMenuItem onClick={() => toast.success("Converted to Task")} className="gap-2 font-bold rounded-xl px-4 py-2.5 text-zinc-900 border-t border-zinc-50 mt-1">
-                            <CheckSquare className="w-4 h-4 text-emerald-500" /> Convert to Task
+                        <ContextMenuItem onClick={() => { navigator.clipboard.writeText(message.content); toast.success('Copied'); }} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5">
+                            <Copy className="w-4 h-4 text-zinc-400" /> <span className="text-xs font-bold">Copy text</span>
                         </ContextMenuItem>
-                        
-                        <ContextMenuItem onClick={() => toast.success("Message Pinned")} className="gap-2 font-bold rounded-xl px-4 py-2.5">
-                            <Play className="w-4 h-4 rotate-[-45deg]" /> Pin Message
-                        </ContextMenuItem>
-
-                        <div className="h-px bg-zinc-50 my-1" />
-
-                        <ContextMenuItem onClick={handleCopy} className="gap-2 font-bold rounded-xl px-4 py-2.5">
-                            <Copy className="w-4 h-4" /> Copy Text
-                        </ContextMenuItem>
-                        
                         {isOwnMessage && (
-                            <ContextMenuItem onClick={handleDelete} className="gap-2 font-bold rounded-xl px-4 py-2.5 text-rose-500">
-                                <Trash2 className="w-4 h-4" /> Delete
+                            <ContextMenuItem onClick={() => setIsEditing(true)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/5">
+                                <span className="text-xs font-bold pl-7">Edit message</span>
+                            </ContextMenuItem>
+                        )}
+                        <div className="h-px bg-zinc-100 dark:bg-white/5 my-1 mx-2" />
+                        {isOwnMessage && (
+                            <ContextMenuItem onClick={() => onDelete?.(message.id)} className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-rose-50 dark:hover:bg-rose-900/10 text-rose-500">
+                                <Trash2 className="w-4 h-4" /> <span className="text-xs font-bold">Delete</span>
                             </ContextMenuItem>
                         )}
                     </ContextMenuContent>
                 </ContextMenu>
 
-                {/* STATUS FOR OWN MESSAGE */}
-                {isOwnMessage && !isSequence && (
-                    <div className="flex items-center gap-1 mt-1 mr-1">
-                        <span className="text-[9px] font-black text-zinc-400 uppercase tracking-tighter">
-                            {formatTimeShort(message.created_at)}
-                        </span>
-                        <div className="w-3 flex items-center justify-center">
-                            {status === 'read' ? (
-                                <CheckCheck className="w-3.5 h-3.5 text-zinc-900" strokeWidth={3} />
-                            ) : (
-                                <Check className="w-3.5 h-3.5 text-zinc-300" strokeWidth={3} />
-                            )}
-                        </div>
+                {/* Reactions Display */}
+                {(message as any).reactions && (message as any).reactions.length > 0 && (
+                    <div className={cn("flex flex-wrap gap-1 mt-1", isOwnMessage ? "justify-end mr-1" : "justify-start ml-1")}>
+                        {Object.entries((message as any).reactions.reduce((acc: any, r: any) => {
+                            acc[r.emoji] = (acc[r.emoji] || 0) + 1;
+                            return acc;
+                        }, {})).map(([emoji, count]: [string, any]) => (
+                            <button key={emoji} onClick={() => onReact?.(message.id, emoji)} className="px-2 py-0.5 rounded-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 text-[11px] font-bold flex items-center gap-1 active:scale-90 transition-all">
+                                <span>{emoji}</span>
+                                {count > 1 && <span className="opacity-60">{count}</span>}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Status Bar */}
+                {isOwnMessage && (
+                    <div className="h-4 mt-1 flex items-center gap-1.5 px-0.5 select-none transition-opacity opacity-0 group-hover:opacity-100">
+                        <span className="text-[10px] font-bold text-zinc-400">{formatTime(message.created_at)}</span>
+                        <StatusIcon />
                     </div>
                 )}
             </div>
-        </motion.div>
+
+            {/* Hover Actions Bar (Simple) */}
+            <div className={cn(
+                "absolute top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 shadow-sm rounded-lg flex items-center p-1 z-10",
+                isOwnMessage ? "right-full mr-2" : "left-full ml-2"
+            )}>
+                <button onClick={() => onReply?.()} className="p-1.5 hover:bg-zinc-50 dark:hover:bg-white/5 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-white"><Reply className="w-3.5 h-3.5" /></button>
+                <button onClick={() => setShowReactionPicker(!showReactionPicker)} className="p-1.5 hover:bg-zinc-50 dark:hover:bg-white/5 rounded text-zinc-400 hover:text-zinc-900 dark:hover:text-white"><Smile className="w-3.5 h-3.5" /></button>
+            </div>
+
+            {showReactionPicker && (
+                <div className={cn("absolute bottom-full mb-2 z-20 flex gap-1 p-1 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-white/5 rounded-xl shadow-2xl", isOwnMessage ? "right-4" : "left-4")}>
+                    {['👍', '❤️', '😂', '🔥', '🚀'].map(e => <button key={e} onClick={() => { onReact?.(message.id, e); setShowReactionPicker(false); }} className="p-1.5 hover:bg-zinc-50 dark:hover:bg-white/5 rounded-lg text-lg transition-transform hover:scale-125">{e}</button>)}
+                </div>
+            )}
+        </div>
     );
 };
-

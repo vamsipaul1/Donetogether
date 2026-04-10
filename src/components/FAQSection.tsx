@@ -1,129 +1,115 @@
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Minus, X } from 'lucide-react'
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Minus } from 'lucide-react';
 
 const faqs = [
   {
-    question: "Who's behind DoneTogether?",
-    answer: "DoneTogether is powered by a passionate team of developers and project managers who care about team execution and clarity.",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+    question: "What exactly is DoneTogether?",
+    answer: "DoneTogether is a high-impact 'Completion System' designed for student groups and founders. Unlike traditional task managers that just list what needs to be done, we focus on the architecture of finishing combining strategic AI assistance, real-time collaboration, and efficiency tracking in one focused room."
   },
   {
-    question: "Is it free for students?",
-    answer: "Yes! We offer a dedicated free tier for students and academic projects to help you build your portfolio.",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka"
+    question: "How is it different from Jira or Asana?",
+    answer: "Most platforms are built for enterprise management and 'tracking' indefinitely. DoneTogether is built for 'mission completion.' We feature ThinkSense AI as a native strategist, integrated project rooms that eliminate tab switching, and real-time XP multipliers that reward actual momentum."
   },
   {
-    question: "Can I collaborate with external partners?",
-    answer: "Absolutely. You can invite anyone via email or link to join your project room.",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nala"
+    question: "Is ThinkSense AI available for all members?",
+    answer: "Yes. ThinkSense AI is a core pillar of the platform. It's integrated into every project room to analyze your trajectory, suggest mission-critical steps, and help resolve blockers through strategic dialogue."
   },
   {
-    question: "Do you provide real-time updates?",
-    answer: "Yes, our platform uses live synchronization so every team member stays on the same page.",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Buddy"
+    question: "How do I invite my team to a project?",
+    answer: "Once you start a mission, you'll receive a unique Invite Link and Join Code. Anyone with this code can instantly enter your project room and start contributing. No complex permissions just execution."
   },
   {
-    question: "Is my data secure?",
-    answer: "We prioritize security with end-to-end encryption for your project data and private communications.",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lilly"
+    question: "What are Streak Points and XP multipliers?",
+    answer: "We believe in rewarding consistency. Streak Points track your daily contributions, and maintaining a streak unlocks XP multipliers. This isn't just gamification it's a proven psychological trigger to help teams maintain focus and see projects through to completion."
   }
-]
+];
 
-const FAQSection = ({ onClose }: { onClose?: () => void }) => {
-  const [openIndex, setOpenIndex] = useState<number | null>(0)
+const FAQItem = ({ question, answer, isOpen, onClick }: { question: string, answer: string, isOpen: boolean, onClick: () => void }) => {
+  return (
+    <div className="border-t border-zinc-200/60 transition-all">
+      <button
+        onClick={onClick}
+        className="w-full py-7 flex items-center justify-between text-left group"
+      >
+        <span className={`text-[16px] md:text-[18px] font-bold font-body transition-colors ${isOpen ? 'text-zinc-900' : 'text-zinc-800/80 group-hover:text-zinc-900'}`}>
+          {question}
+        </span>
+        <div className={`shrink-0 ml-4 transition-transform duration-300 ${isOpen ? 'rotate-0' : 'rotate-90'}`}>
+          {isOpen ? <Minus className="w-5 h-5 text-zinc-900" /> : <Plus className="w-5 h-5 text-zinc-400" />}
+        </div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="pb-8 pr-12">
+              <p className="text-[14px] md:text-[15px] font-medium font-body text-zinc-500 leading-relaxed max-w-[800px]">
+                {answer}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const FAQSection = () => {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <div id="faqs" className="py-8 bg-[#f8f9fa] relative rounded-3xl">
-      <div className="max-w-4xl mx-auto px-6">
-        <div className="flex justify-between items-start mb-12">
-          <div className="text-left">
-            <h2 className="text-3xl sm:text-5xl font-sans font-bold tracking-tight text-[#0a0a0a] mb-3">
-              Commonly Asked Questions
-            </h2>
-            <p className="text-zinc-500 text-base">
-              Everything you need to know about getting your team up and running.
-            </p>
+    <section id="faqs" className="py-24 sm:py-32 bg-[#fcfcf9]">
+      <div className="max-w-[1280px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-[1fr,1.5fr] gap-16 lg:gap-32">
+
+        {/* LEFT SIDE: HEADING */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="flex flex-col justify-start pt-2"
+        >
+          <h2 className="text-[42px] md:text-[52px] font-bold font-body text-zinc-900 leading-[1.1] mb-6">
+            Questions?<br />
+            <span className="text-zinc-700/60 italic">We're here to help.</span>
+          </h2>
+          <a
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=vamsirangumudri2023@gmail.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 mt-4 text-zinc-400/80 font-bold text-[11px] uppercase tracking-[0.2em] group cursor-pointer w-fit no-underline"
+          >
+            <div className="w-5 h-5 rounded-full border border-zinc-400 flex items-center justify-center text-[10px] group-hover:bg-zinc-900 group-hover:border-zinc-900 group-hover:text-white transition-all">↓</div>
+            <span className="font-body text-zinc-900 font-bold text-[15px] hover:text-zinc-700/60 transition-colors underline underline-offset-4 capitalize">Ask here...</span>
+          </a>
+        </motion.div>
+
+        {/* RIGHT SIDE: ACCORDION */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+        >
+          <div className="border-b border-zinc-200/60">
+            {faqs.map((faq, index) => (
+              <FAQItem
+                key={index}
+                question={faq.question}
+                answer={faq.answer}
+                isOpen={openIndex === index}
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+              />
+            ))}
           </div>
-          {onClose && (
-            <button 
-              onClick={onClose}
-              className="p-2 rounded-full hover:bg-zinc-200 transition-colors"
-            >
-              <X size={24} />
-            </button>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-8">
-          {faqs.map((faq, index) => {
-            const isOpen = openIndex === index;
-            return (
-              <div key={index} className="flex flex-col gap-6">
-                {/* Question Bubble (Right Aligned) */}
-                <div className="flex items-start justify-end gap-4">
-                  <div className="flex flex-col items-end gap-2">
-                    <motion.div
-                      onClick={() => setOpenIndex(isOpen ? null : index)}
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      className={`
-                        px-7 py-5 rounded-[28px] rounded-br-[6px] 
-                        font-semibold text-[15.5px] tracking-tight cursor-pointer
-                        shadow-[0_12px_32px_-8px_rgba(0,0,0,0.1)]
-                        ${isOpen ? 'bg-[#0a0a0a] text-white shadow-[#00000020]' : 'bg-zinc-100 text-zinc-500 shadow-none'}
-                        transition-all duration-400 max-w-[90%] sm:max-w-md
-                      `}
-                    >
-                      {faq.question}
-                    </motion.div>
-                  </div>
-                  
-                  <button
-                    onClick={() => setOpenIndex(isOpen ? null : index)}
-                    className="mt-2 w-10 h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center text-zinc-600 hover:bg-zinc-50 transition-colors shadow-sm"
-                  >
-                    {isOpen ? <Minus size={18} /> : <Plus size={18} />}
-                  </button>
-                </div>
-
-                {/* Answer Bubble (Left Aligned) */}
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -20, scale: 0.98 }}
-                      animate={{ opacity: 1, x: 0, scale: 1 }}
-                      exit={{ opacity: 0, x: -20, scale: 0.98 }}
-                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                      className="flex items-start gap-4"
-                    >
-                      <div className="relative mt-auto mb-1">
-                        <img
-                          src={faq.avatar}
-                          alt="Support Avatar"
-                          className="w-12 h-12 rounded-full border-2 border-white shadow-md bg-white p-0.5 object-cover"
-                        />
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></div>
-                      </div>
-
-                      <div className="flex flex-col gap-2 max-w-[90%] sm:max-w-lg">
-                        <div className="px-7 py-6 rounded-[28px] rounded-bl-[6px] bg-white border border-zinc-100 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.06)] text-zinc-600 text-[15.5px] leading-relaxed tracking-tight antialiased">
-                          {faq.answer}
-                        </div>
-                        <span className="text-[11px] font-bold text-zinc-400 ml-4 flex items-center gap-1.5 antialiased">
-                          <span className="w-1 h-1 bg-zinc-300 rounded-full"></span> Support Team
-                        </span>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
+        </motion.div>
       </div>
-    </div>
-  )
-}
+    </section>
+  );
+};
 
-export default FAQSection
+export default FAQSection;

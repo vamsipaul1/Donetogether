@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 
 import HowItWorksSection from '@/components/HowItWorksSection';
 import ComparisonSection from '@/components/ComparisonSection';
+import FAQSection from '@/components/FAQSection';
 
 const Index = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const Index = () => {
         <FeaturesSection />
         <HowItWorksSection />
         <ComparisonSection />
+        <FAQSection />
         <CTASection />
       </main>
       <Footer />

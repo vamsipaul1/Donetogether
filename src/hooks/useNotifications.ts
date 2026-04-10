@@ -59,14 +59,14 @@ export const useNotifications = (userId: string | undefined) => {
                         title: 'New Task Assigned',
                         message: payload.new.title,
                         type: 'task',
-                        link: '/dashboard'
+                        link: '/project-room'
                     });
                 } else if (payload.eventType === 'UPDATE' && payload.new.status === 'completed' && payload.old.status !== 'completed') {
                     addInAppNotification({
                         title: 'Task Completed',
                         message: `Congrats! ${payload.new.title} is done.`,
                         type: 'task',
-                        link: '/dashboard'
+                        link: '/project-room'
                     });
                 }
             })
@@ -87,7 +87,7 @@ export const useNotifications = (userId: string | undefined) => {
                         title: 'New Project Live',
                         message: `Project "${payload.new.title}" has been started.`,
                         type: 'project',
-                        link: '/dashboard'
+                        link: '/project-room'
                     });
                 }
             })

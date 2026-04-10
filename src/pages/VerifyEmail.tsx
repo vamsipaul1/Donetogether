@@ -19,7 +19,7 @@ const VerifyEmail = () => {
         if (session) {
             toast.success('Email verified successfully!');
             // Force reload to ensure all states are clean or just navigate
-            window.location.href = '/dashboard';
+            window.location.href = '/project-room';
         } else {
             // Also try reloading the user on the existing session if it exists but was unconfirmed
             // But usually, getSession is enough if they verified in another tab
@@ -50,7 +50,7 @@ const VerifyEmail = () => {
     useState(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN' || session) {
-                window.location.href = '/dashboard';
+                window.location.href = '/project-room';
             }
         });
         return () => subscription.unsubscribe();
