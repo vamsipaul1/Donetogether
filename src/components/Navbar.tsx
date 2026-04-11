@@ -178,29 +178,30 @@ const Navbar = () => {
 
 
       {/* MOBILE MENU */}
-
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{
               opacity: 1,
-              height: "auto",
+              height: "100vh",
             }}
             exit={{
               opacity: 0,
               height: 0,
             }}
             className="
-              md:hidden
+              lg:hidden
+              fixed
+              inset-0
+              top-[60px]
               bg-white
-              border-t
-              border-zinc-200
-              overflow-hidden
+              z-50
+              overflow-y-auto
+              pb-32
             "
           >
-            <div className="px-6 py-6 flex flex-col gap-4">
-
+            <div className="px-6 py-8 flex flex-col gap-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
@@ -210,23 +211,26 @@ const Navbar = () => {
                     handleNavClick(e, link.href);
                   }}
                   className="
-                    text-[15px]
-                    text-zinc-700
+                    text-[24px]
+                    font-bold
+                    text-zinc-900
+                    tracking-tight
                   "
                 >
                   {link.name}
                 </Link>
               ))}
 
-              <div className="h-px bg-zinc-200 my-2" />
+              <div className="h-px bg-zinc-100 my-4" />
 
               {user ? (
-                <>
+                <div className="flex flex-col gap-6">
                   <Link
                     to="/project-room"
                     onClick={() =>
                       setIsMobileMenuOpen(false)
                     }
+                    className="text-[24px] font-bold text-zinc-900 tracking-tight"
                   >
                     Dashboard
                   </Link>
@@ -236,18 +240,19 @@ const Navbar = () => {
                       signOut();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="text-red-500 text-left"
+                    className="text-red-500 text-left text-[24px] font-bold tracking-tight"
                   >
                     Sign Out
                   </button>
-                </>
+                </div>
               ) : (
-                <>
+                <div className="flex flex-col gap-6 mt-4">
                   <Link
                     to="/login"
                     onClick={() =>
                       setIsMobileMenuOpen(false)
                     }
+                    className="text-[24px] font-bold text-zinc-900 tracking-tight"
                   >
                     Log in
                   </Link>
@@ -257,16 +262,18 @@ const Navbar = () => {
                     onClick={() =>
                       setIsMobileMenuOpen(false)
                     }
+                    className="mt-2"
                   >
                     <button
                       className="
                         w-full
                         bg-black
                         text-white
-                        h-12
+                        h-14
+                        text-[16px]
                         font-bold
                         rounded-full
-                        shadow-lg
+                        shadow-xl
                         active:scale-[0.98]
                         transition-all
                       "
@@ -274,9 +281,8 @@ const Navbar = () => {
                       Get Started
                     </button>
                   </Link>
-                </>
+                </div>
               )}
-
             </div>
           </motion.div>
         )}

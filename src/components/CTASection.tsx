@@ -71,9 +71,9 @@ export default function CTASection() {
         {/* Button */}
         <motion.div variants={fadeUp} className="relative inline-block mt-14">
           {/* Hand-drawn Directional Arrow - Darker and shifted right for mobile */}
-          <div className="absolute -top-12 left-2 sm:-top-16 sm:-left-12 text-black pointer-events-none transform -rotate-6 sm:-rotate-12 opacity-80 sm:opacity-100">
+          <div className="absolute -top-14 -left-2 sm:-top-16 sm:-left-12 text-black pointer-events-none transform -rotate-12 sm:-rotate-12 opacity-60 sm:opacity-100">
             <svg
-              className="w-16 h-16 sm:w-[90px] sm:h-[90px]"
+              className="w-14 h-14 sm:w-[90px] sm:h-[90px]"
               viewBox="0 0 100 100"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"

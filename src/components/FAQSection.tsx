@@ -30,13 +30,13 @@ const FAQItem = ({ question, answer, isOpen, onClick }: { question: string, answ
     <div className="border-t border-zinc-200/60 transition-all">
       <button
         onClick={onClick}
-        className="w-full py-7 flex items-center justify-between text-left group"
+        className="w-full py-5 sm:py-7 flex items-center justify-between text-left group"
       >
-        <span className={`text-[16px] md:text-[18px] font-bold font-body transition-colors ${isOpen ? 'text-zinc-900' : 'text-zinc-800/80 group-hover:text-zinc-900'}`}>
+        <span className={`text-[15px] sm:text-[18px] font-bold font-body transition-colors ${isOpen ? 'text-zinc-900' : 'text-zinc-800/80 group-hover:text-zinc-900'}`}>
           {question}
         </span>
         <div className={`shrink-0 ml-4 transition-transform duration-300 ${isOpen ? 'rotate-0' : 'rotate-90'}`}>
-          {isOpen ? <Minus className="w-5 h-5 text-zinc-900" /> : <Plus className="w-5 h-5 text-zinc-400" />}
+          {isOpen ? <Minus className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-900" /> : <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />}
         </div>
       </button>
       <AnimatePresence>
@@ -48,8 +48,8 @@ const FAQItem = ({ question, answer, isOpen, onClick }: { question: string, answ
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="pb-8 pr-12">
-              <p className="text-[14px] md:text-[15px] font-medium font-body text-zinc-500 leading-relaxed max-w-[800px]">
+            <div className="pb-6 sm:pb-8 pr-4 sm:pr-12">
+              <p className="text-[13.5px] sm:text-[15px] font-medium font-body text-zinc-500 leading-relaxed max-w-[800px]">
                 {answer}
               </p>
             </div>
@@ -64,8 +64,8 @@ const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section id="faqs" className="py-24 sm:py-32 bg-[#fcfcf9]">
-      <div className="max-w-[1280px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-[1fr,1.5fr] gap-16 lg:gap-32">
+    <section id="faqs" className="py-16 sm:py-32 bg-[#fcfcf9]">
+      <div className="max-w-[1280px] mx-auto px-6 grid grid-cols-1 lg:grid-cols-[1fr,1.5fr] gap-10 lg:gap-32">
 
         {/* LEFT SIDE: HEADING */}
         <motion.div
@@ -74,7 +74,7 @@ const FAQSection = () => {
           viewport={{ once: true }}
           className="flex flex-col justify-start pt-2"
         >
-          <h2 className="text-[42px] md:text-[52px] font-bold font-body text-zinc-900 leading-[1.1] mb-6">
+          <h2 className="text-[32px] sm:text-[52px] font-bold font-body text-zinc-900 leading-[1.1] mb-2 sm:mb-6">
             Questions?<br />
             <span className="text-zinc-700/60 italic">We're here to help.</span>
           </h2>

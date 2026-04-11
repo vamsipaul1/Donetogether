@@ -104,7 +104,7 @@ export const ChatInfoSidebar = ({
     };
 
     return (
-        <div className="w-80 h-full border-l border-zinc-200/50 dark:border-white/10 bg-white/60 dark:bg-black/40 backdrop-blur-2xl flex flex-col font-body animate-in slide-in-from-right duration-500">
+        <div className="w-full h-full border-l border-zinc-200/50 dark:border-white/10 bg-white/60 dark:bg-black/40 backdrop-blur-2xl flex flex-col font-body animate-in slide-in-from-right duration-500">
             {/* Header - Balanced & Neat */}
             <div className="h-[72px] flex items-center px-4 shrink-0 border-b border-zinc-200/50 dark:border-white/5">
                 <Button

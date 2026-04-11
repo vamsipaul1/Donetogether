@@ -240,16 +240,16 @@ const CreateProject = () => {
                 <div className="bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-white/5 rounded-[40px] md:rounded-[56px] shadow-[0_32px_128px_-32px_rgba(0,0,0,0.1)] dark:shadow-none overflow-hidden flex flex-col md:flex-row min-h-[640px]">
 
                     {/* Visual Sidebar */}
-                    <div className="md:w-[38%] bg-zinc-950 p-10 md:p-12 text-white flex flex-col justify-between relative overflow-hidden border-r border-white/5">
+                    <div className="md:w-[38%] bg-zinc-950 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden border-b md:border-b-0 md:border-r border-white/5">
                         <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/20 blur-[120px] -mr-40 -mt-40" />
                         <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-600/10 blur-[120px] -ml-40 -mb-40" />
 
                         <div className="relative z-10">
-                            <div className="w-16 h-16 rounded-[24px] bg-white/5 border border-white/10 flex items-center justify-center mb-5 backdrop-blur-2xl shadow-inner group overflow-hidden">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-[20px] md:rounded-[24px] bg-white/5 border border-white/10 flex items-center justify-center mb-4 md:mb-5 backdrop-blur-2xl shadow-inner group overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                 <svg
                                     viewBox="0 0 24 24"
-                                    className="w-10 h-10 text-white group-hover:scale-110 transition-transform duration-500"
+                                    className="w-7 h-7 md:w-10 md:h-10 text-white group-hover:scale-110 transition-transform duration-500"
                                     fill="none"
                                     stroke="currentColor"
                                     strokeWidth="1.8"
@@ -281,38 +281,38 @@ const CreateProject = () => {
                                     <line x1="14" y1="10" x2="16.5" y2="10" />
                                 </svg>
                             </div>
-                            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-violet-500">Builder Mode</h2>
-                            <h1 className="text-4xl md:text-5xl font-extrabold mb-2 pb-6 leading-[1.05] tracking-tighter">
+                            <h2 className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.4em] text-violet-500">Builder Mode</h2>
+                            <h1 className="text-3xl md:text-5xl font-extrabold mb-2 pb-4 md:pb-6 leading-[1.05] tracking-tighter">
                                 {step === 0 && <> <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Project</span><br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-300">Creation</span></>}
                                 {step === 1 && <><span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-300">Assemble</span><br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-300">Unit</span></>}
                                 {step === 2 && <><span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-300">Define</span><br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-300">Launch</span></>}
                             </h1>
-                            <p className="text-zinc-500 text-[15px] font-semibold leading-relaxed max-w-xs">
+                            <p className="hidden md:block text-zinc-500 text-[15px] font-semibold leading-relaxed max-w-xs">
                                 {step === 0 && "Define your core objectives and market domain to set the right foundation."}
                                 {step === 1 && "Select your team role and specify capacity to find the perfect collaborators."}
                                 {step === 2 && "Set a realistic schedule and duration to keep your development on track."}
                             </p>
                         </div>
 
-                        <div className="relative z-8 pt-10 space-y-10">
+                        <div className="relative z-8 pt-6 md:pt-10 space-y-6 md:space-y-10">
                             {/* Vertical Line Connector */}
-                            <div className="absolute left-[23px] top-[108px] bottom-14 w-0.5 bg-gradient-to-b from-white/10 via-white/5 to-white/0" />
+                            <div className="absolute left-[19px] md:left-[23px] top-[108px] bottom-14 w-0.5 bg-gradient-to-b from-white/10 via-white/5 to-white/0 hidden md:block" />
 
                             {steps.map((s, i) => (
                                 <div key={i} className={cn(
-                                    "flex items-start gap-5 relative",
+                                    "flex items-start gap-4 md:gap-5 relative",
                                     i === step ? "opacity-100" : "opacity-40"
                                 )}>
                                     <div className={cn(
-                                        "w-[40px] h-[40px] rounded-full border flex items-center justify-center text-sm font-black z-10",
+                                        "w-[34px] h-[34px] md:w-[40px] md:h-[40px] rounded-full border flex items-center justify-center text-xs md:text-sm font-black z-10",
                                         i === step ? "bg-violet-600 border-violet-400 text-white shadow-violet-500/20" :
                                             (i < step ? "bg-emerald-500 border-emerald-400 text-white" : "bg-white/5 border-white/10 text-zinc-500")
                                     )}>
                                         {i < step ? <CheckCircle2 className="w-5 h-5" /> : `0${i + 1}`}
                                     </div>
-                                    <div className="flex flex-col pt-1.5">
-                                        <span className="text-[12px] font-black uppercase tracking-widest text-white">{s.title}</span>
-                                        <span className="text-[11px] text-zinc-500 mt-1 font-bold">{s.sub}</span>
+                                    <div className="flex flex-col pt-1 md:pt-1.5">
+                                        <span className="text-[11px] md:text-[12px] font-black uppercase tracking-widest text-white">{s.title}</span>
+                                        <span className="hidden md:inline text-[11px] text-zinc-500 mt-1 font-bold">{s.sub}</span>
                                     </div>
                                 </div>
                             ))}
@@ -320,7 +320,7 @@ const CreateProject = () => {
                     </div>
 
                     {/* Step Card Content */}
-                    <div className="flex-1 bg-white dark:bg-[#0a0a0a] p-8 md:p-14 flex flex-col justify-between">
+                    <div className="flex-1 bg-white dark:bg-[#0a0a0a] p-6 md:p-14 flex flex-col justify-between">
                         <div className="max-w-xl mx-auto w-full">
                             {step === 0 && (
                                 <div className="space-y-8">

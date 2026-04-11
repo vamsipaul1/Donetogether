@@ -266,7 +266,7 @@ const Onboarding = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="max-w-[400px] mx-auto w-full"
                     >
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-8 rounded-3xl shadow-xl space-y-6">
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-xl space-y-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase text-zinc-500 ml-1">Your Full Name</label>
                                 <Input
@@ -299,7 +299,7 @@ const Onboarding = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="max-w-[600px] mx-auto w-full"
                     >
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-8 rounded-3xl shadow-xl text-center space-y-6">
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-xl text-center space-y-6">
                             <div className="mx-auto w-24 h-24 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-4xl font-extrabold text-blue-600">
                                 {fullName.split(' ')[0].slice(0,1).toUpperCase()}
                             </div>
@@ -340,7 +340,7 @@ const Onboarding = () => {
                                 transition={{ duration: 0.4, delay: 0.1 + idx * 0.1 }}
                                 className="group"
                             >
-                                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-8 rounded-3xl h-full flex flex-col items-center text-center hover:border-blue-500/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                                <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 sm:p-8 rounded-3xl h-full flex flex-col items-center text-center hover:border-blue-500/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                                     {/* Badge */}
                                     <div className="mb-6">
                                         <span className="text-[10px] font-bold uppercase px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 group-hover:text-blue-600 transition-colors">
@@ -385,7 +385,7 @@ const Onboarding = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         className="max-w-[450px] mx-auto w-full"
                     >
-                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-8 rounded-3xl shadow-xl">
+                        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 sm:p-8 rounded-3xl shadow-xl">
                             {/* Method Toggle */}
                             <div className="flex gap-2 p-1 bg-zinc-100 dark:bg-zinc-950 rounded-xl mb-8">
                                 <button

@@ -174,18 +174,21 @@ const HeroSection = () => {
           </motion.div>
 
           {/* HEADING (The Narrative) */}
-          <motion.div variants={fadeUp} className="max-w-[440px] sm:max-w-4xl">
+          <motion.div variants={fadeUp} className="max-w-[100%] sm:max-w-4xl">
             <h1
               className="
                   font-sans
                   font-[600]
-                  text-[34px]
+                  text-[32px]
+                  xs:text-[38px]
                   sm:text-[52px]
-                  leading-[48px]
+                  leading-[40px]
+                  xs:leading-[46px]
                   sm:leading-[68px]
                   tracking-[-0.05em]
                   sm:tracking-[-0.03em]
                   text-slate-950
+                  px-2
                 "
             >
               Ideas Are Easy.

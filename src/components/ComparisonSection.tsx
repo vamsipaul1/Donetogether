@@ -71,48 +71,68 @@ const ComparisonSection = () => {
         </div>
 
         {/* COMPARISON TABLE */}
-        <div className="relative mt-24">
-          <div className="bg-white rounded-[40px] border border-black/[0.04] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.06)] overflow-hidden">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="w-[30%] py-12 px-10 text-left bg-[#f8f9fa] border-r border-black/[0.04]"></th>
-                  <th className="w-[35%] py-12 px-8 text-left bg-white">
-                    <div className="flex flex-col items-start gap-3">
-                      <Star className="w-7 h-7 text-zinc-900 fill-zinc-900" strokeWidth={1} />
-                      <span className="text-[22px] font-black text-zinc-900 font-body tracking-tight">DoneTogether</span>
-                    </div>
-                  </th>
-                  <th className="w-[35%] py-12 px-8 text-left bg-white">
-                    <div className="flex flex-col items-start gap-3 opacity-90">
-                      <div className="w-7 h-7 rounded-full border-2 border-zinc-900" />
-                      <span className="text-[20px] font-bold text-zinc-900 font-body">Other Platforms</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonData.map((row, index) => (
-                  <tr key={index} className="border-t border-black/[0.04] group">
-                    <td className="py-8 px-10 font-bold font-body text-[#0a0a0a] bg-[#f8f9fa] text-[15px] border-r border-black/[0.04] tracking-normal">
-                      {row.label}
-                    </td>
-                    <td className="py-8 px-8 text-left bg-zinc-950/[0.01] group-hover:bg-violet-50/30 transition-colors">
+        <div className="relative mt-8 sm:mt-24">
+
+          {/* Desktop & Mobile Responsive Table Container */}
+          <div className="bg-white rounded-[32px] sm:rounded-[40px] border border-black/[0.04] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.06)] overflow-hidden">
+            <div className="overflow-x-auto custom-scrollbar scroll-smooth">
+              <table className="w-full border-collapse min-w-[600px] sm:min-w-0">
+                <thead>
+                  <tr className="bg-[#f8f9fa]">
+                    <th className="sticky left-0 z-20 w-[160px] sm:w-[30%] py-10 sm:py-12 px-6 sm:px-10 text-left bg-[#f8f9fa] border-r border-black/[0.04] shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)] sm:shadow-none">
+                      <span className="text-[11px] font-black uppercase text-zinc-400 tracking-widest">Capabilities</span>
+                    </th>
+                    <th className="w-[220px] sm:w-[35%] py-10 sm:py-12 px-6 sm:px-8 text-left bg-white border-r border-black/[0.02] sm:border-r-0">
                       <div className="flex items-center gap-3">
-                        <Check className="w-[18px] h-[18px] text-emerald-500 shrink-0" strokeWidth={3} />
-                        <span className="text-[15px] font-bold font-body text-zinc-900 tracking-tight">{row.doneTogether}</span>
+                        <Star className="w-5 h-5 sm:w-7 sm:h-7 text-zinc-900 fill-zinc-900" strokeWidth={1} />
+                        <span className="text-[17px] sm:text-[22px] font-black text-zinc-900 font-body tracking-tight">DoneTogether</span>
                       </div>
-                    </td>
-                    <td className="py-8 px-8 text-left group-hover:bg-zinc-50/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <X className="w-[18px] h-[18px] text-rose-500 opacity-80 shrink-0" strokeWidth={3} />
-                        <span className="text-[14.5px] font-medium font-body text-zinc-800 tracking-normal">{row.other}</span>
+                    </th>
+                    <th className="w-[220px] sm:w-[35%] py-10 sm:py-12 px-6 sm:px-8 text-left bg-white">
+                      <div className="flex items-center gap-3 opacity-90">
+                        <div className="w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 border-zinc-900" />
+                        <span className="text-[16px] sm:text-[20px] font-bold text-zinc-900 font-body">Others</span>
                       </div>
-                    </td>
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {comparisonData.map((row, index) => (
+                    <tr key={index} className="border-t border-black/[0.04] group">
+                      {/* Sticky Label Column */}
+                      <td className="sticky left-0 z-20 py-6 sm:py-8 px-6 sm:px-10 font-bold font-body text-[#0a0a0a] bg-[#f8f9fa] text-[13px] sm:text-[15px] border-r border-black/[0.04] tracking-normal shadow-[4px_0_12px_-4px_rgba(0,0,0,0.05)] sm:shadow-none">
+                        {row.label}
+                      </td>
+
+                      {/* DoneTogether Column */}
+                      <td className="py-6 sm:py-8 px-6 sm:px-8 text-left bg-zinc-950/[0.01] group-hover:bg-violet-50/30 transition-colors border-r border-black/[0.02] sm:border-r-0">
+                        <div className="flex items-center gap-3">
+                          <Check className="w-[16px] sm:w-[18px] h-[16px] sm:h-[18px] text-emerald-500 shrink-0" strokeWidth={3} />
+                          <span className="text-[13px] sm:text-[15px] font-bold font-body text-zinc-900 tracking-tight leading-snug">{row.doneTogether}</span>
+                        </div>
+                      </td>
+
+                      {/* Others Column */}
+                      <td className="py-6 sm:py-8 px-6 sm:px-8 text-left group-hover:bg-zinc-50/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <X className="w-[16px] sm:w-[18px] h-[16px] sm:h-[18px] text-rose-500 opacity-80 shrink-0" strokeWidth={3} />
+                          <span className="text-[13px] sm:text-[14.5px] font-medium font-body text-zinc-600 sm:text-zinc-800 tracking-normal leading-snug">{row.other}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Scroll Indicator */}
+            <div className="sm:hidden py-3 px-6 bg-[#f8f9fa] border-t border-black/[0.04] flex items-center justify-between">
+              <span className="text-[10px] font-bold text-zinc-700 tracking-normal">Swipe to compare</span>
+              <div className="flex gap-1">
+                <div className="w-4 h-1 rounded-full bg-zinc-900/20" />
+                <div className="w-8 h-1 rounded-full bg-zinc-900/10" />
+              </div>
+            </div>
           </div>
         </div>
       </div>

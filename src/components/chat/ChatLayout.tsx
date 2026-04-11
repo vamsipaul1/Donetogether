@@ -110,8 +110,8 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
             {/* Chat Content Column */}
             <div className="flex-1 flex flex-col h-full bg-white dark:bg-[#09090b] relative">
                 {/* Clean Product Header */}
-                <header className="h-[64px] border-b border-zinc-100 dark:border-white/5 flex items-center justify-between px-6 bg-white/80 dark:bg-black/80 backdrop-blur-md z-30 select-none">
-                    <div className="flex items-center gap-4 min-w-0">
+                <header className="h-[64px] border-b border-zinc-100 dark:border-white/5 flex items-center justify-between px-4 md:px-6 bg-white/80 dark:bg-black/80 backdrop-blur-md z-30 select-none">
+                    <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -240,20 +240,40 @@ export const ChatLayout = ({ projectId, members = [], projectTitle = "Project Te
             </div>
 
             {/* Info Sidebar (Simple Product Style) */}
-            {isInfoOpen && (
-                <div className="hidden lg:block w-[360px] h-full border-l border-zinc-100 dark:border-white/5 shrink-0 bg-white dark:bg-[#09090b]">
-                    <ChatInfoSidebar
-                        onClose={() => setIsInfoOpen(false)}
-                        projectTitle={projectTitle}
-                        members={members}
-                        messages={messages}
-                        onClearChat={clearChatHistory}
-                        projectId={projectId}
-                        projectAvatar={projectAvatar}
-                        onAvatarUpdate={(url) => setProjectAvatar(url)}
-                    />
-                </div>
-            )}
+            <div className="hidden lg:block">
+                {isInfoOpen && (
+                    <div className="w-[360px] h-full border-l border-zinc-100 dark:border-white/5 shrink-0 bg-white dark:bg-[#09090b]">
+                        <ChatInfoSidebar
+                            onClose={() => setIsInfoOpen(false)}
+                            projectTitle={projectTitle}
+                            members={members}
+                            messages={messages}
+                            onClearChat={clearChatHistory}
+                            projectId={projectId}
+                            projectAvatar={projectAvatar}
+                            onAvatarUpdate={(url) => setProjectAvatar(url)}
+                        />
+                    </div>
+                )}
+            </div>
+
+            {/* Mobile Info Sheet */}
+            <div className="lg:hidden">
+                <Sheet open={isInfoOpen} onOpenChange={setIsInfoOpen}>
+                    <SheetContent side="right" className="p-0 w-full sm:w-[360px]">
+                        <ChatInfoSidebar
+                            onClose={() => setIsInfoOpen(false)}
+                            projectTitle={projectTitle}
+                            members={members}
+                            messages={messages}
+                            onClearChat={clearChatHistory}
+                            projectId={projectId}
+                            projectAvatar={projectAvatar}
+                            onAvatarUpdate={(url) => setProjectAvatar(url)}
+                        />
+                    </SheetContent>
+                </Sheet>
+            </div>
         </div>
     );
 };
