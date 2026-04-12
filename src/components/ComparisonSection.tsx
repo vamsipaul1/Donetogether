@@ -127,7 +127,7 @@ const ComparisonSection = () => {
 
             {/* Mobile Scroll Indicator */}
             <div className="sm:hidden py-3 px-6 bg-[#f8f9fa] border-t border-black/[0.04] flex items-center justify-between">
-              <span className="text-[10px] font-bold text-zinc-700 tracking-normal">Swipe to compare</span>
+              <span className="text-[11px] font-bold text-zinc-700 tracking-normal">Swipe to compare</span>
               <div className="flex gap-1">
                 <div className="w-4 h-1 rounded-full bg-zinc-900/20" />
                 <div className="w-8 h-1 rounded-full bg-zinc-900/10" />
