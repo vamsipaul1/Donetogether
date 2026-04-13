@@ -50,9 +50,9 @@ Expected: Waiting room shows, no tasks visible
 
 - [ ] ✅ PASS / ❌ FAIL
 
-#### Test 2: Non-Owner Task Creation
+#### Test 2: Non-lead Task Creation
 ```
-1. Create project (you are owner)
+1. Create project (you are lead)
 2. Join as member (different account)
 3. Member tries to click "Create Task"
 Expected: Button not visible
@@ -62,7 +62,7 @@ Expected: Button not visible
 
 #### Test 3: Edit Other's Task
 ```
-1. Owner creates task assigned to Member A
+1. lead creates task assigned to Member A
 2. Member B tries to update that task
 Expected: Status dropdown disabled
 ```

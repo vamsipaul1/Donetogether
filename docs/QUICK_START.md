@@ -49,7 +49,7 @@ The `qrcode` package has been installed automatically. You're good to go!
 
 You should now see:
 - 📊 Progress bar showing **1 / 4**
-- ✅ Your name in a green slot (as Owner)
+- ✅ Your name in a green slot (as lead)
 - ⚪ 3 empty waiting slots
 - 🔗 Join code (e.g., "ABC123")
 - 📱 QR code you can scan
@@ -74,11 +74,11 @@ After the **4th member** joins:
 - 🎉 Progress bar completes
 - 🔄 Page automatically refreshes
 - 🔓 **Task dashboard unlocks**
-- 📋 You now see "Create Task" button (as owner)
+- 📋 You now see "Create Task" button (as lead)
 
 #### e) Create Your First Task
 
-As the owner:
+As the lead:
 1. Click **+ Create Task**
 2. See **Smart Suggestions** appear (like "Setup repository")
 3. Click a suggestion or type your own
@@ -110,7 +110,7 @@ As an assigned member:
 │                             │
 │   ▓▓▓▓░░░░ 1/4              │
 │                             │
-│   ✅ You (Owner)            │
+│   ✅ You (lead)            │
 │   ⚪ Waiting...             │
 │   ⚪ Waiting...             │
 │   ⚪ Waiting...             │
@@ -158,7 +158,7 @@ WHERE id = 'YOUR_PROJECT_ID';
 ### Issue: "Create Task button doesn't appear"
 
 **Check:**
-- Are you the project owner?
+- Are you the project lead?
 - Refresh the page
 - Check browser console for errors
 
@@ -173,7 +173,7 @@ WHERE id = 'YOUR_PROJECT_ID';
 
 ## 🎯 Features You Can Now Use
 
-### For Owners
+### For leads
 - ✅ Create tasks with domain suggestions
 - ✅ Assign tasks to any team member
 - ✅ Change task status, priority, deadline

@@ -26,7 +26,7 @@ export default function FeaturesSection() {
     {
       title: "Task & Progress Tracking",
       desc:
-        "Visual boards with clear ownership and live progress from idea to completion.",
+        "Visual boards with clear leadership and live progress from idea to completion.",
     },
     {
       title: "Contribution Visibility",

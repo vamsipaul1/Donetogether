@@ -21,7 +21,7 @@ interface TaskBoardProps {
     tasks: TaskWithUser[];
     members: (ProjectMember & { users?: UserType })[];
     currentUser: UserType | null;
-    isOwner: boolean;
+    islead: boolean;
     onTaskUpdate: () => void;
 }
 
@@ -47,7 +47,7 @@ const PRIORITY_CONFIG = {
     high: { color: 'bg-red-500', label: 'High' },
 };
 
-const TaskBoard = ({ tasks, members, currentUser, isOwner, onTaskUpdate }: TaskBoardProps) => {
+const TaskBoard = ({ tasks, members, currentUser, islead, onTaskUpdate }: TaskBoardProps) => {
     const [activeTab, setActiveTab] = useState('all');
 
     const handleStatusUpdate = async (taskId: string, newStatus: TaskStatus) => {
@@ -92,7 +92,7 @@ const TaskBoard = ({ tasks, members, currentUser, isOwner, onTaskUpdate }: TaskB
                 </div>
                 <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">No tasks created yet</h3>
                 <p className="text-zinc-500 max-w-sm mt-2">
-                    {isOwner ? 'Create your first task to get the team started!' : 'Waiting for the team lead to assign tasks.'}
+                    {islead ? 'Create your first task to get the team started!' : 'Waiting for the team lead to assign tasks.'}
                 </p>
             </div>
         );
@@ -123,7 +123,7 @@ const TaskBoard = ({ tasks, members, currentUser, isOwner, onTaskUpdate }: TaskB
                         const StatusIcon = STATUS_CONFIG[task.status].icon;
                         const daysUntil = getDaysUntilDue(task.due_date);
                         const isOverdue = daysUntil < 0 && task.status !== 'completed';
-                        const canEdit = isOwner || task.assigned_to === currentUser?.id;
+                        const canEdit = islead || task.assigned_to === currentUser?.id;
 
                         return (
                             <motion.div

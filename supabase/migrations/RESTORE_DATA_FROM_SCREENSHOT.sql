@@ -12,17 +12,17 @@ ALTER TABLE public.users DROP CONSTRAINT IF EXISTS users_id_fkey;
 DO $$
 DECLARE
     v_project_id UUID;
-    v_owner_id UUID;
+    v_lead_id UUID;
     -- Fixed deterministic IDs so we can rerun the script safely
     v_anil_id UUID := '00000000-0000-0000-0000-000000000001';
     v_dhanunjaya_id UUID := '00000000-0000-0000-0000-000000000002';
 BEGIN
     -- 1. Get the current user ID (you)
-    v_owner_id := auth.uid();
+    v_lead_id := auth.uid();
     
-    IF v_owner_id IS NULL THEN
+    IF v_lead_id IS NULL THEN
         -- If running in SQL editor without auth context, try to find the first user
-        SELECT id INTO v_owner_id FROM public.users LIMIT 1;
+        SELECT id INTO v_lead_id FROM public.users LIMIT 1;
     END IF;
 
     -- 2. Ensure team_name column and index exists
@@ -55,7 +55,7 @@ BEGIN
             'BULLS-' || upper(substring(gen_random_uuid()::text, 1, 4)),
             3, -- Matches the 3 members in screenshot
             true, 
-            v_owner_id,
+            v_lead_id,
             NOW() - INTERVAL '5 days'
         )
         RETURNING id INTO v_project_id;
@@ -73,9 +73,9 @@ BEGIN
 
     -- 5. Restore Project Memberships
     -- Add You (if not already there)
-    IF v_owner_id IS NOT NULL THEN
+    IF v_lead_id IS NOT NULL THEN
         INSERT INTO public.project_members (project_id, user_id, role, joined_at)
-        VALUES (v_project_id, v_owner_id, 'owner', NOW() - INTERVAL '5 days')
+        VALUES (v_project_id, v_lead_id, 'lead', NOW() - INTERVAL '5 days')
         ON CONFLICT (project_id, user_id) DO NOTHING;
     END IF;
 
@@ -99,18 +99,18 @@ BEGIN
     -- VAMSI: 2 active (one overdue)
     INSERT INTO public.tasks (project_id, title, assigned_to, assigned_by, status, due_date)
     VALUES 
-        (v_project_id, 'AI Architecture Design', v_owner_id, v_owner_id, 'in_progress', CURRENT_DATE - INTERVAL '2 days'), -- OVERDUE
-        (v_project_id, 'Initial Sprint Planning', v_owner_id, v_owner_id, 'not_started', CURRENT_DATE + INTERVAL '5 days'); -- ACTIVE
+        (v_project_id, 'AI Architecture Design', v_lead_id, v_lead_id, 'in_progress', CURRENT_DATE - INTERVAL '2 days'), -- OVERDUE
+        (v_project_id, 'Initial Sprint Planning', v_lead_id, v_lead_id, 'not_started', CURRENT_DATE + INTERVAL '5 days'); -- ACTIVE
 
     -- ANIL: 1 active
     INSERT INTO public.tasks (project_id, title, assigned_to, assigned_by, status, due_date)
     VALUES 
-        (v_project_id, 'UI Library Selection', v_anil_id, v_owner_id, 'in_progress', CURRENT_DATE + INTERVAL '3 days');
+        (v_project_id, 'UI Library Selection', v_anil_id, v_lead_id, 'in_progress', CURRENT_DATE + INTERVAL '3 days');
 
     -- DHANUNJAYA: 1 active
     INSERT INTO public.tasks (project_id, title, assigned_to, assigned_by, status, due_date)
     VALUES 
-        (v_project_id, 'Database Performance Tuning', v_dhanunjaya_id, v_owner_id, 'in_progress', CURRENT_DATE + INTERVAL '4 days');
+        (v_project_id, 'Database Performance Tuning', v_dhanunjaya_id, v_lead_id, 'in_progress', CURRENT_DATE + INTERVAL '4 days');
 
     RAISE NOTICE '✅ Restoration Complete: Code-Bulls-AI is back with correct counts!';
 END $$;

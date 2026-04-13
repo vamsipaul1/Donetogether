@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS public.project_members (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('owner', 'member')),
+  role TEXT NOT NULL CHECK (role IN ('lead', 'member')),
   joined_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(project_id, user_id)
 );
@@ -73,7 +73,7 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 6. ULTRA-SPEED POLICIES (No Recursion)
-CREATE POLICY "p_owner_all" ON public.projects FOR ALL TO authenticated USING (auth.uid() = created_by);
+CREATE POLICY "p_lead_all" ON public.projects FOR ALL TO authenticated USING (auth.uid() = created_by);
 CREATE POLICY "p_read_all" ON public.projects FOR SELECT TO authenticated USING (true);
 
 CREATE POLICY "m_read_all" ON public.project_members FOR SELECT TO authenticated USING (true);

@@ -103,7 +103,7 @@ All features are **fully functional** and **production-ready**:
 ### Avatars:
 - **VAMSI RANGUMDURI**: Orange/Red gradient (`VR`)
 - **Anil Kumar**: Cyan/Blue gradient (`AK`)
-- **Project Owner**: Purple/Pink gradient (`PO`)
+- **Project lead**: Purple/Pink gradient (`PO`)
 
 ### Messages:
 ```

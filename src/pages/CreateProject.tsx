@@ -161,7 +161,7 @@ const CreateProject = () => {
                 .insert({
                     project_id: project.id,
                     user_id: user?.id,
-                    role: 'owner',
+                    role: 'lead',
                 });
 
             if (memberError) throw memberError;

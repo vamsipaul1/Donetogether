@@ -78,7 +78,7 @@ const TaskDetailModal = ({
             .eq('user_id', currentUserId)
             .single();
 
-        if (member?.role === 'owner') {
+        if (member?.role === 'lead') {
             setUserRole('LEADER');
             return;
         }

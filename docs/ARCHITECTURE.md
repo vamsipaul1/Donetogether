@@ -7,7 +7,7 @@
 │                         USER LAYER                              │
 │                                                                 │
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐          │
-│  │ Owner   │  │ Member  │  │ Member  │  │ Member  │          │
+│  │ lead   │  │ Member  │  │ Member  │  │ Member  │          │
 │  │ (Alice) │  │ (Bob)   │  │ (Carol) │  │ (Dave)  │          │
 │  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘          │
 │       │            │            │            │                 │
@@ -48,7 +48,7 @@
 │  │  • selectedProject (object)                              │  │
 │  │  • members (array)                                       │  │
 │  │  • tasks (array)                                         │  │
-│  │  • isOwner (boolean)                                     │  │
+│  │  • islead (boolean)                                     │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                           │                                     │
 └───────────────────────────┼─────────────────────────────────────┘
@@ -91,7 +91,7 @@
 │  │  project_members                                         │  │
 │  │  ├─ project_id                                           │  │
 │  │  ├─ user_id                                              │  │
-│  │  └─ role ('owner' | 'member')                           │  │
+│  │  └─ role ('lead' | 'member')                           │  │
 │  │                                                          │  │
 │  │  tasks ✨ NEW                                            │  │
 │  │  ├─ project_id                                           │  │
@@ -110,12 +110,12 @@
 │  │    ✓ is_team_complete(project_id)                       │  │
 │  │                                                          │  │
 │  │  tasks_insert_policy:                                   │  │
-│  │    ✓ is_project_owner(project_id, auth.uid())           │  │
+│  │    ✓ is_project_lead(project_id, auth.uid())           │  │
 │  │    ✓ is_team_complete(project_id)                       │  │
 │  │                                                          │  │
 │  │  tasks_update_policy:                                   │  │
 │  │    ✓ is_team_complete(project_id)                       │  │
-│  │    ✓ (is_owner OR assigned_to = auth.uid())             │  │
+│  │    ✓ (is_lead OR assigned_to = auth.uid())             │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                           │                                     │
 │  ┌──────────────────────────────────────────────────────────┐  │
@@ -141,7 +141,7 @@
 ### Flow 1: Project Creation → Waiting Room
 
 ```
-Owner Creates Project
+lead Creates Project
         │
         ├─ Selects team_size = 4
         ├─ Sends to Supabase
@@ -158,7 +158,7 @@ Owner Creates Project
          ▼
 ┌─────────────────┐
 │ project_members │
-│ role = 'owner'  │
+│ role = 'lead'  │
 └────────┬────────┘
          │
          ▼
@@ -199,10 +199,10 @@ Member Enters Join Code
     Dashboard Unlocks! 🎉
 ```
 
-### Flow 3: Owner Creates Task
+### Flow 3: lead Creates Task
 
 ```
-Owner Clicks "+ Create Task"
+lead Clicks "+ Create Task"
         │
         ├─ Modal opens
         ├─ Sees domain suggestions
@@ -211,7 +211,7 @@ Owner Clicks "+ Create Task"
         ▼
     Supabase Insert
         │
-        ├─ RLS Check: is_owner?        ✓
+        ├─ RLS Check: is_lead?        ✓
         ├─ RLS Check: team_complete?   ✓
         │
         ▼
@@ -338,7 +338,7 @@ Layer 3: DATA VALIDATION (DB Constraints)
         ▼
 
 Layer 4: UI PERMISSIONS (React)
-├─ Conditional rendering (owner-only buttons)
+├─ Conditional rendering (lead-only buttons)
 ├─ Input validation
 └─ Error boundaries
 
@@ -351,7 +351,7 @@ Result: 🔒 FORTRESS
 
 | Attack | Defense |
 |--------|---------|
-| Member tries to create task via API | RLS blocks: `is_project_owner() = false` |
+| Member tries to create task via API | RLS blocks: `is_project_lead() = false` |
 | Member tries to update other's task | RLS blocks: `assigned_to != auth.uid()` |
 | Direct URL to `/dashboard` before team complete | RLS returns 0 tasks, UI shows WaitingRoom |
 | Change team size after creation | Frontend doesn't allow, column has CHECK |
@@ -366,7 +366,7 @@ Result: 🔒 FORTRESS
 ## 📡 Realtime Flow
 
 ```
-Browser 1 (Owner)                Browser 2 (Member)
+Browser 1 (lead)                Browser 2 (Member)
       │                                │
       │  ← Supabase Realtime Channel → │
       │     (project_123)               │
@@ -408,7 +408,7 @@ Browser 1 (Owner)                Browser 2 (Member)
                     │    ┌──────────────────┐
                     └───→│ project_members  │
                          ├──────────────────┤
-                         │ role (owner|mem) │
+                         │ role (lead|mem) │
                          └─────────┬────────┘
                                    │
                                    │ 1:N
@@ -433,10 +433,10 @@ Browser 1 (Owner)                Browser 2 (Member)
 | Show Dashboard | No projects | Empty state (Create/Join) |
 | Show Dashboard | Has project + !complete | WaitingRoom |
 | Show Dashboard | Has project + complete | TaskDashboard |
-| Show Create Task | isOwner = true | Button visible |
-| Show Create Task | isOwner = false | Button hidden |
-| Allow Status Update | assigned_to = me OR isOwner | Dropdown enabled |
-| Allow Status Update | assigned_to != me AND !isOwner | Dropdown disabled |
+| Show Create Task | islead = true | Button visible |
+| Show Create Task | islead = false | Button hidden |
+| Allow Status Update | assigned_to = me OR islead | Dropdown enabled |
+| Allow Status Update | assigned_to != me AND !islead | Dropdown disabled |
 | Calculate Overdue | due_date < today AND !completed | Display as overdue |
 
 ---
@@ -453,7 +453,7 @@ ORDER BY due_date;
 -- Time: ~10ms for 100 tasks
 
 -- Permission check (cached)
-SELECT is_project_owner(?, auth.uid());
+SELECT is_project_lead(?, auth.uid());
 -- Time: ~3ms (uses index)
 
 -- Team completion (indexed)
@@ -514,7 +514,7 @@ Realtime Latency:    100-300ms (Supabase)
                            │
                       ┌────┴────┐
                       ▼         ▼
-              Owner Actions  Member Actions
+              lead Actions  Member Actions
               • Create Task  • Update Status
               • Assign       • View All
               • Delete

@@ -18,4 +18,4 @@ SET
   can_restore_tasks = TRUE,
   can_manage_resources = TRUE,
   can_post_messages = TRUE
-WHERE role = 'owner';
+WHERE role = 'lead';

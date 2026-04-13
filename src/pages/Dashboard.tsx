@@ -105,7 +105,7 @@ const Dashboard = () => {
     const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
     const [isEditProjectOpen, setIsEditProjectOpen] = useState(false);
     const [isInviteOpen, setIsInviteOpen] = useState(false);
-    const [isOwner, setIsOwner] = useState(false);
+    const [isLead, setIsLead] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
     const [isGovernanceOpen, setIsGovernanceOpen] = useState(false);
     const [showWelcome, setShowWelcome] = useState(false);
@@ -274,7 +274,7 @@ const Dashboard = () => {
                 .eq('project_id', selectedProject.id);
 
             setMembers(membersData || []);
-            setIsOwner(!!membersData?.find(m => m.user_id === currentUser.id && m.role === 'owner'));
+            setIsLead(!!membersData?.find(m => m.user_id === currentUser.id && m.role === 'lead'));
 
             // Fetch tasks regardless of team completion status so early joiners can see them
             const { data: tasksData } = await supabase
@@ -297,7 +297,7 @@ const Dashboard = () => {
     };
 
     const handleDeleteProject = async () => {
-        if (!selectedProject || !isOwner) return;
+        if (!selectedProject || !isLead) return;
         if (!confirm(`Are you sure you want to delete "${selectedProject.title}"? This action cannot be undone.`)) return;
         try {
             const { error } = await supabase.from('projects').delete().eq('id', selectedProject.id);
@@ -375,7 +375,7 @@ const Dashboard = () => {
         }
     };
 
-    // State to allow owner to bypass waiting room
+    // State to allow lead to bypass waiting room
     const [bypassedWaitingRoom, setBypassedWaitingRoom] = useState(false);
 
     useEffect(() => {
@@ -410,12 +410,12 @@ const Dashboard = () => {
 
     // Show Waiting Room only if:
     // 1. Team is incomplete
-    // 2. User hasn't bypassed it (for owners)
+    // 2. User hasn't bypassed it (for leads)
     // 3. Members list is loaded (to check role)
     // Bypassed Waiting Room for user request
     /*
     if (selectedProject && !selectedProject.is_team_complete && !bypassedWaitingRoom) {
-        // If owner, they can bypass. If member, they stick here until team complete.
+        // If lead, they can bypass. If member, they stick here until team complete.
         return (
             <WaitingRoom
                 project={selectedProject}
@@ -533,7 +533,7 @@ const Dashboard = () => {
                     <div className="space-y-1">
                         <div className="px-4 py-2 flex items-center justify-between group">
                             <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Projects</span>
-                            {isOwner && projects.length > 0 && <Plus className="w-3.5 h-3.5 text-zinc-400 opacity-0 group-hover:opacity-100 cursor-pointer" onClick={() => navigate('/create-project')} />}
+                            {isLead && projects.length > 0 && <Plus className="w-3.5 h-3.5 text-zinc-400 opacity-0 group-hover:opacity-100 cursor-pointer" onClick={() => navigate('/create-project')} />}
                         </div>
 
                         {/* Empty State - No Projects */}
@@ -623,7 +623,7 @@ const Dashboard = () => {
                             <DropdownMenuContent side="right" align="start" className={`${isMobile ? 'w-52' : 'w-64'} ml-2 rounded-xl p-2 font-body bg-white dark:bg-black border-zinc-200 dark:border-[#3d3e40] shadow-xl`}>
                                 <DropdownMenuLabel className="text-[11px] text-zinc-500 font-bold uppercase tracking-normal px-2 py-1.5 mb-1">My workspace</DropdownMenuLabel>
 
-                                {isOwner && (
+                                {isLead && (
                                     <>
                                         <DropdownMenuItem onClick={() => setIsInviteOpen(true)} className="flex items-center justify-between px-2 py-2 focus:bg-zinc-100 dark:focus:bg-[#2e2f31] rounded-lg cursor-pointer">
                                             <div className="flex items-center gap-2">
@@ -651,7 +651,7 @@ const Dashboard = () => {
                                         </DropdownMenuItem>
                                     </>
                                 )}
-                                {!isOwner && (
+                                {!isLead && (
                                     <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 rounded-lg cursor-default opacity-50">
                                         <span className="text-xs text-zinc-500">Member access only</span>
                                     </DropdownMenuItem>
@@ -732,7 +732,7 @@ const Dashboard = () => {
                                             <span className="text-[13.5px] font-bold text-zinc-700 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white">Create Task</span>
                                         </DropdownMenuItem>
 
-                                        {isOwner && (
+                                        {isLead && (
                                             <>
                                                 <div className="h-px bg-zinc-100 dark:bg-zinc-800/50 my-1 mx-2" />
                                                 <DropdownMenuLabel className="px-3 py-1 text-[10px] font-black text-zinc-400 dark:text-zinc-500 uppercase tracking-widest opacity-80">
@@ -782,7 +782,7 @@ const Dashboard = () => {
 
 
 
-                        {isOwner && activeView !== 'home' && activeView !== 'list' && (
+                        {isLead && activeView !== 'home' && activeView !== 'list' && (
                             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="hidden sm:block">
                                 <Button
                                     onClick={() => setIsCreateTaskOpen(true)}
@@ -873,7 +873,7 @@ const Dashboard = () => {
 
                                     <div className="h-px bg-zinc-100 dark:bg-zinc-900 my-1" />
 
-                                    {isOwner && selectedProject && activeView !== 'completion_summary' && !selectedProject.is_completed && (
+                                    {isLead && selectedProject && activeView !== 'completion_summary' && !selectedProject.is_completed && (
                                         <div className="px-2 py-1">
                                             <DropdownMenuItem
                                                 onClick={() => setIsCompletionConfirmOpen(true)}
@@ -1100,13 +1100,13 @@ const Dashboard = () => {
     function renderView() {
         switch (activeView) {
             case 'home': return <HomeView user={currentUser} tasks={userTasks} onAddTask={handleAddTask} onTasksUpdated={fetchUserTasks} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
-            case 'overview': return selectedProject ? <Overview project={selectedProject} members={members} tasks={projectTasks} onProjectUpdated={fetchProjectDetails} isOwner={isOwner} /> : <HomeView user={currentUser} tasks={userTasks} onAddTask={handleAddTask} onTasksUpdated={fetchUserTasks} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
-            case 'list': return <TaskList tasks={selectedProject ? projectTasks : userTasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} onAddTask={() => setIsCreateTaskOpen(true)} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
-            case 'board': return selectedProject ? <BoardView tasks={projectTasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={fetchProjectDetails} onAddTask={() => setIsCreateTaskOpen(true)} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} /> : <ComingSoon view="Board" />;
-            case 'timeline': return selectedProject ? <TimelineView tasks={projectTasks} members={members} currentUserId={currentUser?.id || ''} isOwner={isOwner} onTasksUpdated={fetchProjectDetails} onAddTask={() => setIsCreateTaskOpen(true)} /> : <ComingSoon view="Timeline" />;
+            case 'overview': return selectedProject ? <Overview project={selectedProject} members={members} tasks={projectTasks} onProjectUpdated={fetchProjectDetails} isLead={isLead} /> : <HomeView user={currentUser} tasks={userTasks} onAddTask={handleAddTask} onTasksUpdated={fetchUserTasks} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
+            case 'list': return <TaskList tasks={selectedProject ? projectTasks : userTasks} members={members} currentUserId={currentUser?.id || ''} isLead={isLead} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} onAddTask={() => setIsCreateTaskOpen(true)} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} />;
+            case 'board': return selectedProject ? <BoardView tasks={projectTasks} members={members} currentUserId={currentUser?.id || ''} isLead={isLead} onTasksUpdated={fetchProjectDetails} onAddTask={() => setIsCreateTaskOpen(true)} onEditTask={(task) => { setSelectedTask(task); setIsCreateTaskOpen(true); }} /> : <ComingSoon view="Board" />;
+            case 'timeline': return selectedProject ? <TimelineView tasks={projectTasks} members={members} currentUserId={currentUser?.id || ''} isLead={isLead} onTasksUpdated={fetchProjectDetails} onAddTask={() => setIsCreateTaskOpen(true)} /> : <ComingSoon view="Timeline" />;
             case 'dashboard': return <AnalyticsView tasks={projectTasks} members={members} />;
             case 'progress': return <ProgressView tasks={projectTasks} members={members} />;
-            case 'proof_of_work': return selectedProject && currentUser ? <ProofOfWorkView projectId={selectedProject.id} currentUser={currentUser} members={members} isOwner={isOwner} /> : <div />;
+            case 'proof_of_work': return selectedProject && currentUser ? <ProofOfWorkView projectId={selectedProject.id} currentUser={currentUser} members={members} isLead={isLead} /> : <div />;
             case 'messages': return <InboxView projectId={selectedProject?.id} members={members} currentUserId={currentUser?.id || ''} onlineUsers={onlineUsers} />;
             case 'history': return <HistoryView tasks={selectedProject ? projectTasks : userTasks} members={members} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} />;
             case 'settings': return <SettingsView user={user} currentUser={currentUser} onUserUpdated={fetchUserTasks} />;

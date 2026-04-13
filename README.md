@@ -21,7 +21,7 @@ The project has successfully completed its "Alpha" phase. It has been fully lint
 
 ### 2. "Mission Control" (Waiting Room)
 - **Immersive experience** for new projects waiting for team members.
-- **Owner Bypass**: Team Leaders can now instantly access the dashboard via the **"ENTER MISSION CONTROL"** button without waiting for the full team.
+- **lead Bypass**: Team Leaders can now instantly access the dashboard via the **"ENTER MISSION CONTROL"** button without waiting for the full team.
 - **Real-time Status**: Live updates on team readiness and member joins.
 
 ### 3. Critical Fixes & Stability
@@ -41,8 +41,8 @@ The project has successfully completed its "Alpha" phase. It has been fully lint
 
 ### 2. Smart Teaming & Governance
 - **Role Selection**: Dedicated flows for **Team Leaders** and **Team Members**.
-- **Governance Modal**: Complete control over team permissions (task management, inviting, analytics access) and ownership transfer.
-- **Member Management**: Owners can remove members or update roles easily.
+- **Governance Modal**: Complete control over team permissions (task management, inviting, analytics access) and leadership transfer.
+- **Member Management**: leads can remove members or update roles easily.
 
 ### 3. Realtime Group Chat System
 - **WhatsApp-Style Interface**: Clean, modern chat UI with message bubbles and smooth animations.

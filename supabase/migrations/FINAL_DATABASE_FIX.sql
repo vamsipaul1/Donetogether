@@ -49,7 +49,7 @@ ADD CONSTRAINT tasks_project_id_fkey
 FOREIGN KEY (project_id) REFERENCES public.projects(id) ON DELETE CASCADE;
 
 -- 6. FIX RLS POLICIES (Simplified for smooth working)
-DROP POLICY IF EXISTS "p_owner_all" ON public.projects;
+DROP POLICY IF EXISTS "p_lead_all" ON public.projects;
 DROP POLICY IF EXISTS "p_read_all" ON public.projects;
 DROP POLICY IF EXISTS "projects_select" ON public.projects;
 DROP POLICY IF EXISTS "projects_insert" ON public.projects;
@@ -57,7 +57,7 @@ DROP POLICY IF EXISTS "projects_update" ON public.projects;
 
 CREATE POLICY "projects_select" ON public.projects FOR SELECT TO authenticated USING (true);
 CREATE POLICY "projects_insert" ON public.projects FOR INSERT TO authenticated WITH CHECK (auth.uid() = created_by);
-CREATE POLICY "projects_update" ON public.projects FOR UPDATE TO authenticated USING (auth.uid() = created_by OR EXISTS (SELECT 1 FROM public.project_members WHERE project_id = id AND user_id = auth.uid() AND role = 'owner'));
+CREATE POLICY "projects_update" ON public.projects FOR UPDATE TO authenticated USING (auth.uid() = created_by OR EXISTS (SELECT 1 FROM public.project_members WHERE project_id = id AND user_id = auth.uid() AND role = 'lead'));
 CREATE POLICY "projects_delete" ON public.projects FOR DELETE TO authenticated USING (auth.uid() = created_by);
 
 -- 7. FIX TASK RLS (Allows dragging/moving)

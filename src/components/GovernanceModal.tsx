@@ -36,7 +36,7 @@ const GovernanceModal = ({
     onPermissionsUpdated
 }: GovernanceModalProps) => {
     // Current user's role check
-    const isOwner = members.find(m => m.user_id === currentUserId)?.role === 'owner';
+    const isLead = members.find(m => m.user_id === currentUserId)?.role === 'lead';
     const currentUserMemberId = members.find(m => m.user_id === currentUserId)?.id;
 
     const [loading, setLoading] = useState<string | null>(null);
@@ -51,7 +51,7 @@ const GovernanceModal = ({
     }, [members]);
 
     const handleRemoveMember = async (memberId: string) => {
-        if (!isOwner) return;
+        if (!isLead) return;
 
         // Secure User ID identification
         let user_id = localMembers.find(m => m.id === memberId)?.user_id;
@@ -85,7 +85,7 @@ const GovernanceModal = ({
             ];
             await Promise.allSettled(taskUnassignPromises);
 
-            // 2. Reassign Authored Tasks (to Owner)
+            // 2. Reassign Authored Tasks (to lead)
             await supabase.from('tasks')
                 .update({ assigned_by: currentUserId })
                 .eq('project_id', project.id)
@@ -160,7 +160,7 @@ const GovernanceModal = ({
     };
 
     const updatePermission = async (memberId: string, field: string, value: boolean) => {
-        if (!isOwner) return;
+        if (!isLead) return;
 
         // Optimistic Update
         setLocalMembers(prev => prev.map(m =>
@@ -186,22 +186,22 @@ const GovernanceModal = ({
         }
     };
 
-    const handleTransferOwnership = async (newOwnerUserId: string) => {
-        if (!isOwner) return;
+    const handleTransferLeadership = async (newLeadUserId: string) => {
+        if (!isLead) return;
 
         setLoading('transfer');
-        const newOwnerMember = localMembers.find(m => m.user_id === newOwnerUserId);
+        const newLeadMember = localMembers.find(m => m.user_id === newLeadUserId);
 
-        if (!newOwnerMember || !currentUserMemberId) {
+        if (!newLeadMember || !currentUserMemberId) {
             setLoading(null);
             return;
         }
 
         try {
             // Priority 1: Try using RPC
-            const { error: rpcError } = await supabase.rpc('transfer_project_ownership', {
+            const { error: rpcError } = await supabase.rpc('transfer_project_leadership', {
                 p_id: project.id,
-                new_owner_id: newOwnerUserId
+                new_lead_id: newLeadUserId
             });
 
             if (rpcError) {
@@ -210,8 +210,8 @@ const GovernanceModal = ({
                 // Priority 2: Manual Update Strategy
                 const { error: promoteError } = await supabase
                     .from('project_members')
-                    .update({ role: 'owner' })
-                    .eq('user_id', newOwnerUserId)
+                    .update({ role: 'lead' })
+                    .eq('user_id', newLeadUserId)
                     .eq('project_id', project.id);
 
                 if (promoteError) throw promoteError;
@@ -224,16 +224,16 @@ const GovernanceModal = ({
 
                 if (demoteError) {
                     console.error("Demotion failed:", demoteError);
-                    toast.warning("New owner promoted, but failed to demote you.");
+                    toast.warning("New lead promoted, but failed to demote you.");
                 }
             }
 
-            toast.success("Ownership transferred successfully.");
+            toast.success("leadership transferred successfully.");
             onPermissionsUpdated();
             onClose();
         } catch (err: any) {
             console.error("Transfer failed:", err);
-            toast.error(err.message || "Failed to transfer ownership.");
+            toast.error(err.message || "Failed to transfer leadership.");
         } finally {
             setLoading(null);
             setTransferringTo(null);
@@ -252,7 +252,7 @@ const GovernanceModal = ({
                                 Team Permissions
                             </DialogTitle>
                             <DialogDescription className="text-zinc-500 font-normal text-[15px] leading-relaxed">
-                                Manage roles, access levels, and project ownership.
+                                Manage roles, access levels, and project leadership.
                             </DialogDescription>
                         </div>
                         <div className="w-12 h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center border border-zinc-100 dark:border-zinc-800 shadow-sm">
@@ -276,9 +276,9 @@ const GovernanceModal = ({
                                                     <span className="text-[15px] font-semibold text-zinc-950 dark:text-white">
                                                         {member.users?.full_name || member.users?.email?.split('@')[0]}
                                                     </span>
-                                                    {member.role === 'owner' ? (
+                                                    {member.role === 'lead' ? (
                                                         <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border-none text-[9px] uppercase font-black px-2 py-0.5 flex items-center gap-1">
-                                                            <Crown className="w-3 h-3" /> Owner
+                                                            <Crown className="w-3 h-3" /> lead
                                                         </Badge>
                                                     ) : (
                                                         <Badge variant="outline" className="text-[9px] text-zinc-400 border-zinc-200 dark:border-zinc-700 uppercase font-black px-2 py-0.5">Member</Badge>
@@ -288,14 +288,14 @@ const GovernanceModal = ({
                                             </div>
                                         </div>
 
-                                        {isOwner && member.role !== 'owner' && (
+                                        {isLead && member.role !== 'lead' && (
                                             <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     onClick={() => setTransferringTo(member.user_id)}
                                                     className="w-8 h-8 rounded-lg text-zinc-300 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
-                                                    title="Transfer Ownership"
+                                                    title="Transfer leadership"
                                                 >
                                                     <Crown className="w-4 h-4" />
                                                 </Button>
@@ -314,7 +314,7 @@ const GovernanceModal = ({
 
                                     {/* Permission Buttons */}
                                     <div className="pl-[52px]">
-                                        {member.role === 'owner' ? (
+                                        {member.role === 'lead' ? (
                                             <div className="flex items-center gap-2 py-2">
                                                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
                                                     <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -326,55 +326,55 @@ const GovernanceModal = ({
                                                 <PermissionButton
                                                     label="Tasks"
                                                     active={member.can_manage_tasks}
-                                                    disabled={!isOwner}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_manage_tasks', !member.can_manage_tasks)}
                                                 />
                                                 <PermissionButton
                                                     label="Invite"
                                                     active={member.can_invite_members}
-                                                    disabled={!isOwner}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_invite_members', !member.can_invite_members)}
                                                 />
                                                 <PermissionButton
                                                     label="Analytics"
                                                     active={member.can_view_analytics}
-                                                    disabled={!isOwner}
+                                                    disabled={!islead}
                                                     onClick={() => updatePermission(member.id, 'can_view_analytics', !member.can_view_analytics)}
                                                 />
                                                 <PermissionButton
                                                     label="Settings"
                                                     active={member.can_edit_project_details}
-                                                    disabled={!isOwner}
+                                                    disabled={!islead}
                                                     onClick={() => updatePermission(member.id, 'can_edit_project_details', !member.can_edit_project_details)}
                                                 />
                                                 <PermissionButton
                                                     label="Timeline"
                                                     active={member.can_manage_timeline}
-                                                    disabled={!isOwner}
+                                                    disabled={!islead}
                                                     onClick={() => updatePermission(member.id, 'can_manage_timeline', !member.can_manage_timeline)}
                                                 />
                                                 <PermissionButton
                                                     label="Restore"
                                                     active={member.can_restore_tasks}
-                                                    disabled={!isOwner}
+                                                    disabled={!islead}
                                                     onClick={() => updatePermission(member.id, 'can_restore_tasks', !member.can_restore_tasks)}
                                                 />
                                                 <PermissionButton
                                                     label="Files"
                                                     active={member.can_manage_resources}
-                                                    disabled={!isOwner}
+                                                    disabled={!islead}
                                                     onClick={() => updatePermission(member.id, 'can_manage_resources', !member.can_manage_resources)}
                                                 />
                                                 <PermissionButton
                                                     label="Chat"
                                                     active={member.can_post_messages}
-                                                    disabled={!isOwner}
+                                                    disabled={!islead}
                                                     onClick={() => updatePermission(member.id, 'can_post_messages', !member.can_post_messages)}
                                                 />
                                                 <PermissionButton
                                                     label="Verify Tasks"
                                                     active={member.can_verify_tasks}
-                                                    disabled={!isOwner}
+                                                    disabled={!islead}
                                                     onClick={() => updatePermission(member.id, 'can_verify_tasks', !member.can_verify_tasks)}
                                                 />
                                             </div>
@@ -399,14 +399,14 @@ const GovernanceModal = ({
                             <div className="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center mb-6 shadow-sm">
                                 <Crown className="w-8 h-8 text-amber-600 dark:text-amber-400" />
                             </div>
-                            <h3 className="text-xl font-black mb-2 text-zinc-900 dark:text-white tracking-tight">Transfer Ownership?</h3>
+                            <h3 className="text-xl font-black mb-2 text-zinc-900 dark:text-white tracking-tight">Transfer leadership?</h3>
                             <p className="text-sm font-medium text-zinc-500 mb-8 max-w-[280px] leading-relaxed">
-                                You are about to transfer ownership. <br />
+                                You are about to transfer leadership. <br />
                                 <span className="text-amber-600 dark:text-amber-400 font-bold">You will lose admin privileges</span> and become a regular member.
                             </p>
                             <div className="flex gap-4 w-full max-w-xs">
                                 <Button variant="outline" onClick={() => setTransferringTo(null)} className="flex-1 font-bold rounded-xl border-zinc-200 dark:border-zinc-700 h-12 bg-white dark:bg-zinc-900">Cancel</Button>
-                                <Button onClick={() => handleTransferOwnership(transferringTo)} className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl h-12 shadow-md shadow-amber-500/20">
+                                <Button onClick={() => handleTransferLeadership(transferringTo)} className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl h-12 shadow-md shadow-amber-500/20">
                                     Confirm Transfer
                                 </Button>
                             </div>

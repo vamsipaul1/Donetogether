@@ -28,11 +28,11 @@ CREATE POLICY "tasks_insert_policy" ON public.tasks
         SELECT 1 FROM public.project_members
         WHERE project_id = public.tasks.project_id 
           AND user_id = auth.uid()
-          AND (role = 'owner' OR can_manage_tasks = true)
+          AND (role = 'lead' OR can_manage_tasks = true)
     )
   );
 
--- 4. UPDATE: Owners can update anything, Assigned users can update their tasks anytime
+-- 4. UPDATE: leads can update anything, Assigned users can update their tasks anytime
 CREATE POLICY "tasks_update_policy" ON public.tasks
   FOR UPDATE TO authenticated
   USING (
@@ -40,12 +40,12 @@ CREATE POLICY "tasks_update_policy" ON public.tasks
         SELECT 1 FROM public.project_members
         WHERE project_id = public.tasks.project_id 
           AND user_id = auth.uid()
-          AND (role = 'owner' OR can_manage_tasks = true)
+          AND (role = 'lead' OR can_manage_tasks = true)
     )
     OR (assigned_to = auth.uid())
   );
 
--- 5. DELETE: Owners or those with permission can delete
+-- 5. DELETE: leads or those with permission can delete
 CREATE POLICY "tasks_delete_policy" ON public.tasks
   FOR DELETE TO authenticated
   USING (
@@ -53,7 +53,7 @@ CREATE POLICY "tasks_delete_policy" ON public.tasks
         SELECT 1 FROM public.project_members
         WHERE project_id = public.tasks.project_id 
           AND user_id = auth.uid()
-          AND (role = 'owner' OR can_manage_tasks = true)
+          AND (role = 'lead' OR can_manage_tasks = true)
     )
   );
 

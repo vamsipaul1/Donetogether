@@ -147,7 +147,7 @@ const WaitingRoom = ({ project, members, currentUserId, onEnterDashboard, isSubV
                                         <div>
                                             <p className="text-xs font-bold text-zinc-900 dark:text-zinc-200">
                                                 {member.users?.full_name || member.users?.email?.split('@')[0]}
-                                                {member.role === 'owner' && <span className="ml-2 text-[9px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-500 border border-zinc-200 dark:border-zinc-700">LEADER</span>}
+                                                {member.role === 'lead' && <span className="ml-2 text-[9px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-500 border border-zinc-200 dark:border-zinc-700">LEADER</span>}
                                             </p>
                                         </div>
                                     </div>

@@ -21,7 +21,7 @@ CREATE TABLE public.project_members (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   project_id UUID NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL CHECK (role IN ('owner', 'member')) DEFAULT 'member',
+  role TEXT NOT NULL CHECK (role IN ('lead', 'member')) DEFAULT 'member',
   joined_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   UNIQUE(project_id, user_id)
 );
@@ -151,7 +151,7 @@ CREATE POLICY "projects_update" ON public.projects
       SELECT 1 FROM public.project_members
       WHERE project_id = projects.id 
       AND user_id = auth.uid() 
-      AND role = 'owner'
+      AND role = 'lead'
     )
   );
 

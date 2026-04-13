@@ -28,7 +28,7 @@ interface OverviewProps {
     members: (ProjectMember & { users?: User })[]
     tasks: Task[]
     onProjectUpdated?: () => Promise<void>;
-    isOwner?: boolean;
+    islead?: boolean;
 }
 
 const Overview = ({
@@ -36,7 +36,7 @@ const Overview = ({
     members,
     tasks,
     onProjectUpdated,
-    isOwner,
+    islead,
 }: OverviewProps) => {
     /* ---------------- MEMBER FILTER ---------------- */
 

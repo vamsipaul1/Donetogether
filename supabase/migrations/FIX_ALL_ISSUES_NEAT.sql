@@ -40,13 +40,13 @@ ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.project_members ENABLE ROW LEVEL SECURITY;
 
 -- 5. Re-apply polished policies (Drop first to avoid duplication errors)
-DROP POLICY IF EXISTS "Enable update for project owners" ON public.projects;
-CREATE POLICY "Enable update for project owners" ON public.projects
+DROP POLICY IF EXISTS "Enable update for project leads" ON public.projects;
+CREATE POLICY "Enable update for project leads" ON public.projects
   FOR UPDATE USING (
     auth.uid() = created_by 
     OR EXISTS (
       SELECT 1 FROM public.project_members
-      WHERE project_id = id AND user_id = auth.uid() AND role = 'owner'
+      WHERE project_id = id AND user_id = auth.uid() AND role = 'lead'
     )
   );
 

@@ -7,15 +7,15 @@
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 
 -- 2. Drop existing update policy if it exists (to avoid conflicts)
-DROP POLICY IF EXISTS "Enable update for project owners" ON public.projects;
+DROP POLICY IF EXISTS "Enable update for project leads" ON public.projects;
 DROP POLICY IF EXISTS "Projects update policy" ON public.projects;
 
 -- 3. Create a comprehensive update policy
 -- This allows a user to update a project IF:
 --   a) They created it (created_by)
 --   OR
---   b) They are a project member with role 'owner'
-CREATE POLICY "Enable update for project owners" ON public.projects
+--   b) They are a project member with role 'lead'
+CREATE POLICY "Enable update for project leads" ON public.projects
   FOR UPDATE USING (
     auth.uid() = created_by 
     OR 
@@ -23,7 +23,7 @@ CREATE POLICY "Enable update for project owners" ON public.projects
       SELECT 1 FROM public.project_members
       WHERE project_id = id
       AND user_id = auth.uid()
-      AND role = 'owner'
+      AND role = 'lead'
     )
   );
 

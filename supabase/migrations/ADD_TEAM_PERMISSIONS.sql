@@ -12,13 +12,13 @@ ADD COLUMN IF NOT EXISTS can_view_analytics BOOLEAN DEFAULT true,
 ADD COLUMN IF NOT EXISTS can_edit_project_details BOOLEAN DEFAULT false;
 
 -- 2. INITIALIZE permissions based on role
--- Owners get everything
+-- leads get everything
 UPDATE public.project_members
 SET can_manage_tasks = true,
     can_invite_members = true,
     can_view_analytics = true,
     can_edit_project_details = true
-WHERE role = 'owner';
+WHERE role = 'lead';
 
 -- Regular members get task management and analytics by default
 UPDATE public.project_members
@@ -26,40 +26,40 @@ SET can_manage_tasks = true,
     can_invite_members = false,
     can_view_analytics = true,
     can_edit_project_details = false
-WHERE role != 'owner';
+WHERE role != 'lead';
 
 -- 3. FUNCTION: Safe Leadership Transfer
--- Transfers ownership from one user to another and demotes the previous owner to 'member'
-CREATE OR REPLACE FUNCTION public.transfer_project_ownership(p_id UUID, new_owner_id UUID)
+-- Transfers leadership from one user to another and demotes the previous lead to 'member'
+CREATE OR REPLACE FUNCTION public.transfer_project_leadership(p_id UUID, new_lead_id UUID)
 RETURNS VOID AS $$
 DECLARE
-    current_owner_id UUID;
+    current_lead_id UUID;
 BEGIN
-    -- 1. Verify caller is the current owner (handled by RLS or explicit check)
+    -- 1. Verify caller is the current lead (handled by RLS or explicit check)
     -- We assume the application logic or RLS handles the permission to call this.
     
-    SELECT user_id INTO current_owner_id 
+    SELECT user_id INTO current_lead_id 
     FROM public.project_members 
-    WHERE project_id = p_id AND role = 'owner';
+    WHERE project_id = p_id AND role = 'lead';
 
-    IF current_owner_id = auth.uid() THEN
-        -- 2. Demote current owner
+    IF current_lead_id = auth.uid() THEN
+        -- 2. Demote current lead
         UPDATE public.project_members
         SET role = 'member',
             can_edit_project_details = false,
             can_invite_members = false
-        WHERE project_id = p_id AND user_id = current_owner_id;
+        WHERE project_id = p_id AND user_id = current_lead_id;
 
-        -- 3. Promote new owner
+        -- 3. Promote new lead
         UPDATE public.project_members
-        SET role = 'owner',
+        SET role = 'lead',
             can_manage_tasks = true,
                 can_invite_members = true,
                 can_view_analytics = true,
                 can_edit_project_details = true
-        WHERE project_id = p_id AND user_id = new_owner_id;
+        WHERE project_id = p_id AND user_id = new_lead_id;
     ELSE
-        RAISE EXCEPTION 'Only the current project owner can transfer leadership.';
+        RAISE EXCEPTION 'Only the current project lead can transfer leadership.';
     END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

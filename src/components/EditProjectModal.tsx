@@ -133,7 +133,7 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, members 
                                                     <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate uppercase tracking-tight">
                                                         {member.users?.full_name || 'Team Member'}
                                                     </p>
-                                                    {member.role === 'owner' && (
+                                                    {member.role === 'lead' && (
                                                         <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                                                     )}
                                                 </div>
@@ -141,11 +141,11 @@ const EditProjectModal = ({ isOpen, onClose, project, onProjectUpdated, members 
                                                     {member.users?.email}
                                                 </p>
                                             </div>
-                                            <div className={`text-[9px] font-black uppercase px-3 py-1 rounded-xl tracking-wider ${member.role === 'owner'
+                                            <div className={`text-[9px] font-black uppercase px-3 py-1 rounded-xl tracking-wider ${member.role === 'lead'
                                                 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-500'
                                                 : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
                                                 }`}>
-                                                {member.role === 'owner' ? 'Leader' : (member.role === 'admin' ? 'Admin' : 'Member')}
+                                                {member.role === 'lead' ? 'Leader' : (member.role === 'admin' ? 'Admin' : 'Member')}
                                             </div>
                                         </div>
                                     ))}

@@ -22,7 +22,7 @@ interface TaskListProps {
     tasks: Task[];
     members: (ProjectMember & { users?: UserType })[];
     currentUserId: string;
-    isOwner: boolean;
+    islead: boolean;
     onTasksUpdated: () => void;
 
     onAddTask: () => void;
@@ -30,7 +30,7 @@ interface TaskListProps {
 }
 
 
-const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAddTask, onEditTask }: TaskListProps) => {
+const TaskList = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAddTask, onEditTask }: TaskListProps) => {
     const [isProofModalOpen, setIsProofModalOpen] = useState(false);
     const [taskForProof, setTaskForProof] = useState<Task | null>(null);
     const [selectedTaskForDetail, setSelectedTaskForDetail] = useState<Task | null>(null);
@@ -52,7 +52,7 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
         // Intercept completion
         if (updates.status === 'completed') {
             const currentUserMember = members.find(m => m.user_id === currentUserId);
-            const canVerify = isOwner || currentUserMember?.can_verify_tasks;
+            const canVerify = islead || currentUserMember?.can_verify_tasks;
 
             if (!canVerify) {
                 const task = tasks.find(t => t.id === taskId);
@@ -144,7 +144,7 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        if (isOwner || task.assigned_to === currentUserId) {
+                                                        if (islead || task.assigned_to === currentUserId) {
                                                             handleTaskChange(task.id, { status: task.status === 'completed' ? 'not_started' : 'completed' });
                                                         }
                                                     }}
@@ -166,7 +166,7 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                                                 </div>
                                             </div>
 
-                                            {isOwner && (
+                                            {islead && (
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <button className="p-1 -mr-2 text-zinc-400">
@@ -254,17 +254,17 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
                                     >
                                         {/* Name Row */}
                                         <div className="flex-[4] flex items-center gap-3 min-w-20 pr-4">
-                                            {isOwner && (
+                                            {islead && (
                                                 <div className="opacity-0 group-hover:opacity-100 cursor-grab">
                                                     <GripVertical className="w-4 h-4 text-zinc-400 dark:text-zinc-600" />
                                                 </div>
                                             )}
                                             <button
-                                                onClick={() => (isOwner || task.assigned_to === currentUserId) && handleTaskChange(task.id, { status: task.status === 'completed' ? 'not_started' : 'completed' })}
+                                                onClick={() => (islead || task.assigned_to === currentUserId) && handleTaskChange(task.id, { status: task.status === 'completed' ? 'not_started' : 'completed' })}
                                                 className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${task.status === 'completed'
                                                     ? 'bg-emerald-500 border-emerald-500'
                                                     : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-500'
-                                                    } ${(isOwner || task.assigned_to === currentUserId) ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
+                                                    } ${(islead || task.assigned_to === currentUserId) ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'}`}
                                             >
                                                 {task.status === 'completed' && <CheckCircle2 className="w-3 h-3 text-white" />}
                                             </button>
@@ -326,7 +326,7 @@ const TaskList = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAd
 
                                         {/* Options */}
                                         <div className="w-10 flex justify-end">
-                                            {isOwner && (
+                                            {islead && (
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <button className="opacity-0 group-hover:opacity-100 p-10 text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-200 transition-all">

@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS public.activities (
     project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
     entity_type VARCHAR(50), -- 'task', 'blocker', 'project'
     entity_id UUID,
-    action VARCHAR(100), -- 'status_transition', 'blocker_added', 'ownership_change'
+    action VARCHAR(100), -- 'status_transition', 'blocker_added', 'leadership_change'
     diff_payload JSONB,
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT NOW()

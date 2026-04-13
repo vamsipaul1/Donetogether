@@ -91,15 +91,15 @@ CREATE TRIGGER trigger_check_team_completion
   AFTER INSERT ON public.project_members
   FOR EACH ROW EXECUTE FUNCTION public.check_team_completion();
 
--- 7. FUNCTION: Helper to check if user is project owner
-CREATE OR REPLACE FUNCTION public.is_project_owner(p_id UUID, u_id UUID)
+-- 7. FUNCTION: Helper to check if user is project lead
+CREATE OR REPLACE FUNCTION public.is_project_lead(p_id UUID, u_id UUID)
 RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.project_members
     WHERE project_id = p_id 
       AND user_id = u_id 
-      AND role = 'owner'
+      AND role = 'lead'
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
@@ -146,23 +146,23 @@ CREATE POLICY "tasks_select_policy" ON public.tasks
     AND is_team_complete(project_id)
   );
 
--- INSERT: Only project owner can create tasks, AND team must be complete
+-- INSERT: Only project lead can create tasks, AND team must be complete
 CREATE POLICY "tasks_insert_policy" ON public.tasks
   FOR INSERT TO authenticated
   WITH CHECK (
-    is_project_owner(project_id, auth.uid())
+    is_project_lead(project_id, auth.uid())
     AND is_team_complete(project_id)
   );
 
 -- UPDATE: 
--- - Owner can update any task field
+-- - lead can update any task field
 -- - Member can only update status of their assigned tasks
 CREATE POLICY "tasks_update_policy" ON public.tasks
   FOR UPDATE TO authenticated
   USING (
     is_team_complete(project_id)
     AND (
-      is_project_owner(project_id, auth.uid())
+      is_project_lead(project_id, auth.uid())
       OR (
         assigned_to = auth.uid()
         -- Member restriction: Can only change status field
@@ -171,11 +171,11 @@ CREATE POLICY "tasks_update_policy" ON public.tasks
     )
   );
 
--- DELETE: Only project owner can delete tasks
+-- DELETE: Only project lead can delete tasks
 CREATE POLICY "tasks_delete_policy" ON public.tasks
   FOR DELETE TO authenticated
   USING (
-    is_project_owner(project_id, auth.uid())
+    is_project_lead(project_id, auth.uid())
     AND is_team_complete(project_id)
   );
 

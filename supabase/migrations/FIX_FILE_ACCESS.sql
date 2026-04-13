@@ -49,11 +49,11 @@ ON storage.objects FOR UPDATE
 TO authenticated
 USING (
     bucket_id = 'chat-files'
-    AND auth.uid() = owner
+    AND auth.uid() = lead
 )
 WITH CHECK (
     bucket_id = 'chat-files'
-    AND auth.uid() = owner
+    AND auth.uid() = lead
 );
 
 -- Policy 4: Allow users to delete their own files (optional)
@@ -62,7 +62,7 @@ ON storage.objects FOR DELETE
 TO authenticated
 USING (
     bucket_id = 'chat-files'
-    AND auth.uid() = owner
+    AND auth.uid() = lead
 );
 
 -- ========================================

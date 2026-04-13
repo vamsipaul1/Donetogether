@@ -65,7 +65,7 @@ export function buildAIContext(
     const completionPercentage = Math.round((completedTasks.length / tasks.length) * 100) || 0;
 
     // Team analysis
-    const leader = members.find(m => m.role === 'owner')?.users?.full_name || 'Unknown';
+    const leader = members.find(m => m.role === 'lead')?.users?.full_name || 'Unknown';
     const teamMembers = members.map(m => {
         const userTasks = tasks.filter(t => t.assigned_to === m.user_id);
         const userCompleted = userTasks.filter(t => t.status === 'completed');

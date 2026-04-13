@@ -32,7 +32,7 @@ A production-grade task management system for student teams with intelligent tea
    - Due date tracking with visual indicators
 
 4. **Role-Based Permissions**
-   - **Owner**: Create tasks, assign to anyone, change all task properties
+   - **lead**: Create tasks, assign to anyone, change all task properties
    - **Members**: Update only their assigned task status
    - Enforced at both UI and database level
 
@@ -117,7 +117,7 @@ WHERE (
 2. **See waiting room** → Share join code/QR
 3. **Members join** → Watch progress bar
 4. **Team completes** → Dashboard auto-unlocks
-5. **Owner creates tasks** → Domain suggestions appear
+5. **lead creates tasks** → Domain suggestions appear
 6. **Members update status** → Only their tasks
 
 ---
@@ -140,7 +140,7 @@ WHERE (
 ```sql
 -- Three-way permission check
 1. Is team complete? (RLS blocks if false)
-2. Is user the owner? → Allow all updates
+2. Is user the lead? → Allow all updates
 3. Is user assigned to task? → Allow status-only updates
 ```
 
@@ -165,19 +165,19 @@ User must be project member
 AND project.is_team_complete = true
 
 -- Tasks INSERT Policy  
-Only owner
+Only lead
 AND project.is_team_complete = true
 
 -- Tasks UPDATE Policy
-(Owner) OR (Member AND assigned_to = current_user)
+(lead) OR (Member AND assigned_to = current_user)
 AND project.is_team_complete = true
 ```
 
 ### Frontend (UX Layer)
 
 - Waiting Room shown if `!is_team_complete`
-- Create Task button hidden if `!isOwner`
-- Status dropdown enabled only for assigned member or owner
+- Create Task button hidden if `!islead`
+- Status dropdown enabled only for assigned member or lead
 - Direct URL access checked via RLS (no bypass possible)
 
 ---
@@ -199,7 +199,7 @@ project_id           UUID FK → projects
 title                TEXT NOT NULL
 description          TEXT
 assigned_to          UUID FK → users
-assigned_by          UUID FK → users (owner)
+assigned_by          UUID FK → users (lead)
 status               TEXT (not_started, in_progress, completed, blocked)
 priority             TEXT (low, medium, high)
 due_date             DATE NOT NULL
@@ -248,7 +248,7 @@ supabase.channel(`project_${projectId}`)
 - [ ] 4th member joins → Dashboard unlocks
 
 ### Task Management
-- [ ] Owner creates task with suggestion
+- [ ] lead creates task with suggestion
 - [ ] Assign to member
 - [ ] Member sees task in dashboard
 - [ ] Member updates status (allowed)
@@ -257,7 +257,7 @@ supabase.channel(`project_${projectId}`)
 
 ### Edge Cases
 - [ ] Direct URL to `/dashboard` before team complete → Shows waiting room
-- [ ] Owner creates task before team complete → RLS blocks insert
+- [ ] lead creates task before team complete → RLS blocks insert
 - [ ] Member leaves after completion → Count drops, no re-lock (by design)
 
 ---
@@ -402,14 +402,14 @@ FROM projects;
 UPDATE projects SET is_team_complete = true WHERE id = 'YOUR_PROJECT_ID';
 ```
 
-### "Can't create tasks as owner"
+### "Can't create tasks as lead"
 
 ```sql
--- Verify you're actually owner
+-- Verify you're actually lead
 SELECT * FROM project_members 
 WHERE project_id = 'YOUR_PROJECT_ID' AND user_id = auth.uid();
 
--- Should show role = 'owner'
+-- Should show role = 'lead'
 ```
 
 ### "Waiting room stuck at 3/4"
@@ -429,7 +429,7 @@ WHERE project_id = 'YOUR_PROJECT_ID' AND user_id = auth.uid();
 DROP TABLE IF EXISTS public.tasks CASCADE;
 DROP FUNCTION IF EXISTS handle_task_completion CASCADE;
 DROP FUNCTION IF EXISTS check_team_completion CASCADE;
-DROP FUNCTION IF EXISTS is_project_owner CASCADE;
+DROP FUNCTION IF EXISTS is_project_lead CASCADE;
 DROP FUNCTION IF EXISTS is_project_member CASCADE;
 DROP FUNCTION IF EXISTS is_team_complete CASCADE;
 DROP VIEW IF EXISTS tasks_with_status CASCADE;

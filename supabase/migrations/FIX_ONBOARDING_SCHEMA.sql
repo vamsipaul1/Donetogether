@@ -41,15 +41,15 @@ CREATE POLICY "Users can view own join requests" ON public.join_requests
 CREATE POLICY "Users can create join requests" ON public.join_requests
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Policy: Team Leaders (Owners) can view requests for their projects
--- (Complexity: assumes project_members table links owners)
+-- Policy: Team Leaders (leads) can view requests for their projects
+-- (Complexity: assumes project_members table links leads)
 CREATE POLICY "Team users can view requests" ON public.join_requests
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM public.project_members pm
             WHERE pm.project_id = join_requests.team_id
             AND pm.user_id = auth.uid()
-            AND pm.role = 'owner'
+            AND pm.role = 'lead'
         )
     );
 
@@ -60,7 +60,7 @@ CREATE POLICY "Team leaders can update requests" ON public.join_requests
             SELECT 1 FROM public.project_members pm
             WHERE pm.project_id = join_requests.team_id
             AND pm.user_id = auth.uid()
-            AND pm.role = 'owner'
+            AND pm.role = 'lead'
         )
     );
 
@@ -99,7 +99,7 @@ CREATE POLICY "Team leaders create invites" ON public.invites
             SELECT 1 FROM public.project_members pm
             WHERE pm.project_id = invites.team_id
             AND pm.user_id = auth.uid()
-            AND pm.role = 'owner'
+            AND pm.role = 'lead'
         )
     );
 

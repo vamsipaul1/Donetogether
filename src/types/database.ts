@@ -38,7 +38,7 @@ export interface ProjectMember {
     id: string;
     project_id: string;
     user_id: string;
-    role: 'owner' | 'member';
+    role: 'lead' | 'member';
     joined_at: string;
     can_manage_tasks: boolean;
     can_invite_members: boolean;

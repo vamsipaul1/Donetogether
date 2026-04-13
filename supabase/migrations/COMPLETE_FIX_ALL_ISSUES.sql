@@ -121,9 +121,9 @@ CREATE POLICY "tasks_delete_policy" ON public.tasks
 -- ============================================
 
 -- 3.1 DROP existing project policies that might conflict
-DROP POLICY IF EXISTS "p_owner_all" ON public.projects;
+DROP POLICY IF EXISTS "p_lead_all" ON public.projects;
 DROP POLICY IF EXISTS "p_read_all" ON public.projects;
-DROP POLICY IF EXISTS "Enable update for project owners" ON public.projects;
+DROP POLICY IF EXISTS "Enable update for project leads" ON public.projects;
 DROP POLICY IF EXISTS "projects_select" ON public.projects;
 DROP POLICY IF EXISTS "projects_insert" ON public.projects;
 DROP POLICY IF EXISTS "projects_update" ON public.projects;
@@ -140,7 +140,7 @@ CREATE POLICY "projects_insert" ON public.projects
   FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = created_by);
 
--- UPDATE: Project creator or members with owner role can update
+-- UPDATE: Project creator or members with lead role can update
 CREATE POLICY "projects_update" ON public.projects
   FOR UPDATE TO authenticated
   USING (
@@ -149,7 +149,7 @@ CREATE POLICY "projects_update" ON public.projects
       SELECT 1 FROM public.project_members
       WHERE project_id = projects.id 
       AND user_id = auth.uid() 
-      AND role = 'owner'
+      AND role = 'lead'
     )
   );
 

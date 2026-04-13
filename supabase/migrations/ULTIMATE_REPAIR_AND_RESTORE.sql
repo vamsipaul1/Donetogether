@@ -71,22 +71,22 @@ DELETE FROM public.projects WHERE team_name = 'Code-Bulls-AI';
 DO $$
 DECLARE
     v_project_id UUID;
-    v_owner_id UUID;
+    v_lead_id UUID;
     -- Original Deterministic IDs for Anil & Dhanunjaya
     v_anil_id UUID := '00000000-0000-0000-0000-000000000001';
     v_dhanunjaya_id UUID := '00000000-0000-0000-0000-000000000002';
 BEGIN
     -- 0. Identity Context
-    v_owner_id := auth.uid();
-    IF v_owner_id IS NULL THEN
-        SELECT id INTO v_owner_id FROM public.users LIMIT 1;
+    v_lead_id := auth.uid();
+    IF v_lead_id IS NULL THEN
+        SELECT id INTO v_lead_id FROM public.users LIMIT 1;
     END IF;
 
     -- 1. Create Clean Project (Using 4 to satisfy any remaining constraints, and dropping old ones)
     ALTER TABLE public.projects DROP CONSTRAINT IF EXISTS projects_expected_team_size_check;
     
     INSERT INTO public.projects (title, team_name, domain, goal, join_code, expected_team_size, is_team_complete, created_by)
-    VALUES ('Code-Bulls-AI', 'Code-Bulls-AI', 'AI', 'HELLO AI', 'BULLS-' || upper(substring(gen_random_uuid()::text, 1, 4)), 4, true, v_owner_id)
+    VALUES ('Code-Bulls-AI', 'Code-Bulls-AI', 'AI', 'HELLO AI', 'BULLS-' || upper(substring(gen_random_uuid()::text, 1, 4)), 4, true, v_lead_id)
     ON CONFLICT (team_name) DO UPDATE SET goal = EXCLUDED.goal
     RETURNING id INTO v_project_id;
 
@@ -98,16 +98,16 @@ BEGIN
 
     -- 3. Add to Squad (The ORGINAL real data)
     INSERT INTO public.project_members (project_id, user_id, role)
-    VALUES (v_project_id, v_owner_id, 'owner'),
+    VALUES (v_project_id, v_lead_id, 'lead'),
            (v_project_id, v_anil_id, 'member'),
            (v_project_id, v_dhanunjaya_id, 'member')
     ON CONFLICT (project_id, user_id) DO NOTHING;
 
     -- 4. Initial Real Tasks
     INSERT INTO public.tasks (project_id, title, assigned_to, assigned_by, status, due_date) VALUES 
-    (v_project_id, 'Project Blueprint', v_owner_id, v_owner_id, 'in_progress', CURRENT_DATE - INTERVAL '1 day'), -- Overdue matches red badge
-    (v_project_id, 'UI Prototype', v_anil_id, v_owner_id, 'in_progress', CURRENT_DATE + INTERVAL '2 days'),
-    (v_project_id, 'Backend Schema', v_dhanunjaya_id, v_owner_id, 'in_progress', CURRENT_DATE + INTERVAL '3 days');
+    (v_project_id, 'Project Blueprint', v_lead_id, v_lead_id, 'in_progress', CURRENT_DATE - INTERVAL '1 day'), -- Overdue matches red badge
+    (v_project_id, 'UI Prototype', v_anil_id, v_lead_id, 'in_progress', CURRENT_DATE + INTERVAL '2 days'),
+    (v_project_id, 'Backend Schema', v_dhanunjaya_id, v_lead_id, 'in_progress', CURRENT_DATE + INTERVAL '3 days');
 
     RAISE NOTICE '✅ ULTIMATE REPAIR: Code-Bulls-AI is now fixed and restored neatly!';
 END $$;

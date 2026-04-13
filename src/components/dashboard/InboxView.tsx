@@ -32,7 +32,7 @@ const InboxView = ({ projectId, members = [], currentUserId, onlineUsers }: Inbo
     }, [projectId]);
 
     const currentUserMember = members.find((m: any) => m.user_id === currentUserId);
-    const canVerify = currentUserMember?.role === 'owner' || currentUserMember?.can_verify_tasks;
+    const canVerify = currentUserMember?.role === 'lead' || currentUserMember?.can_verify_tasks;
 
     if (!projectId) {
         return (

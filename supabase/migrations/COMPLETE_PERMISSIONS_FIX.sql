@@ -14,7 +14,7 @@ ADD COLUMN IF NOT EXISTS can_restore_tasks BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS can_manage_resources BOOLEAN DEFAULT false,
 ADD COLUMN IF NOT EXISTS can_post_messages BOOLEAN DEFAULT true;
 
--- 2. Grant full access to Owners
+-- 2. Grant full access to leads
 UPDATE public.project_members
 SET can_manage_tasks = true,
     can_invite_members = true,
@@ -24,7 +24,7 @@ SET can_manage_tasks = true,
     can_restore_tasks = true,
     can_manage_resources = true,
     can_post_messages = true
-WHERE role = 'owner';
+WHERE role = 'lead';
 
 -- 3. Update RLS for Tasks to respect can_manage_tasks
 DROP POLICY IF EXISTS "tasks_insert_policy" ON public.tasks;
@@ -35,10 +35,10 @@ CREATE POLICY "tasks_insert_policy" ON public.tasks
         SELECT 1 FROM public.project_members
         WHERE project_id = public.tasks.project_id 
           AND user_id = auth.uid()
-          AND (role = 'owner' OR can_manage_tasks = true)
+          AND (role = 'lead' OR can_manage_tasks = true)
     )
     AND (
-        is_project_owner(project_id, auth.uid()) 
+        is_project_lead(project_id, auth.uid()) 
         OR is_team_complete(project_id)
     )
   );
@@ -51,7 +51,7 @@ CREATE POLICY "tasks_update_policy" ON public.tasks
         SELECT 1 FROM public.project_members
         WHERE project_id = public.tasks.project_id 
           AND user_id = auth.uid()
-          AND (role = 'owner' OR can_manage_tasks = true)
+          AND (role = 'lead' OR can_manage_tasks = true)
     )
     OR (
         is_team_complete(project_id)
@@ -67,7 +67,7 @@ CREATE POLICY "tasks_delete_policy" ON public.tasks
         SELECT 1 FROM public.project_members
         WHERE project_id = public.tasks.project_id 
           AND user_id = auth.uid()
-          AND (role = 'owner' OR can_manage_tasks = true)
+          AND (role = 'lead' OR can_manage_tasks = true)
     )
   );
 
@@ -81,7 +81,7 @@ CREATE POLICY "p_update_policy" ON public.projects
         SELECT 1 FROM public.project_members
         WHERE project_id = public.projects.id 
           AND user_id = auth.uid()
-          AND (role = 'owner' OR can_edit_project_details = true)
+          AND (role = 'lead' OR can_edit_project_details = true)
     )
   );
 

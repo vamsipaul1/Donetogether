@@ -14,12 +14,12 @@ interface TimelineViewProps {
     tasks: Task[];
     members: (ProjectMember & { users?: UserType })[];
     currentUserId: string;
-    isOwner: boolean;
+    islead: boolean;
     onTasksUpdated: () => void;
     onAddTask: () => void;
 }
 
-const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, onAddTask }: TimelineViewProps) => {
+const TimelineView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAddTask }: TimelineViewProps) => {
     const [viewDate, setViewDate] = useState(new Date());
     const [timelineRange, setTimelineRange] = useState(28); // Default 4 weeks
     const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
@@ -89,7 +89,7 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
 
     // Manipulation Handlers
     const handleStartTaskManipulation = (e: React.MouseEvent | React.TouchEvent, task: Task, type: 'drag' | 'resize-start' | 'resize-end') => {
-        if (!isOwner) return;
+        if (!islead) return;
         // e.stopPropagation(); 
         const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
         setActiveTaskId(task.id);
@@ -396,19 +396,19 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
 
                                                                     return (
                                                                         <div
-                                                                            onMouseDown={isOwner ? (e) => handleDragStart(e, task) : undefined}
-                                                                            onTouchStart={isOwner ? (e) => handleDragStart(e, task) : undefined}
+                                                                            onMouseDown={islead ? (e) => handleDragStart(e, task) : undefined}
+                                                                            onTouchStart={islead ? (e) => handleDragStart(e, task) : undefined}
                                                                             onClick={() => {
                                                                                 if (manipulationOffset === 0) handleTaskClick(task);
                                                                             }}
                                                                             className={`group/bar absolute h-7 md:h-9 rounded-lg md:rounded-xl px-2 md:px-3 flex items-center gap-1.5 md:gap-2 shadow-lg border-t border-white/20 transition-all z-10
                                                                             ${colorClass} ${activeTaskId === task.id ? 'z-50 ring-2 ring-emerald-500 ring-offset-2 dark:ring-offset-black scale-105 opacity-90' : ''}
-                                                                            ${isOwner ? 'cursor-grab active:cursor-grabbing hover:brightness-105 active:scale-[0.99]' : 'cursor-pointer'}
+                                                                            ${islead ? 'cursor-grab active:cursor-grabbing hover:brightness-105 active:scale-[0.99]' : 'cursor-pointer'}
                                                                         `}
                                                                             style={{ left: style.left, width: style.width }}
                                                                         >
                                                                             {/* Start Resize Handle */}
-                                                                            {isOwner && (
+                                                                            {islead && (
                                                                                 <div
                                                                                     className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/20 rounded-l-xl z-20"
                                                                                     onMouseDown={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-start'); }}
@@ -417,7 +417,7 @@ const TimelineView = ({ tasks, members, currentUserId, isOwner, onTasksUpdated, 
                                                                             )}
 
                                                                             {/* End Resize Handle */}
-                                                                            {isOwner && (
+                                                                            {islead && (
                                                                                 <div
                                                                                     className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize hover:bg-white/20 rounded-r-xl z-20"
                                                                                     onMouseDown={(e) => { e.stopPropagation(); handleStartTaskManipulation(e, task, 'resize-end'); }}

@@ -82,7 +82,7 @@ ALTER TABLE public.message_reads ENABLE ROW LEVEL SECURITY;
 -- 6. RLS POLICIES (Security-First)
 -- ============================================
 
--- PROFILES: Everyone can read, only owner can update
+-- PROFILES: Everyone can read, only lead can update
 DROP POLICY IF EXISTS "profiles_select" ON public.profiles;
 CREATE POLICY "profiles_select" ON public.profiles
   FOR SELECT TO authenticated

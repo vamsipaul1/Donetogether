@@ -23,12 +23,12 @@
 
 ✅ **Row Level Security Policies**
 - ✅ SELECT: Member + Team Complete
-- ✅ INSERT: Owner + Team Complete  
-- ✅ UPDATE: Owner OR (Member + Own Task)
-- ✅ DELETE: Owner Only
+- ✅ INSERT: lead + Team Complete  
+- ✅ UPDATE: lead OR (Member + Own Task)
+- ✅ DELETE: lead Only
 
 ✅ **Helper Functions**
-- `is_project_owner(project_id, user_id)`
+- `is_project_lead(project_id, user_id)`
 - `is_project_member(project_id, user_id)`
 - `is_team_complete(project_id)`
 - `handle_task_completion()` - Auto-set completed_at
@@ -90,7 +90,7 @@
 
 ✅ Priority badges (low/medium/high)
 ✅ Due date formatting with countdown
-✅ Conditional status update (owner or assigned member only)
+✅ Conditional status update (lead or assigned member only)
 ✅ Select dropdown for status change
 ✅ Empty state messaging
 
@@ -107,7 +107,7 @@
 ✅ Toast notifications
 ✅ Auto-reset on close
 
-**UX**: Owner sees suggestions immediately, clicks to auto-fill.
+**UX**: lead sees suggestions immediately, clicks to auto-fill.
 
 ---
 
@@ -123,7 +123,7 @@
 
 **State 2: Waiting Room** (NEW)
 - Shows when `!is_team_complete`
-- Even owner can't see tasks
+- Even lead can't see tasks
 - Displays WaitingRoom component
 - Realtime subscription for member joins
 
@@ -132,11 +132,11 @@
 - Project header with domain badge
 - Stats cards (Total, Completed, My Tasks)
 - Task board with all tasks
-- Create Task button (owner only)
+- Create Task button (lead only)
 - Realtime task updates
 
 ✅ **Permission Checks**:
-- `isOwner` computed from role
+- `islead` computed from role
 - Create button visibility
 - Status update permissions passed to TaskBoard
 
@@ -168,7 +168,7 @@
 CREATE POLICY "tasks_insert_policy" ON tasks
   FOR INSERT 
   USING (
-    is_project_owner(project_id, auth.uid())
+    is_project_lead(project_id, auth.uid())
     AND is_team_complete(project_id) -- 🔒 CRITICAL GATE
   );
 ```
@@ -256,7 +256,7 @@ CREATE POLICY "tasks_insert_policy" ON tasks
 |------------|--------|-------|
 | Team size 4-6 | ✅ | Enforced at DB + UI |
 | Task dashboard locked | ✅ | RLS + Waiting Room |
-| Owner creates tasks | ✅ | RLS INSERT policy |
+| lead creates tasks | ✅ | RLS INSERT policy |
 | Members update status only | ✅ | Conditional UI + RLS |
 | Overdue auto-calc | ✅ | Computed, not stored |
 | Domain suggestions | ✅ | 9 domains, 50+ tasks |
@@ -303,7 +303,7 @@ QUICK_START.md                 [NEW] - Setup guide
    - ✅ Progress bar fills
    - ✅ Dashboard unlocks on 5th member
 
-3. **Owner creates task**
+3. **lead creates task**
    - ✅ Suggestions appear
    - ✅ Insert succeeds
    

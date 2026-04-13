@@ -87,7 +87,7 @@ A **production-ready, enterprise-grade task management system** built exactly to
 |---|------------|----------------|--------|
 | 1 | Team size 4-6 members | DB constraint + UI selection | ✅ |
 | 2 | Task dashboard locked until team complete | RLS + Waiting Room | ✅ |
-| 3 | Owner creates/assigns tasks | RLS INSERT policy | ✅ |
+| 3 | lead creates/assigns tasks | RLS INSERT policy | ✅ |
 | 4 | Members update status only | Conditional UI + RLS UPDATE | ✅ |
 | 5 | Everyone sees all tasks | RLS SELECT policy | ✅ |
 | 6 | Overdue auto-calculated | Frontend logic, not stored | ✅ |
@@ -128,7 +128,7 @@ A **production-ready, enterprise-grade task management system** built exactly to
 
 **Layer 2: Authorization** (PostgreSQL RLS)
 - Every query checked
-- Helper functions (`is_project_owner`, etc.)
+- Helper functions (`is_project_lead`, etc.)
 - Impossible to bypass
 
 **Layer 3: Data Validation** (DB Constraints)
@@ -147,7 +147,7 @@ A **production-ready, enterprise-grade task management system** built exactly to
 
 ## 📊 Key Features
 
-### For Team Leaders (Owners)
+### For Team Leaders (leads)
 
 - ✅ Create project with team size selection
 - ✅ Invite members via code/QR
