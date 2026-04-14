@@ -19,10 +19,8 @@ const AIAssistant = ({
     project,
     tasks,
     members,
-    user,
-    userdeio
+    user
 }: any) => {
-    const effectiveUser = user ?? userdeio;
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
@@ -96,7 +94,7 @@ const AIAssistant = ({
             project: {
                 id: project?.id ?? '',
                 name: project?.title ?? '',
-                goal: project?.description ?? '',
+                goal: project?.goal || project?.description || '',
                 team_size: Array.isArray(members) ? members.length : 0
             },
             tasks: {
@@ -228,10 +226,10 @@ const AIAssistant = ({
 
             setMessages(prev => [...prev, botMessage]);
 
-            if (effectiveUser?.id) {
+            if (user?.id) {
                 try {
                     await supabase.from('ai_logs').insert({
-                        user_id: effectiveUser.id,
+                        user_id: user.id,
                         project_id: project?.id,
                         prompt: contentToSend,
                         response: responseText || data.response,
@@ -272,12 +270,12 @@ const AIAssistant = ({
     const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
     const fetchHistory = async () => {
-        if (!effectiveUser?.id) return;
+        if (!user?.id) return;
         setIsLoadingHistory(true);
         const { data, error } = await supabase
             .from('ai_logs')
             .select('*')
-            .eq('user_id', effectiveUser.id)
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(20);
 
@@ -412,7 +410,7 @@ const AIAssistant = ({
                             </div>
 
                             <div className="text-base font-bold text-zinc-900 dark:text-white absolute left-1/2 -translate-x-1/2 hidden md:block pointer-events-none tracking-tight">
-                                {effectiveUser?.full_name || 'Daily Assistant'}
+                                {user?.full_name || 'Daily Assistant'}
                             </div>
 
                             <div className="flex items-center gap-2" onPointerDown={(e) => e.stopPropagation()}>
@@ -521,7 +519,7 @@ const AIAssistant = ({
                                         className="text-center space-y-2 mb-16"
                                     >
                                         <h1 className="text-4xl md:text-[40px] font-bold text-zinc-900 dark:text-white tracking-tight leading-[1.1]">
-                                            Hi {effectiveUser?.full_name?.split(' ')[0] || 'There'},<br />
+                                            Hi {user?.full_name?.split(' ')[0] || 'There'},<br />
                                             Ready to Achieve <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-[#9933FF] dark:from-blue-400 dark:to-purple-500">Great Things?</span>
                                         </h1>
                                     </motion.div>
