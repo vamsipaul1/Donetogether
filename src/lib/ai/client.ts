@@ -151,7 +151,7 @@ export async function mockAI(mode: AIMode, context: AIContext): Promise<AIRespon
                 mode
             };
 
-        case 'progress_analyst':
+        case 'progress_analyst': {
             const healthScore = Math.round(
                 (context.tasks.done / context.tasks.total) * 100 *
                 (context.timeline.days_remaining / (context.timeline.days_elapsed + context.timeline.days_remaining))
@@ -182,8 +182,9 @@ export async function mockAI(mode: AIMode, context: AIContext): Promise<AIRespon
                 },
                 mode
             };
+        }
 
-        case 'team_mentor':
+        case 'team_mentor': {
             const avgTasksPerMember = context.tasks.total / context.project.team_size;
             const workloadImbalance = context.team.members.some(m =>
                 m.tasks_assigned > avgTasksPerMember * 1.5 || m.tasks_assigned < avgTasksPerMember * 0.5
@@ -224,6 +225,7 @@ export async function mockAI(mode: AIMode, context: AIContext): Promise<AIRespon
                 },
                 mode
             };
+        }
 
         case 'reflection_coach':
             return {

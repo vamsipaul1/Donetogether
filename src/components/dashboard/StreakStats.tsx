@@ -21,12 +21,11 @@ const StreakStats = ({ userId }: { userId: string }) => {
         const updateStreak = async () => {
             try {
                 // Fetch or Initialize streak record
-                let { data, error } = await supabase
+                const { data, error } = await supabase
                     .from('user_streaks')
                     .select('*')
                     .eq('user_id', userId)
                     .single();
-
                 const today = new Date().toISOString().split('T')[0];
                 const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
