@@ -89,7 +89,7 @@ export default function WhyChoose() {
             className="text-center mb-16"
           >
             <h1 className="font-body text-[32px] sm:text-[42px] font-bold tracking-tight text-zinc-900">
-              Why DoneTogether?
+              Why WeMakeIt?
             </h1>
           </motion.div>
 

@@ -92,7 +92,7 @@ const Login = () => {
                             className="font-sans font-semibold tracking-[-0.03em] text-zinc-950 text-[32px] md:text-[48px] leading-[1.1] antialiased"
                         >
                             Log in to <br />
-                            <span className="text-slate-600">DoneTogether Work</span>
+                            <span className="text-slate-600">WeMakeIt Work</span>
                             <span className="ml-3 text-orange-500 font-light inline-block transition-transform group-hover:translate-x-1 animate-bounce">→</span>
                         </motion.h1>
                     </motion.div>
@@ -113,7 +113,7 @@ const Login = () => {
                                     <img src="/favicon.ico" alt="Logo" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
                                 </div>
                                 <span className="font-body font-black text-3xl tracking-normal text-slate-900">
-                                    DoneTogether
+                                    WeMakeIt
                                 </span>
                             </Link>
                         </div>

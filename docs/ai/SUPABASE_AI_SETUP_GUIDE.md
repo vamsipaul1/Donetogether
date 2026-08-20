@@ -33,7 +33,7 @@ Before deploying, test the function on your local machine:
 
 ```bash
 # Navigate to your project directory
-cd "c:\Users\rangu\Downloads\DoneTogether\Front-end"
+cd "c:\Users\rangu\Downloads\WeMakeIt\Front-end"
 
 # Start Supabase locally (this will use the .env file)
 supabase start

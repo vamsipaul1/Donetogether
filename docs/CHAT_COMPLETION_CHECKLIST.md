@@ -344,6 +344,6 @@ All code is written. All features are implemented. All documentation is complete
 
 ---
 
-**DONETOGETHER JUST BECAME A SERIOUS COLLABORATION PLATFORM.** 💪
+**WeMakeIt JUST BECAME A SERIOUS COLLABORATION PLATFORM.** 💪
 
 Now go run that SQL and watch the magic happen! ✨

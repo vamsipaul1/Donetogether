@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { preloadRoute } from '@/utils/preload';
+import { lazyRoutes } from '@/App';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -93,7 +95,11 @@ export default function CTASection() {
               />
             </svg>
           </div>
-          <Link to={user ? "/project-room" : "/signup"}>
+          <Link 
+            to={user ? "/project-room" : "/signup"}
+            onMouseEnter={() => preloadRoute(user ? lazyRoutes.Dashboard : lazyRoutes.SignUp)}
+            onTouchStart={() => preloadRoute(user ? lazyRoutes.Dashboard : lazyRoutes.SignUp)}
+          >
             <button
               className="
                 group

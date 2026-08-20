@@ -1,6 +1,6 @@
-# DoneTogether - Team Collaboration Platform
+# WeMakeIt - Team Collaboration Platform
 
-DoneTogether is a premium, high-performance team collaboration platform designed for modern squads. It features a sleek glassmorphic UI, real-time data synchronization, and advanced project management capabilities.
+WeMakeIt is a premium, high-performance team collaboration platform designed for modern squads. It features a sleek glassmorphic UI, real-time data synchronization, and advanced project management capabilities.
 
 ## 🚀 Project Status: Production Ready & Polished
 The project has successfully completed its "Alpha" phase. It has been fully linted, type-checked, and validated for production deployment.

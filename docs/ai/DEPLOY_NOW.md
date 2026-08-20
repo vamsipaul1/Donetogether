@@ -1,6 +1,6 @@
 # 🎯 YOUR PERSONAL DEPLOYMENT GUIDE
-## For: DoneTogether Project
-## GitHub Repo: https://github.com/vaibhavpaul1/Donetogether
+## For: WeMakeIt Project
+## GitHub Repo: https://github.com/vaibhavpaul1/WeMakeIt
 
 ---
 
@@ -15,7 +15,7 @@ Your code is already on GitHub, so deployment is **SUPER EASY** - just use the S
 ### 🔑 PART 1: Add API Key (2 minutes)
 
 1. Open: **https://supabase.com/dashboard**
-2. Click: Your **DoneTogether** project
+2. Click: Your **WeMakeIt** project
 3. Left sidebar → Click: **⚙️ Settings** (bottom)
 4. Click: **Edge Functions**
 5. Click: **Secrets** tab
@@ -35,7 +35,7 @@ Your code is already on GitHub, so deployment is **SUPER EASY** - just use the S
 
 ```powershell
 # Open PowerShell in your project folder
-cd "c:\Users\rangu\Downloads\DoneTogether\Front-end"
+cd "c:\Users\rangu\Downloads\WeMakeIt\Front-end"
 
 # Check status
 git status
@@ -52,7 +52,7 @@ git push origin main
 2. Click: **Create a new function** (or **Deploy function**)
 3. Choose: **Deploy from GitHub**
 4. If prompted, connect your GitHub account
-5. Select repository: **vaibhavpaul1/Donetogether**
+5. Select repository: **vaibhavpaul1/WeMakeIt**
 6. Select branch: **main** (or your default branch)
 7. Enter function details:
    ```
@@ -130,7 +130,7 @@ const getTaskSuggestions = async () => {
     'task_assistant',
     {
       project: {
-        name: 'DoneTogether',
+        name: 'WeMakeIt',
         goal: 'Team collaboration platform',
         team_size: 5
       },

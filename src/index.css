@@ -29,13 +29,6 @@
 
 /* variable LAST */
 
-@font-face {
-  font-family: "SatoshiVar";
-  src: url("/fonts/Satoshi-Variable.woff2") format("woff2");
-  font-weight: 300 900;
-}
-
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -50,7 +43,7 @@
   }
 }
 
-/* DoneTogether Design System - Dark Mode Default */
+/* WeMakeIt Design System - Dark Mode Default */
 @layer base {
   :root {
     --background: 33 33% 97%;

@@ -3,20 +3,42 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { lazy, Suspense } from "react";
+
+// Statically import the main Index/Landing page so it loads in a split-second instantly on first visit
 import Index from "./pages/Index";
-import SignUp from "./pages/SignUp";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import CreateProject from "./pages/CreateProject";
-import InvitePage from "./pages/InvitePage";
-import JoinProject from "./pages/JoinProject";
-import Onboarding from "./pages/Onboarding";
-import SetupProfile from "./pages/SetupProfile";
-import Premium from "./pages/Premium";
-import NotFound from "./pages/NotFound";
-import VerifyEmail from "./pages/VerifyEmail";
-import WhyChoose from "./pages/WhyChoose";
-import MessagesPage from "./pages/MessagesPage";
+
+// Export dynamic dynamic-import functions so they can be preloaded on demand (e.g. on button/link hover)
+export const lazyRoutes = {
+  SignUp: () => import("./pages/SignUp"),
+  Login: () => import("./pages/Login"),
+  Dashboard: () => import("./pages/Dashboard"),
+  CreateProject: () => import("./pages/CreateProject"),
+  InvitePage: () => import("./pages/InvitePage"),
+  JoinProject: () => import("./pages/JoinProject"),
+  Onboarding: () => import("./pages/Onboarding"),
+  SetupProfile: () => import("./pages/SetupProfile"),
+  Premium: () => import("./pages/Premium"),
+  NotFound: () => import("./pages/NotFound"),
+  VerifyEmail: () => import("./pages/VerifyEmail"),
+  WhyChoose: () => import("./pages/WhyChoose"),
+  MessagesPage: () => import("./pages/MessagesPage"),
+};
+
+// Define Lazy-Loaded Page Components using dynamic imports
+const SignUp = lazy(lazyRoutes.SignUp);
+const Login = lazy(lazyRoutes.Login);
+const Dashboard = lazy(lazyRoutes.Dashboard);
+const CreateProject = lazy(lazyRoutes.CreateProject);
+const InvitePage = lazy(lazyRoutes.InvitePage);
+const JoinProject = lazy(lazyRoutes.JoinProject);
+const Onboarding = lazy(lazyRoutes.Onboarding);
+const SetupProfile = lazy(lazyRoutes.SetupProfile);
+const Premium = lazy(lazyRoutes.Premium);
+const NotFound = lazy(lazyRoutes.NotFound);
+const VerifyEmail = lazy(lazyRoutes.VerifyEmail);
+const WhyChoose = lazy(lazyRoutes.WhyChoose);
+const MessagesPage = lazy(lazyRoutes.MessagesPage);
 
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -25,6 +47,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AnimatePresence } from "framer-motion";
 import PageTransition from "./components/PageTransition";
 import { useLocation } from "react-router-dom";
+import LoadingScreen from "./components/LoadingScreen";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +79,9 @@ const AnimatedRoutes = () => {
   );
 };
 
-const App = () => (
+const App = () => {
+  console.log("🧩 App component rendering...");
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <ThemeProvider>
@@ -64,12 +89,15 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <AnimatedRoutes />
+            <Suspense fallback={<LoadingScreen />}>
+              <AnimatedRoutes />
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

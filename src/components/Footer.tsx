@@ -7,9 +7,9 @@ const Footer = () => {
 
         {/* Left: Brand & Copyright */}
         <div className="flex flex-col font-body sm:flex-row items-center gap-2 text-center sm:text-left">
-          <span className="font-bold text-base sm:text-lg text-zinc-800 dark:text-white">DoneTogether.</span>
+          <span className="font-bold text-base sm:text-lg text-zinc-800 dark:text-white">WeMakeIt.</span>
           <span className="text-xs sm:text-sm text-zinc-400 font-mono sm:pl-4 sm:border-l border-black/10 dark:border-white/10">
-            © 2026 DoneTogether Inc.
+            © 2026 WeMakeIt Inc.
           </span>
         </div>
 

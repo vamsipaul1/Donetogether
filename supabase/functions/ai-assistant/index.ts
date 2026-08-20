@@ -132,7 +132,7 @@ serve(async (req) => {
 
 function getSystemPrompt(mode: string, context: any): string {
   const baseContext = `
-You are a helpful AI assistant for the DoneTogether project management platform.
+You are a helpful AI assistant for the WeMakeIt project management platform.
 Project: ${context.project?.name || 'Unknown'}
 Goal: ${context.project?.goal || 'No goal set'}
 Tasks: ${context.tasks?.total || 0} total

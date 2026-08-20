@@ -303,7 +303,7 @@ const CompletionSummary = ({ project, tasks, members, onBack }: CompletionSummar
                     {/* Footer / Contact Details */}
                     <div className="pt-16 mt-16 border-t border-zinc-100 dark:border-white/5 text-center">
                         <p className="text-[10px] font-black text-zinc-300 dark:text-zinc-800 uppercase tracking-[0.5em] mb-4">
-                            Official Completion Certificate • DoneTogether
+                            Official Completion Certificate • WeMakeIt
                         </p>
                         <p className="text-[12px] font-bold text-zinc-400">
                             Generated on {format(new Date(), 'MMMM d, yyyy HH:mm')}

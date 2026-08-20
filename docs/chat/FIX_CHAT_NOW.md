@@ -8,7 +8,7 @@ This means the `chat_rooms` table is either missing or RLS is blocking you.
 
 ### Step 1: Run the SQL Migration
 1. **Open Supabase Dashboard**: https://supabase.com/dashboard
-2. **Select your project**: DoneTogether
+2. **Select your project**: WeMakeIt
 3. **Click "SQL Editor"** in the left sidebar
 4. **Create "New query"**
 5. **Copy the ENTIRE contents** of `FIX_CHAT_COMPLETE.sql`

@@ -54,7 +54,7 @@ const SignUp = () => {
             await signInWithGoogle();
             // Trigger welcome notification
             if (Notification.permission === 'granted') {
-                new Notification('Welcome to DoneTogether!', { 
+                new Notification('Welcome to WeMakeIt!', { 
                     body: 'Your journey to building elite projects starts now. 🚀',
                     icon: '/favicon.ico'
                 });
@@ -99,7 +99,7 @@ const SignUp = () => {
                         <div className="relative overflow-hidden rounded-[40px] border border-zinc-200/50 bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.14)] p-8 flex items-center justify-center">
                             <img
                                 src="/b.png"
-                                alt="DoneTogether signup"
+                                alt="WeMakeIt signup"
                                 className="h-[420px] w-full object-contain object-center"
                                 loading="lazy"
                             />
@@ -164,7 +164,7 @@ const SignUp = () => {
                                     <img src="/favicon.ico" alt="Logo" className="w-6 h-6 sm:w-8 sm:h-8 object-contain transition-transform group-hover:scale-110" />
                                 </div>
                                 <h1 className="font-body font-bold text-2xl sm:text-3xl tracking-tighter text-zinc-900 antialiased">
-                                    DoneTogether
+                                    WeMakeIt
                                 </h1>
                             </Link>
                         </div>

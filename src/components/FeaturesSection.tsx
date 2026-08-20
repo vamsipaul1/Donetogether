@@ -1,223 +1,199 @@
-import { motion } from "framer-motion";
-import clsx from "clsx";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
-  },
-};
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Sparkles, MessageSquare, LayoutList, ChevronRight, Layers } from "lucide-react";
 
 export default function FeaturesSection() {
+  const [activeTab, setActiveTab] = useState(0);
+
   const features = [
     {
-      title: "AI-Assisted Planning",
-      desc:
-        "Removes doubt, simplifies decisions, and keeps your workflow on track.",
-      featured: true,
+      title: "AI Planning",
+      icon: <Sparkles size={20} />,
+      content: (
+        <div className="flex flex-col gap-6 h-full justify-center">
+          {/* Mockup for AI Planning */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex items-start gap-4 mx-auto max-w-lg w-full relative">
+            <div className="w-10 h-10 rounded-full bg-[#033ad2]/10 flex items-center justify-center shrink-0">
+              <Sparkles size={20} className="text-[#033ad2]" />
+            </div>
+            <div className="flex-1">
+              <div className="text-sm font-bold text-gray-800 mb-1">WeMakeIt AI</div>
+              <div className="text-[15px] leading-relaxed text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-100 rounded-tl-none">
+                I've broken down your project into 5 key milestones. I recommend starting with the database schema setup to unblock the backend team. Should I assign these tasks?
+              </div>
+            </div>
+
+            {/* Action buttons mockup */}
+            <div className="absolute -bottom-4 right-6 flex gap-2">
+              <button className="bg-white border border-gray-200 shadow-sm text-xs font-semibold px-4 py-2 rounded-full hover:bg-gray-50 text-gray-700">Modify Plan</button>
+              <button className="bg-[#033ad2] text-white shadow-sm text-xs font-semibold px-4 py-2 rounded-full hover:bg-[#033ad2]/90">Assign Tasks</button>
+            </div>
+          </div>
+        </div>
+      )
     },
     {
-      title: "Real-Time Collaboration",
-      desc:
-        "Chat directly inside tasks. Keep discussions relevant, traceable, and connected to work.",
+      title: "Task Boards",
+      icon: <LayoutList size={20} />,
+      content: (
+        <div className="flex flex-col gap-4 h-full justify-center">
+          {/* Mockup for Task Boards */}
+          <div className="w-full flex gap-4 overflow-hidden pt-4 px-2">
+            <div className="bg-white/80 p-4 rounded-xl shadow-sm border border-gray-200 min-w-[240px] flex-1">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">To Do</div>
+                <div className="w-5 h-5 rounded-full bg-gray-100 text-xs flex items-center justify-center font-semibold text-gray-500">3</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-3 hover:border-[#033ad2]/30 transition-colors cursor-pointer">
+                <div className="flex gap-2 mb-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 text-orange-700">Frontend</span>
+                </div>
+                <div className="text-[14px] font-bold text-gray-800 leading-tight">Implement Design System</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:border-[#033ad2]/30 transition-colors cursor-pointer">
+                <div className="flex gap-2 mb-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-700">Backend</span>
+                </div>
+                <div className="text-[14px] font-bold text-gray-800 leading-tight">Setup Supabase Auth</div>
+              </div>
+            </div>
+
+            <div className="bg-white/80 p-4 rounded-xl shadow-sm border border-gray-200 min-w-[240px] flex-1 opacity-75 scale-95 origin-left">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">In Progress</div>
+                <div className="w-5 h-5 rounded-full bg-[#033ad2]/10 text-xs flex items-center justify-center font-semibold text-[#033ad2]">1</div>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-[#033ad2]/20 border-l-4 border-l-[#033ad2]">
+                <div className="flex gap-2 mb-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-700">Design</span>
+                </div>
+                <div className="text-[14px] font-bold text-gray-800 leading-tight mb-3">Hero Section UI</div>
+                <div className="flex justify-between items-center">
+                  <div className="w-6 h-6 rounded-full bg-gray-200 overflow-hidden border-2 border-white"><img src="https://i.pravatar.cc/100?img=33" alt="" /></div>
+                  <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden"><div className="w-1/2 h-full bg-[#033ad2]"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
     },
     {
-      title: "Task & Progress Tracking",
-      desc:
-        "Visual boards with clear leadership and live progress from idea to completion.",
-    },
-    {
-      title: "Contribution Visibility",
-      desc:
-        "See who is doing what. Avoid imbalance with transparent activity tracking.",
-    },
+      title: "Project Chat",
+      icon: <MessageSquare size={20} />,
+      content: (
+        <div className="flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden relative max-w-lg mx-auto w-full">
+          <div className="px-5 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-sm flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">#</div>
+            <div>
+              <div className="font-bold text-[15px] text-gray-900 leading-none">general-planning</div>
+              <div className="text-[12px] text-gray-500 mt-1">3 members typing...</div>
+            </div>
+          </div>
+
+          <div className="p-5 flex flex-col gap-4 flex-1 bg-gray-50/50">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden"><img src="https://i.pravatar.cc/100?img=12" alt="" /></div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 mb-1 ml-1">Sarah M. <span className="font-normal text-gray-400">10:42 AM</span></div>
+                <div className="bg-white border border-gray-200 px-4 py-2.5 rounded-2xl rounded-tl-none text-[14px] shadow-sm text-gray-700">
+                  Are we using Tailwind for the new dashboard?
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 self-end flex-row-reverse">
+              <div className="w-8 h-8 rounded-full bg-blue-200 flex-shrink-0 overflow-hidden"><img src="https://i.pravatar.cc/100?img=11" alt="" /></div>
+              <div className="flex flex-col items-end">
+                <div className="text-xs font-bold text-gray-500 mb-1 mr-1">You <span className="font-normal text-gray-400">10:45 AM</span></div>
+                <div className="bg-[#033ad2] text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-[14px] shadow-sm">
+                  Yes! I just updated the `FeaturesSection` layout with it.
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 self-end flex-row-reverse">
+              <div className="bg-[#033ad2] text-white px-4 py-2.5 rounded-2xl rounded-tr-none text-[14px] shadow-sm">
+                It looks super clean now! 🎉
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-white border-t border-gray-100">
+            <div className="bg-gray-50 border border-gray-200 rounded-full px-4 py-2.5 flex items-center gap-3">
+              <Layers size={18} className="text-gray-400" />
+              <div className="text-[14px] text-gray-400 font-medium">Type a message...</div>
+            </div>
+          </div>
+        </div>
+      )
+    }
   ];
 
   return (
-    <section
-      id="features"
-      className="
-        relative
-        isolate
-        w-full
-        py-16
-        sm:py-24
-        border-t
-        border-border
-        scroll-mt-28
-        overflow-hidden
-        bg-background
-      "
-    >
-      {/* soft section tint (DrawKit-like) */}
-      <div className="absolute inset-0 bg-muted/35" />
+    <section className="relative w-full py-20 sm:py-32 bg-[#f7d4de]">
+      <div className="max-w-[1300px] mx-auto px-6 flex flex-col items-center">
 
-      {/* subtle gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
-
-      {/* dots */}
-      <div
-        className="
-          pointer-events-none
-          absolute
-          inset-0
-          opacity-[0.08]
-          [background-image:radial-gradient(rgba(20,20,30,0.18)_1px,transparent_1px)]
-          [background-size:18px_18px]
-        "
-      />
-
-      {/* container */}
-      <div className="relative mx-auto max-w-[1280px] px-6 gap-6">
-
-        {/* HEADER */}
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={fadeUp}
-          className="text-center max-w-[760px] mx-auto"
-        >
-
-          <h2
-            className="
-              font-sans
-              font-[500]
-
-              text-[28px]
-              xs:text-[32px]
-              sm:text-[48px]
-
-              leading-[1.15]
-              sm:leading-[1.05]
-
-              tracking-[-0.03em]
-
-              text-zinc-900
-            "
-          >
-            Structure. Clarity. Execution.
+        {/* HEADER BLOCK */}
+        <div className="flex flex-col items-start text-left max-w-4xl mb-20">
+          <div className="bg-[#033ad2]/10 text-[#033ad2] font-body font-bold text-[14px] leading-none tracking-wide pl-2.5 pr-4 py-2 rounded-full mb-6 inline-flex items-center gap-2.5 shadow-sm">
+            <img
+              src="/featurelogo.png"
+              alt="WeMakeIt logo"
+              className="h-5 w-auto object-contain"
+            />
+            <span className="mt-[2px]">Ask WeMakeIt. What are the benefits?</span>
+          </div>
+          <h2 className="text-[32px] sm:text-[42px] md:text-[38px] font-body font-[300] text-[#033ad2] leading-[1.15] tracking-[-0.03em] max-w-[800px]">
+            Manage every student project without the chaos. Give your team the clarity they need to execute perfectly.
           </h2>
+        </div>
 
-          <p
-            className="
-              font-body
+        {/* MAIN FEATURE CARD */}
+        <div className="w-full bg-white rounded-[40px] p-4 sm:p-10 shadow-2xl shadow-blue-900/5 flex flex-col lg:flex-row gap-6 sm:gap-12 min-h-[600px]">
 
-              text-[16px]
-              leading-[24px]
-
-              text-zinc-800
-
-              mt-7
-
-              max-w-[560px]
-              mx-auto
-            "
-          >
-            DoneTogether gives students and founders the structure,
-            clarity, and speed of professional product teams.
-          </p>
-        </motion.div>
-
-        {/* GRID */}
-        <div
-          className="
-            grid
-            grid-cols-1
-            sm:grid-cols-2
-            lg:grid-cols-3
-            xl:grid-cols-4
-            gap-6
-            mt-16
-          "
-        >
-          {features.map((feature, index) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 24, scale: 0.96 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: "-10px" }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.08,
-                ease: [0.21, 1.11, 0.81, 0.99]
-              }}
-              whileHover={{
-                y: -8,
-                scale: 1.02,
-                transition: { type: "spring", stiffness: 400, damping: 14 }
-              }}
-              className={clsx(
-                "group relative overflow-hidden rounded-3xl border border-border/60 bg-card/80 backdrop-blur-sm p-6 sm:p-8",
-                "transition duration-300 hover:border-border hover:ring-2 hover:ring-border/60 hover:shadow-lg",
-                "motion-reduce:transition-none motion-reduce:hover:transform-none motion-reduce:hover:shadow-none motion-reduce:hover:ring-0",
-                feature.featured && "ring-2 ring-border/60",
-              )}
-            >
-
-              {/* hover highlight */}
-              <div className="pointer-events-none absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-gradient-to-br from-muted/35 via-transparent to-muted/15" />
-
-              {/* top row (no icons) */}
-              <div className="relative z-[1] flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center rounded-full border border-border/60 bg-background/40 px-3 py-1 font-body text-[12px] leading-none tracking-[-0.01em] text-foreground/80">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-
-                  </div>
-
-                  {/* title */}
-                  <h3
-                    className="
-                      mt-5
-                      font-body
-                      font-semibold
-                      text-[18px]
-                      sm:text-[19px]
-                      leading-tight
-                      tracking-[-0.02em]
-                    "
-                  >
-                    <span
-                      className={clsx(
-                        "bg-clip-text text-transparent",
-                        [
-                          "bg-gradient-to-r from-indigo-500 to-blue-400",
-                          "bg-gradient-to-r from-pink-500 to-fuchsia-400",
-                          "bg-gradient-to-r from-emerald-500 to-lime-400",
-                          "bg-gradient-to-r from-orange-400 to-yellow-300",
-                        ][index % 4]
-                      )}
-                    >
+          {/* LEFT TABS */}
+          <div className="lg:w-[35%] flex flex-col gap-3 justify-center">
+            {features.map((feature, idx) => {
+              const isActive = activeTab === idx;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setActiveTab(idx)}
+                  className={`flex items-center justify-between p-6 rounded-3xl text-left transition-all duration-300 ${isActive
+                    ? "bg-gray-50/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-gray-100"
+                    : "hover:bg-gray-50/50 border border-transparent"
+                    }`}
+                >
+                  <div className="flex items-center gap-5">
+                    <div className={`p-3 rounded-2xl transition-colors ${isActive ? "bg-white text-[#033ad2] shadow-sm border border-gray-100" : "text-gray-400 bg-gray-50"}`}>
+                      {feature.icon}
+                    </div>
+                    <span className={`font-bold text-[19px] tracking-tight ${isActive ? "text-gray-900" : "text-gray-500"}`}>
                       {feature.title}
                     </span>
-                  </h3>
-                </div>
-              </div>
+                  </div>
+                  {isActive && <ChevronRight size={20} className="text-gray-400" />}
+                </button>
+              );
+            })}
+          </div>
 
-              {/* desc */}
-              <p
-                className="
-                  relative
-                  z-[1]
-                  font-body
-                  text-[14.5px]
-                  leading-[22px]
-                  text-zinc-800
-                  mt-3
-                "
+          {/* RIGHT CANVAS */}
+          <div className="lg:w-[65%] bg-[#fcfcfd] rounded-[28px] p-6 sm:p-10 flex flex-col border border-gray-100 shadow-[inset_0_4px_20px_rgba(0,0,0,0.02)] overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -15, scale: 0.98 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="flex-1 w-full h-full flex flex-col"
               >
-                {feature.desc}
-              </p>
-
-              {/* bottom accent */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r from-transparent via-border to-transparent opacity-50 transition-opacity duration-300 group-hover:opacity-90" />
-            </motion.div>
-          ))}
+                {features[activeTab].content}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
 
       </div>

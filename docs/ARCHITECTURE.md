@@ -1,4 +1,4 @@
-# 🏗️ SYSTEM ARCHITECTURE - DoneTogether Task Management
+# 🏗️ SYSTEM ARCHITECTURE - WeMakeIt Task Management
 
 ## 📐 Architecture Diagram
 

@@ -1,7 +1,7 @@
 # 🤖 AI Assistant Setup Guide
 
 ## 📋 Overview
-Your DoneTogether app now has a fully functional AI Assistant powered by Groq's ultra-fast LLM API! This guide will help you set it up.
+Your WeMakeIt app now has a fully functional AI Assistant powered by Groq's ultra-fast LLM API! This guide will help you set it up.
 
 ---
 
@@ -15,7 +15,7 @@ Your DoneTogether app now has a fully functional AI Assistant powered by Groq's 
 ### Step 2: Generate API Key
 1. Once logged in, go to **API Keys** in the sidebar
 2. Click **Create API Key**
-3. Give it a name like "DoneTogether"
+3. Give it a name like "WeMakeIt"
 4. Click **Submit**
 5. **COPY THE KEY** - it starts with `gsk_...`
    - ⚠️ **IMPORTANT**: You can only view this once! Save it somewhere safe.

@@ -45,12 +45,12 @@ export function buildAIContext(
     mode: AIMode,
     project: Project,
     tasks: Task[],
-    members: ProjectMember[]
+    members: (ProjectMember & { users?: any })[]
 ): AIContext {
     // Task statistics
     const completedTasks = tasks.filter(t => t.status === 'completed');
     const inProgressTasks = tasks.filter(t => t.status === 'in_progress');
-    const todoTasks = tasks.filter(t => t.status === 'todo');
+    const todoTasks = tasks.filter(t => t.status === 'not_started');
     const overdueTasks = tasks.filter(t =>
         t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed'
     );

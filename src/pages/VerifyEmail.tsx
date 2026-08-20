@@ -112,7 +112,7 @@ const VerifyEmail = () => {
                                     <img src="/favicon.ico" alt="Logo" className="w-5 h-5 object-contain" />
                                 </div>
                                 <span className="font-serif font-bold text-2xl tracking-tighter text-zinc-900 dark:text-white group-hover:opacity-80 transition-opacity">
-                                    DoneTogether
+                                    WeMakeIt
                                 </span>
                             </Link>
                         </div>

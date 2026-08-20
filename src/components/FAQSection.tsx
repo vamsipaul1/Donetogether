@@ -4,12 +4,12 @@ import { Plus, Minus } from 'lucide-react';
 
 const faqs = [
   {
-    question: "What exactly is DoneTogether?",
-    answer: "DoneTogether is a high-impact 'Completion System' designed for student groups and founders. Unlike traditional task managers that just list what needs to be done, we focus on the architecture of finishing combining strategic AI assistance, real-time collaboration, and efficiency tracking in one focused room."
+    question: "What exactly is WeMakeIt?",
+    answer: "WeMakeIt is a high-impact 'Completion System' designed for student groups and founders. Unlike traditional task managers that just list what needs to be done, we focus on the architecture of finishing combining strategic AI assistance, real-time collaboration, and efficiency tracking in one focused room."
   },
   {
     question: "How is it different from Jira or Asana?",
-    answer: "Most platforms are built for enterprise management and 'tracking' indefinitely. DoneTogether is built for 'mission completion.' We feature ThinkSense AI as a native strategist, integrated project rooms that eliminate tab switching, and real-time XP multipliers that reward actual momentum."
+    answer: "Most platforms are built for enterprise management and 'tracking' indefinitely. WeMakeIt is built for 'mission completion.' We feature ThinkSense AI as a native strategist, integrated project rooms that eliminate tab switching, and real-time XP multipliers that reward actual momentum."
   },
   {
     question: "Is ThinkSense AI available for all members?",

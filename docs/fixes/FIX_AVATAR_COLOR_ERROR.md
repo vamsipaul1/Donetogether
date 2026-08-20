@@ -15,7 +15,7 @@ Failed to save color
 4. **Click** "+ New Query"
 5. **Copy & Paste** the entire content from:
    ```
-   c:/Users/rangu/Downloads/DoneTogether/Front-end/supabase/migrations/ADD_AVATAR_COLOR.sql
+   c:/Users/rangu/Downloads/WeMakeIt/Front-end/supabase/migrations/ADD_AVATAR_COLOR.sql
    ```
 6. **Click** "Run" button
 7. **Done!**

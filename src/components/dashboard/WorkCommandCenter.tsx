@@ -8,7 +8,7 @@ import {
     Calendar, MoreHorizontal
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import type { Task, TaskStatus, Subtask, TaskBlocker, ActivitySignal, ProjectMember, User as UserType } from '@/types/database';
+import type { Task, TaskStatus, ProjectMember, Subtask, TaskBlocker, ProjectActivity, User as UserType } from '@/types/database';
 import { toast } from 'sonner';
 import { formatDistanceToNow, isAfter, isBefore, addMinutes } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -45,7 +45,7 @@ interface DerivedWorkState {
         dependency_pending: Task[];
         completed: Task[];
     };
-    activitySignals: ActivitySignal[];
+    activitySignals: Activity[];
 }
 
 interface ActionableTask extends Task {
@@ -64,7 +64,7 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
     const [tasks, setTasks] = useState<Task[]>([]);
     const [subtasks, setSubtasks] = useState<Subtask[]>([]);
     const [blockers, setBlockers] = useState<TaskBlocker[]>([]);
-    const [signals, setSignals] = useState<ActivitySignal[]>([]);
+    const [signals, setSignals] = useState<ProjectActivity[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     // ============================================
@@ -117,11 +117,11 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
 
         // 1. Organize Flow
         const flow = {
-            backlog: tasks.filter(t => t.status === 'backlog'),
-            planned: tasks.filter(t => t.status === 'planned'),
-            active: tasks.filter(t => t.status === 'active'),
+            backlog: tasks.filter(t => t.status === 'not_started'),
+            planned: tasks.filter(t => t.status === 'not_started'),
+            active: tasks.filter(t => t.status === 'in_progress'),
             blocked: tasks.filter(t => t.status === 'blocked'),
-            dependency_pending: tasks.filter(t => t.status === 'dependency_pending'),
+            dependency_pending: tasks.filter(t => t.status === 'blocked'), // Assuming blocked for now
             completed: tasks.filter(t => t.status === 'completed'),
         };
 
@@ -146,19 +146,19 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
 
         // 3. Next Action Queue (Ranked)
         const actionableTasks: ActionableTask[] = tasks
-            .filter(t => ['backlog', 'planned', 'active'].includes(t.status))
+            .filter(t => ['not_started', 'in_progress'].includes(t.status))
             .map(t => {
                 let reason = "In Flow";
                 let cta = "Execute";
 
-                if (isBefore(new Date(t.due_date), now)) {
+                if (t.due_date && isBefore(new Date(t.due_date), now)) {
                     reason = "Overdue - Immediate Attention";
                     cta = "Prioritize";
-                } else if (t.status === 'active') {
+                } else if (t.status === 'in_progress') {
                     reason = "Active - Keep Momentum";
                     cta = "Update";
-                } else if (t.status === 'planned') {
-                    reason = "Planned - Ready to Start";
+                } else if (t.status === 'not_started') {
+                    reason = "Ready to Start";
                     cta = "Start Now";
                 }
 
@@ -167,11 +167,11 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
             .sort((a, b) => {
                 // Sorting logic: Overdue > Active > Planned > Priority
                 const priorityWeight = { high: 3, medium: 2, low: 1 };
-                const aOverdue = isBefore(new Date(a.due_date), now) ? 10 : 0;
-                const bOverdue = isBefore(new Date(b.due_date), now) ? 10 : 0;
+                const aOverdue = a.due_date && isBefore(new Date(a.due_date), now) ? 10 : 0;
+                const bOverdue = b.due_date && isBefore(new Date(b.due_date), now) ? 10 : 0;
 
-                const aState = a.status === 'active' ? 5 : a.status === 'planned' ? 3 : 1;
-                const bState = b.status === 'active' ? 5 : b.status === 'planned' ? 3 : 1;
+                const aState = a.status === 'in_progress' ? 5 : a.status === 'not_started' ? 3 : 1;
+                const bState = b.status === 'in_progress' ? 5 : b.status === 'not_started' ? 3 : 1;
 
                 return (bOverdue + bState + priorityWeight[b.priority]) - (aOverdue + aState + priorityWeight[a.priority]);
             });
@@ -199,7 +199,7 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
             executionFlow: flow,
             activitySignals: signals
         };
-    }, [tasks, subtasks, blockers, signals, members]);
+    }, [tasks, blockers, signals, members]);
 
     // ============================================
     // STATE TRANSITIONS (THE ENGINE)
@@ -218,7 +218,7 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
                 .update({
                     status: to,
                     updated_at: new Date().toISOString(),
-                    start_date: to === 'active' && !tasks.find(t => t.id === taskId)?.start_date ? new Date().toISOString() : undefined,
+                    start_date: to === 'in_progress' && !tasks.find(t => t.id === taskId)?.start_date ? new Date().toISOString() : undefined,
                     completed_at: to === 'completed' ? new Date().toISOString() : undefined
                 })
                 .eq('id', taskId);
@@ -313,9 +313,9 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
                                     <div className="flex items-center gap-6">
                                         <div className={cn(
                                             "w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner",
-                                            task.status === 'active' ? "bg-blue-50 dark:bg-blue-900/20 text-blue-500" : "bg-zinc-50 dark:bg-zinc-800 text-zinc-400"
+                                            task.status === 'in_progress' ? "bg-blue-50 dark:bg-blue-900/20 text-blue-500" : "bg-zinc-50 dark:bg-zinc-800 text-zinc-400"
                                         )}>
-                                            {task.status === 'active' ? <Zap className="w-5 h-5 fill-current" /> : <Layers className="w-5 h-5" />}
+                                            {task.status === 'in_progress' ? <Zap className="w-5 h-5 fill-current" /> : <Layers className="w-5 h-5" />}
                                         </div>
                                         <div>
                                             <h4 className="text-[15px] font-bold text-zinc-900 dark:text-white mb-1 group-hover:text-blue-500 transition-colors">
@@ -329,7 +329,7 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
                                         </div>
                                     </div>
                                     <Button
-                                        onClick={() => transitionState(task.id, task.status, task.status === 'active' ? 'completed' : 'active')}
+                                        onClick={() => transitionState(task.id, task.status, task.status === 'in_progress' ? 'completed' : 'in_progress')}
                                         className="h-11 px-6 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-black font-bold uppercase text-[10px] tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg"
                                     >
                                         {task.ctaLabel} <ArrowRight className="w-3.5 h-3.5 ml-2" />
@@ -378,7 +378,7 @@ const WorkCommandCenter = ({ projectId, members, currentUser }: WorkCommandCente
                                         <span>BY {blocked.blockedBy}</span>
                                     </div>
                                     <button
-                                        onClick={() => transitionState(blocked.id, 'blocked', 'planned')}
+                                        onClick={() => transitionState(blocked.id, 'blocked', 'not_started')}
                                         className="text-rose-500 hover:text-rose-600 underline underline-offset-4"
                                     >
                                         Resolve & Plan

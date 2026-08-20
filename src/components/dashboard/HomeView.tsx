@@ -263,7 +263,7 @@ const HomeView = ({ user, tasks, onAddTask, onTasksUpdated, onEditTask }: HomeVi
                                                     {task.title}
                                                 </h3>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">DoneTogether</span>
+                                                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">WeMakeIt</span>
                                                     <div className="w-0.5 h-0.5 rounded-full bg-zinc-300" />
                                                     <span className={`text-[10px] font-black uppercase tracking-widest ${task.priority === 'high' ? 'text-red-500' : 'text-zinc-400'}`}>
                                                         {task.priority || 'Normal'}

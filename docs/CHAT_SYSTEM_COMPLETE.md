@@ -371,7 +371,7 @@ I gave you a **production-ready, enterprise-grade, realtime collaboration platfo
 - ✅ Ready to deploy
 
 **Result:**
-DoneTogether just became a **serious collaboration platform**.
+WeMakeIt just became a **serious collaboration platform**.
 
 ---
 

@@ -61,8 +61,8 @@ const InviteTeamModal = ({ isOpen, onClose, project }: InviteTeamModalProps) => 
                                     const emailInput = document.getElementById('invite-email-input') as HTMLInputElement;
                                     const email = emailInput?.value;
                                     if (email) {
-                                        const subject = `Join my team on DoneTogether: ${project.title}`;
-                                        const body = `Hey,\n\nI'm inviting you to join my project "${project.title}" on DoneTogether.\n\nUse this link to join:\n${inviteLink}\n\nOr use the access code: ${project.join_code}\n\nSee you there!`;
+                                        const subject = `Join my team on WeMakeIt: ${project.title}`;
+                                        const body = `Hey,\n\nI'm inviting you to join my project "${project.title}" on WeMakeIt.\n\nUse this link to join:\n${inviteLink}\n\nOr use the access code: ${project.join_code}\n\nSee you there!`;
                                         window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                                         toast.success("Opened email client");
                                     } else {

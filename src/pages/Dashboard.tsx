@@ -62,6 +62,7 @@ import InboxView from '@/components/dashboard/InboxView';
 import ProofOfWorkView from '@/components/dashboard/ProofOfWorkView';
 import ProgressView from '@/components/dashboard/ProgressView';
 import SettingsView from '@/components/dashboard/SettingsView';
+import WorkCommandCenter from '@/components/dashboard/WorkCommandCenter';
 
 import { WelcomeOverlay } from '@/components/dashboard/WelcomeOverlay';
 import AIAssistant from '@/components/ai/AIAssistant';
@@ -69,7 +70,7 @@ import NotificationDropdown from '@/components/dashboard/NotificationDropdown';
 import { useNotifications } from '@/hooks/useNotifications';
 import StreakStats from '@/components/dashboard/StreakStats';
 
-type DashboardView = 'home' | 'overview' | 'list' | 'board' | 'timeline' | 'dashboard' | 'calendar' | 'workflow' | 'messages' | 'files' | 'workspace' | 'history' | 'progress' | 'proof_of_work' | 'settings' | 'completion_summary';
+type DashboardView = 'home' | 'overview' | 'list' | 'board' | 'timeline' | 'dashboard' | 'calendar' | 'workflow' | 'messages' | 'files' | 'workspace' | 'history' | 'progress' | 'proof_of_work' | 'settings' | 'completion_summary' | 'mission_control';
 
 const Dashboard = () => {
     const { user, signOut, loading: authLoading } = useAuth();
@@ -396,7 +397,7 @@ const Dashboard = () => {
                 className="flex flex-col items-center gap-4 text-center z-10"
             >
                 <h1 className="text-4xl md:text-5xl font-black tracking-[0.2em] text-white drop-shadow-sm uppercase">
-                    DoneTogether
+                    WeMakeIt
                 </h1>
                 <motion.div
                     initial={{ width: 0, opacity: 0 }}
@@ -480,7 +481,7 @@ const Dashboard = () => {
                             />
                         </div>
                         <span className="text-lg font-black tracking-tight text-zinc-900 dark:text-white">
-                            DoneTogether
+                            WeMakeIt
                         </span>
                     </a>
                     {isMobile ? (
@@ -661,7 +662,7 @@ const Dashboard = () => {
 
                                 <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 focus:bg-zinc-100 dark:focus:bg-[#2e2f31] rounded-lg cursor-pointer bg-zinc-50 dark:bg-[#2e2f31]/50">
                                     <div className="w-8 flex justify-cener"><div className="w-3 h-3 rounded-[3px] bg-emerald-500" /></div>
-                                    <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">donetogether</span>
+                                    <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">WeMakeIt</span>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -873,7 +874,7 @@ const Dashboard = () => {
 
                                     <div className="h-px bg-zinc-100 dark:bg-zinc-900 my-1" />
 
-                                    {isLead && selectedProject && activeView !== 'completion_summary' && !selectedProject.is_completed && (
+                                    {isLead && selectedProject && activeView !== 'completion_summary' && selectedProject.is_active && (
                                         <div className="px-2 py-1">
                                             <DropdownMenuItem
                                                 onClick={() => setIsCompletionConfirmOpen(true)}
@@ -955,6 +956,7 @@ const Dashboard = () => {
                         <Tab active={activeView === 'timeline'} onClick={() => setActiveView('timeline')}>Timeline</Tab>
                         <Tab active={activeView === 'progress'} onClick={() => setActiveView('progress')}>Progress</Tab>
                         <Tab active={activeView === 'proof_of_work'} onClick={() => setActiveView('proof_of_work')}>Proof of Work</Tab>
+                        <Tab active={activeView === 'mission_control'} onClick={() => setActiveView('mission_control')}>Mission Control</Tab>
                         {/* <Tab active={activeView === 'dashboard'} onClick={() => setActiveView('dashboard')}>Analytics</Tab> */}
                     </nav>
                 )}
@@ -1109,6 +1111,7 @@ const Dashboard = () => {
             case 'proof_of_work': return selectedProject && currentUser ? <ProofOfWorkView projectId={selectedProject.id} currentUser={currentUser} members={members} isLead={isLead} /> : <div />;
             case 'messages': return <InboxView projectId={selectedProject?.id} members={members} currentUserId={currentUser?.id || ''} onlineUsers={onlineUsers} />;
             case 'history': return <HistoryView tasks={selectedProject ? projectTasks : userTasks} members={members} onTasksUpdated={selectedProject ? fetchProjectDetails : fetchUserTasks} />;
+            case 'mission_control': return selectedProject ? <WorkCommandCenter projectId={selectedProject.id} members={members} currentUser={currentUser} /> : <div />;
             case 'settings': return <SettingsView user={user} currentUser={currentUser} onUserUpdated={fetchUserTasks} />;
             case 'completion_summary': return selectedProject ? (
                 <CompletionSummary

@@ -166,7 +166,11 @@ const CreateProject = () => {
 
             if (memberError) throw memberError;
 
-            await supabase.from('users').update({ onboarding_completed: true }).eq('id', user?.id);
+            // Update user status and role
+            await supabase.from('users').update({ 
+                onboarding_completed: true,
+                role: 'LEADER'
+            }).eq('id', user?.id);
 
             toast.success('Project Created Successfully!', {
                 description: "You've successfully set the stage. Time to head ahead, start managing tasks, and build something great with your buddies! 🚀✨"
@@ -181,9 +185,11 @@ const CreateProject = () => {
             }
 
             navigate(`/invite/${project.id}`);
-        } catch (error: unknown) {
+        } catch (error: any) {
             console.error('Error creating project:', error);
-            toast.error(error instanceof Error ? error.message : 'Failed to create project');
+            // Show more specific error message if it's a DB error
+            const errorMessage = error.details || error.message || 'Failed to create project';
+            toast.error(errorMessage);
         } finally {
             setLoading(false);
         }

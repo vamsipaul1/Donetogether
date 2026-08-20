@@ -13,7 +13,7 @@
 
 ### Test Locally
 ```bash
-cd "c:\Users\rangu\Downloads\DoneTogether\Front-end"
+cd "c:\Users\rangu\Downloads\WeMakeIt\Front-end"
 supabase start
 ```
 

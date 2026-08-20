@@ -63,13 +63,13 @@ export const ChatInfoSidebar = ({
     }, []);
 
     const allSharedFiles = useMemo(() => messages
-        .filter(msg => msg.attachment_url)
+        .filter(msg => msg.media_url)
         .map(msg => ({
-            name: msg.attachment_name || 'File',
+            name: 'Shared File',
             date: format(new Date(msg.created_at), 'MMM d'),
-            size: formatFileSize(msg.attachment_size || 0),
-            type: msg.attachment_type || 'file',
-            url: msg.attachment_url
+            size: 'Unknown',
+            type: 'file',
+            url: msg.media_url as string
         }))
         .reverse()
         , [messages]);

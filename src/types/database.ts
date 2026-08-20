@@ -1,5 +1,5 @@
 // ============================================
-// DoneTogether Database Types
+// WeMakeIt Database Types
 // ============================================
 
 export interface User {
@@ -82,6 +82,35 @@ export interface TaskStep {
     completed: boolean;
 }
 
+export interface Subtask {
+    id: string;
+    task_id: string;
+    title: string;
+    completed: boolean;
+    created_at: string;
+}
+
+export interface TaskBlocker {
+    id: string;
+    task_id: string;
+    blocked_by_id: string;
+    reason: string;
+    blocked_since: string;
+    resolved_at?: string;
+}
+
+export interface ProjectActivity {
+    id: string;
+    project_id: string;
+    user_id: string;
+    entity_type: 'task' | 'project' | 'member';
+    entity_id: string;
+    action: string;
+    diff_payload?: any;
+    created_at: string;
+}
+
+// ... existing Task interface ...
 export interface Task {
     id: string;
     project_id: string;
@@ -92,6 +121,7 @@ export interface Task {
     assigned_by: string;
     status: TaskStatus;
     priority: TaskPriority;
+    estimate_duration?: number; // in minutes
     start_date?: string;
     due_date: string;
     completed_at?: string;

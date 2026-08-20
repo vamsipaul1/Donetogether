@@ -10,17 +10,17 @@ interface ProofOfWorkViewProps {
     projectId: string;
     currentUser: User;
     members: (ProjectMember & { users?: User })[];
-    islead: boolean; // Or can_verify_tasks
+    isLead: boolean; // Or can_verify_tasks
 }
 
 interface MyProofWithDetails extends TaskProof {
     task?: Task;
 }
 
-const ProofOfWorkView = ({ projectId, currentUser, members, islead }: ProofOfWorkViewProps) => {
+const ProofOfWorkView = ({ projectId, currentUser, members, isLead }: ProofOfWorkViewProps) => {
     // Determine if user is a verifier
     const currentMember = members.find(m => m.user_id === currentUser.id);
-    const canVerify = islead || currentMember?.can_verify_tasks;
+    const canVerify = isLead || currentMember?.can_verify_tasks;
 
     const [activeTab, setActiveTab] = useState<'reviews' | 'my_proofs'>('reviews');
 

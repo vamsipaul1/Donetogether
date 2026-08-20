@@ -1,4 +1,4 @@
-# 🎯 PROJECT SUMMARY - DoneTogether Task Management
+# 🎯 PROJECT SUMMARY - WeMakeIt Task Management
 
 ## 📋 What Was Delivered
 

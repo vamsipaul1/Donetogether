@@ -6,7 +6,7 @@
 
 ### What to do:
 1. Open browser → Go to **https://supabase.com/dashboard**
-2. Click your **DoneTogether** project
+2. Click your **WeMakeIt** project
 3. Look at LEFT SIDEBAR → Click **⚙️ Settings** (at the bottom)
 4. Click **Edge Functions** (in the settings menu)
 5. Click **Secrets** tab (at the top)
@@ -42,7 +42,7 @@ Secret value: YOUR_GROQ_API_KEY_HERE
 2. Click **"Create a new function"** or **"Deploy function"**
 3. Choose **"Deploy from GitHub"**
 4. Connect your GitHub account (if not already connected)
-5. Select your repository: **DoneTogether**
+5. Select your repository: **WeMakeIt**
 6. Select branch: **main** (or your default branch)
 7. Function settings:
    ```
@@ -72,7 +72,7 @@ Secret value: YOUR_GROQ_API_KEY_HERE
 
 ```powershell
 # Go to your project
-cd "c:\Users\rangu\Downloads\DoneTogether\Front-end"
+cd "c:\Users\rangu\Downloads\WeMakeIt\Front-end"
 
 # Login (will open browser)
 supabase login

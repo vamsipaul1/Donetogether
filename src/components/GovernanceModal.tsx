@@ -338,43 +338,43 @@ const GovernanceModal = ({
                                                 <PermissionButton
                                                     label="Analytics"
                                                     active={member.can_view_analytics}
-                                                    disabled={!islead}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_view_analytics', !member.can_view_analytics)}
                                                 />
                                                 <PermissionButton
                                                     label="Settings"
                                                     active={member.can_edit_project_details}
-                                                    disabled={!islead}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_edit_project_details', !member.can_edit_project_details)}
                                                 />
                                                 <PermissionButton
                                                     label="Timeline"
                                                     active={member.can_manage_timeline}
-                                                    disabled={!islead}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_manage_timeline', !member.can_manage_timeline)}
                                                 />
                                                 <PermissionButton
                                                     label="Restore"
                                                     active={member.can_restore_tasks}
-                                                    disabled={!islead}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_restore_tasks', !member.can_restore_tasks)}
                                                 />
                                                 <PermissionButton
                                                     label="Files"
                                                     active={member.can_manage_resources}
-                                                    disabled={!islead}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_manage_resources', !member.can_manage_resources)}
                                                 />
                                                 <PermissionButton
                                                     label="Chat"
                                                     active={member.can_post_messages}
-                                                    disabled={!islead}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_post_messages', !member.can_post_messages)}
                                                 />
                                                 <PermissionButton
                                                     label="Verify Tasks"
                                                     active={member.can_verify_tasks}
-                                                    disabled={!islead}
+                                                    disabled={!isLead}
                                                     onClick={() => updatePermission(member.id, 'can_verify_tasks', !member.can_verify_tasks)}
                                                 />
                                             </div>

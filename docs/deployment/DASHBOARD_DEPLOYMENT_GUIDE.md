@@ -20,7 +20,7 @@
 1. Open your browser
 2. Go to: **https://supabase.com/dashboard**
 3. Log in with your account
-4. Click on your **DoneTogether** project
+4. Click on your **WeMakeIt** project
 
 ### Step 2: Navigate to Edge Functions Settings
 1. Look at the **left sidebar**
@@ -58,7 +58,7 @@ Now we need to upload your AI assistant code to Supabase.
 1. In the left sidebar, click **"Edge Functions"**
 2. Click **"Create a new function"** or **"Deploy function"**
 3. Choose **"Deploy from GitHub"**
-4. Select your repository: `DoneTogether`
+4. Select your repository: `WeMakeIt`
 5. Select branch: `main` (or whatever your main branch is)
 6. Function name: `ai-assistant`
 7. Path to function: `Front-end/supabase/functions/ai-assistant`
@@ -87,7 +87,7 @@ Don't worry, I'll make this super easy:
 
 ```powershell
 # Navigate to your project
-cd "c:\Users\rangu\Downloads\DoneTogether\Front-end"
+cd "c:\Users\rangu\Downloads\WeMakeIt\Front-end"
 
 # Login to Supabase (this will open a browser window)
 supabase login

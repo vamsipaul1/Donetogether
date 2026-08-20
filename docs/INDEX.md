@@ -1,4 +1,4 @@
-# 📚 Documentation Index - DoneTogether Task Management
+# 📚 Documentation Index - WeMakeIt Task Management
 
 Welcome! This index will guide you through all documentation files.
 

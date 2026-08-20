@@ -118,7 +118,7 @@ Build Status: **✅ SUCCESS**
 ## 🗂️ **FILE TREE (Chat-Related)**
 
 ```
-DoneTogether/Front-end/
+WeMakeIt/Front-end/
 │
 ├── src/
 │   ├── components/

@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { preloadRoute } from "@/utils/preload";
+import { lazyRoutes } from "@/App";
 
 const navLinks = [
   { name: "Features", href: "/#features" },
   { name: "How it works", href: "/#how-it-works" },
   { name: "FAQs", href: "/#faqs" },
-  { name: "Why Choose", href: "/why-choose" },
+  { name: "Why Choose", href: "/why-choose", key: "WhyChoose" },
   {
     name: "Contact Us",
     href:
@@ -70,7 +72,7 @@ const Navbar = () => {
         transition-all
         duration-300
         ${isScrolled
-          ? "backdrop-blur-lg border-b border-zinc-200/50 py-3"
+          ? "bg-[#033ad2] shadow-md py-3"
           : "bg-transparent py-5"
         }
       `}
@@ -80,22 +82,20 @@ const Navbar = () => {
         {/* LOGO */}
         <Link
           to="/"
-          className="flex items-center gap-2 text-zinc-900 font-bold shrink-0"
+          className="flex items-center gap-2 text-white font-bold shrink-0"
         >
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-            <img
-              src="/favicon.ico"
-              alt="logo"
-              className="w-5 h-5"
-            />
-          </div>
-          <span className="text-[17px] font-bold tracking-tight">
-            DoneTogether
+          <img
+            src="/wemakeit.png"
+            alt="WeMakeIt logo"
+            className="h-8 w-auto object-contain"
+          />
+          <span className="text-[17px] text-[#ffebeb] tracking-tight">
+            WeMakeIt
           </span>
         </Link>
 
         {/* CENTER PILL NAV (Desktop) */}
-        <div className="hidden xl:flex absolute left-1/2 -translate-x-1/2 items-center bg-white/70 dark:bg-zinc-900/50 backdrop-blur-xl border border-white/40 dark:border-white/5 px-8 py-2.5 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.06)] gap-8">
+        <div className="hidden xl:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
           {navLinks.map((link) => (
             <Link
               key={link.name}
@@ -103,14 +103,17 @@ const Navbar = () => {
               onClick={(e) =>
                 handleNavClick(e, link.href)
               }
+              onMouseEnter={() => {
+                if (link.key && lazyRoutes[link.key as keyof typeof lazyRoutes]) {
+                  preloadRoute(lazyRoutes[link.key as keyof typeof lazyRoutes]);
+                }
+              }}
               className="
-                text-[14px]
+                text-[14.5px]
                 font-medium
-                text-zinc-900
-                dark:text-zinc-100
-                hover:text-black
-                dark:hover:text-white
-                transition-all
+                text-white/80
+                hover:text-white
+                transition-colors
               "
             >
               {link.name}
@@ -124,6 +127,7 @@ const Navbar = () => {
             <div className="flex items-center gap-4">
               <Link
                 to="/project-room"
+                onMouseEnter={() => preloadRoute(lazyRoutes.Dashboard)}
                 className="text-[13.5px] font-bold text-zinc-900 hover:opacity-70 transition-opacity"
               >
                 Project Room
@@ -139,11 +143,15 @@ const Navbar = () => {
             <div className="flex items-center gap-8">
               <Link
                 to="/login"
-                className="text-[14px] font-bold text-zinc-600 hover:text-black transition-colors"
+                onMouseEnter={() => preloadRoute(lazyRoutes.Login)}
+                className="text-[14px] font-bold text-[#ffebeb]"
               >
                 Log in
               </Link>
-              <Link to="/signup">
+              <Link
+                to="/signup"
+                onMouseEnter={() => preloadRoute(lazyRoutes.SignUp)}
+              >
                 <button
                   className="
                     bg-black
@@ -210,6 +218,16 @@ const Navbar = () => {
                     setIsMobileMenuOpen(false);
                     handleNavClick(e, link.href);
                   }}
+                  onMouseEnter={() => {
+                    if (link.key && lazyRoutes[link.key as keyof typeof lazyRoutes]) {
+                      preloadRoute(lazyRoutes[link.key as keyof typeof lazyRoutes]);
+                    }
+                  }}
+                  onTouchStart={() => {
+                    if (link.key && lazyRoutes[link.key as keyof typeof lazyRoutes]) {
+                      preloadRoute(lazyRoutes[link.key as keyof typeof lazyRoutes]);
+                    }
+                  }}
                   className="
                     text-[24px]
                     font-bold
@@ -230,6 +248,8 @@ const Navbar = () => {
                     onClick={() =>
                       setIsMobileMenuOpen(false)
                     }
+                    onMouseEnter={() => preloadRoute(lazyRoutes.Dashboard)}
+                    onTouchStart={() => preloadRoute(lazyRoutes.Dashboard)}
                     className="text-[24px] font-bold text-zinc-900 tracking-tight"
                   >
                     Dashboard
@@ -252,6 +272,8 @@ const Navbar = () => {
                     onClick={() =>
                       setIsMobileMenuOpen(false)
                     }
+                    onMouseEnter={() => preloadRoute(lazyRoutes.Login)}
+                    onTouchStart={() => preloadRoute(lazyRoutes.Login)}
                     className="text-[24px] font-bold text-zinc-900 tracking-tight"
                   >
                     Log in
@@ -262,6 +284,8 @@ const Navbar = () => {
                     onClick={() =>
                       setIsMobileMenuOpen(false)
                     }
+                    onMouseEnter={() => preloadRoute(lazyRoutes.SignUp)}
+                    onTouchStart={() => preloadRoute(lazyRoutes.SignUp)}
                     className="mt-2"
                   >
                     <button

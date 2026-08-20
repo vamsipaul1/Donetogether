@@ -1,4 +1,4 @@
-# 🚀 DoneTogether - Task Management System
+# 🚀 WeMakeIt - Task Management System
 
 ## Implementation Complete ✅
 

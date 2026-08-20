@@ -13,7 +13,7 @@ const Premium = () => {
 
     return (
         <div className="min-h-screen bg-[#F0F5F0] dark:bg-zinc-950 font-sans selection:bg-violet-500/30 overflow-x-hidden">
-            <Navbar isDark={isDark} toggleTheme={toggleTheme} />
+            <Navbar />
 
             <main className="relative pt-24 pb-20 px-4 sm:px-6">
                 {/* Background Gradients (Scaled Down) */}
@@ -47,7 +47,7 @@ const Premium = () => {
                             transition={{ delay: 0.2 }}
                             className="text-lg text-zinc-500 dark:text-zinc-500 max-w-xl mx-auto font-medium leading-relaxed"
                         >
-                            Whether you're shipping a student project or building an early-stage product, DoneTogether keeps your team aligned, accountable, and fast.
+                            Whether you're shipping a student project or building an early-stage product, WeMakeIt keeps your team aligned, accountable, and fast.
                         </motion.p>
                     </div>
 

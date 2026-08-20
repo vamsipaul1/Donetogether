@@ -22,7 +22,7 @@ interface BoardViewProps {
     tasks: Task[];
     members: (ProjectMember & { users?: UserType })[];
     currentUserId: string;
-    islead: boolean;
+    isLead: boolean;
     onTasksUpdated: () => void;
     onAddTask: () => void;
     onEditTask: (task: Task) => void;
@@ -34,7 +34,7 @@ const COLUMNS: { id: TaskStatus; label: string }[] = [
     { id: 'completed', label: 'Done' },
 ];
 
-const BoardView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAddTask, onEditTask }: BoardViewProps) => {
+const BoardView = ({ tasks, members, currentUserId, isLead, onTasksUpdated, onAddTask, onEditTask }: BoardViewProps) => {
     const [optimisticTasks, setOptimisticTasks] = useState(tasks);
     const [isProofModalOpen, setIsProofModalOpen] = useState(false);
     const [taskForProof, setTaskForProof] = useState<Task | null>(null);
@@ -97,7 +97,7 @@ const BoardView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAd
 
         // Check if user has permission to move this task
         const currentUserMember = members.find(m => m.user_id === currentUserId);
-        const hasPermission = islead || (task && task.assigned_to === currentUserId);
+        const hasPermission = isLead || (task && task.assigned_to === currentUserId);
 
         if (!hasPermission) {
             toast.error('You can only move tasks assigned to you');
@@ -107,7 +107,7 @@ const BoardView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAd
         const newStatus = destination.droppableId as TaskStatus;
 
         // PROOF OF WORK CHECK
-        const canVerify = islead || currentUserMember?.can_verify_tasks;
+        const canVerify = isLead || currentUserMember?.can_verify_tasks;
 
         // If moving to completed AND not authorized to verify, require proof
         if (newStatus === 'completed' && !canVerify) {
@@ -171,7 +171,7 @@ const BoardView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAd
             {/* Board Header */}
             <header className="px-4 md:px-6 h-14 flex items-center justify-between border-b border-zinc-200/50 dark:border-white/5 bg-background/50 dark:bg-zinc-900/50 backdrop-blur-xl sticky top-0 z-20 overflow-x-auto scrollbar-hide shrink-0">
                 <div className="flex items-center gap-3 md:gap-6 min-w-max">
-                    {islead && (
+                    {isLead && (
                         <button onClick={onAddTask} className="flex items-center gap-1.5 md:gap-2 px-2.5 md:px-3 py-1.5 bg-black dark:bg-white text-white dark:text-black rounded-lg text-[9px] md:text-[10px] font-black hover:scale-105 transition-all uppercase shadow-lg shadow-black/20">
                             <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 invert brightness-0 dark:brightness-200" /> <span className="hidden sm:inline">Add task</span><span className="sm:hidden">Add</span>
                         </button>
@@ -196,7 +196,7 @@ const BoardView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAd
                                         </span>
                                     </div>
                                     <div className="flex gap-1">
-                                        {islead && (
+                                        {isLead && (
                                             <button onClick={onAddTask} className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors">
                                                 <img src="/image copy 4.png" alt="" className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100" />
                                             </button>
@@ -216,7 +216,7 @@ const BoardView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAd
                                             {optimisticTasks
                                                 .filter((t) => t.status === col.id)
                                                 .map((task, index) => (
-                                                    <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!(islead || task.assigned_to === currentUserId)}>
+                                                    <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!(isLead || task.assigned_to === currentUserId)}>
                                                         {(provided, snapshot) => (
                                                             <div
                                                                 ref={provided.innerRef}
@@ -235,7 +235,7 @@ const BoardView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAd
                                                                     </div>
 
                                                                     <div className="flex justify-end relative z-10">
-                                                                        {islead && (
+                                                                        {isLead && (
                                                                             <DropdownMenu>
                                                                                 <DropdownMenuTrigger asChild>
                                                                                     <button className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-400 hover:text-zinc-900 dark:text-zinc-500 dark:hover:text-zinc-200 transition-all rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700">
@@ -288,7 +288,7 @@ const BoardView = ({ tasks, members, currentUserId, islead, onTasksUpdated, onAd
                                                     </Draggable>
                                                 ))}
                                             {provided.placeholder}
-                                            {islead && (
+                                            {isLead && (
                                                 <button
                                                     onClick={() => {
                                                         onAddTask();
