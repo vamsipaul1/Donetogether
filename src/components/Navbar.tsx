@@ -10,7 +10,6 @@ const navLinks = [
   { name: "Features", href: "/#features" },
   { name: "How it works", href: "/#how-it-works" },
   { name: "FAQs", href: "/#faqs" },
-  { name: "Why Choose", href: "/why-choose", key: "WhyChoose" },
   {
     name: "Contact Us",
     href:
@@ -128,13 +127,13 @@ const Navbar = () => {
               <Link
                 to="/project-room"
                 onMouseEnter={() => preloadRoute(lazyRoutes.Dashboard)}
-                className="text-[13.5px] font-bold text-zinc-900 hover:opacity-70 transition-opacity"
+                className="text-[13.5px] font-bold text-white hover:opacity-70 transition-opacity"
               >
                 Project Room
               </Link>
               <button
                 onClick={() => signOut()}
-                className="text-[13.5px] font-bold text-zinc-500 hover:text-red-500 transition-colors"
+                className="text-[13.5px] font-bold text-black"
               >
                 Sign Out
               </button>

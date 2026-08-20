@@ -18,39 +18,29 @@ export default function CTASection() {
   const { user } = useAuth();
 
   return (
-    <section className="relative w-full bg-white py-16 sm:py-36 border-t border-zinc-100 overflow-hidden isolate">
-      {/* Subtle Radial Gradient Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(247,247,247,1)_0%,rgba(255,255,255,0)_80%)] pointer-events-none -z-10" />
-
+    <section className="w-full bg-white py-20 sm:py-24 md:py-32">
       <motion.div
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         transition={{ staggerChildren: 0.15 }}
-        className="max-w-4xl mx-auto px-6 text-center"
+        className="max-w-[1200px] mx-auto px-6 sm:px-12 lg:px-24 text-left"
       >
         {/* Heading */}
         <motion.h2
           variants={fadeUp}
+          style={{ color: '#2563eb' }}
           className="
             font-sans
-            font-semibold
-            text-3xl xs:text-4xl sm:text-5xl md:text-6xl 
-            tracking-[-0.03em] 
-            text-[#0a0a0a] 
+            font-bold
+            text-4xl sm:text-5xl md:text-6xl lg:text-[54px]
+            tracking-tight
             mb-6 
-            leading-[1.15]
-            sm:leading-[1.05]
+            leading-[1.1]
+            max-w-[800px]
           "
         >
-          Ready to{' '}
-          <span className="relative">
-            <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">
-              build your next project
-            </span>
-
-          </span>{' '}
-          together?
+          You've seen how it works.<br /> Now put it to work.
         </motion.h2>
 
         {/* Subheading */}
@@ -58,44 +48,21 @@ export default function CTASection() {
           variants={fadeUp}
           className="
             font-body
-            text-lg sm:text-[18px] 
-            text-slate-700 
+            text-[17px] sm:text-[18px] 
+            text-zinc-700 
             mb-10 
-            max-w-2xl 
-            mx-auto
-            leading-relaxed
-            tracking-[-0.015em]
+            max-w-[540px] 
+            leading-[1.6]
+            tracking-tight
+            antialiased
           "
         >
-          Align your team, track your progress, and turn your ideas into reality.
+          Get started with WeMakeIt and start resolving more team issues. Try it for free and see the impact for yourself.
         </motion.p>
 
         {/* Button */}
-        <motion.div variants={fadeUp} className="relative inline-block mt-14">
-          {/* Hand-drawn Directional Arrow - Darker and shifted right for mobile */}
-          <div className="absolute -top-14 -left-2 sm:-top-16 sm:-left-12 text-black pointer-events-none transform -rotate-12 sm:-rotate-12 opacity-60 sm:opacity-100">
-            <svg
-              className="w-14 h-14 sm:w-[90px] sm:h-[90px]"
-              viewBox="0 0 100 100"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M20,20 Q65,15 90,65"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-              />
-              <path
-                d="M75,55 L90,65 L100,50"
-                stroke="currentColor"
-                strokeWidth="4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <Link 
+        <motion.div variants={fadeUp}>
+          <Link
             to={user ? "/project-room" : "/signup"}
             onMouseEnter={() => preloadRoute(user ? lazyRoutes.Dashboard : lazyRoutes.SignUp)}
             onTouchStart={() => preloadRoute(user ? lazyRoutes.Dashboard : lazyRoutes.SignUp)}
@@ -106,26 +73,24 @@ export default function CTASection() {
                 inline-flex
                 items-center
                 justify-center
-                gap-3
-                bg-[#0a0a0a] 
+                gap-2.5
+                bg-[#2563eb] 
                 text-white 
-                px-8 
-                h-[56px]
-                text-[15.5px] 
-                font-semibold 
-                rounded-full 
+                px-6 
+                py-3
+                text-[15px] 
+                font-bold 
+                font-body
+                rounded-xl
                 transition-all
                 duration-300
-                hover:bg-[#1a1a1a]
-                hover:shadow-[0_12px_36px_-12px_rgba(0,0,0,0.4)]
-                hover:-translate-y-1
+                hover:bg-[#1d4ed8]
+                hover:shadow-lg hover:shadow-blue-500/20
                 active:scale-95
               "
             >
-              <span>Launch Your Workspace</span>
-              <div className="bg-white/20 rounded-full p-[4px] transition-transform duration-300 group-hover:translate-x-1.5 flex items-center justify-center">
-                <ArrowRight size={17} strokeWidth={3} />
-              </div>
+              Get Started
+              <ArrowRight size={17} strokeWidth={2.5} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </Link>
         </motion.div>

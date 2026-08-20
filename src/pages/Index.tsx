@@ -7,7 +7,7 @@ import CTASection from '@/components/CTASection';
 import Footer from '@/components/Footer';
 
 import HowItWorksSection from '@/components/HowItWorksSection';
-import ComparisonSection from '@/components/ComparisonSection';
+import UnifiedWorkspaceSection from '@/components/UnifiedWorkspaceSection';
 import FAQSection from '@/components/FAQSection';
 
 const Index = () => {
@@ -39,8 +39,8 @@ const Index = () => {
       <main>
         <HeroSection />
         <FeaturesSection />
+        <UnifiedWorkspaceSection />
         <HowItWorksSection />
-        <ComparisonSection />
         <FAQSection />
         <CTASection />
       </main>
